@@ -1,0 +1,6 @@
+defaults:
+- data_valuation: synthetic
+
+common:
+  n_jobs: 8
+  n_repetitions: 10

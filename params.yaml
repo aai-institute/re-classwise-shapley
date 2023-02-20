@@ -1,0 +1,20 @@
+data_valuation:
+  budgets:
+  - 500
+  removal_percentages:
+  - 0.0
+  - 0.05
+  - 0.1
+  - 0.2
+  - 0.3
+  - 0.4
+  method_names:
+  - Random
+  - Class Wise
+  dataset: synthetic
+  n_features: 50
+  n_train_samples: 200
+  n_test_samples: 1000
+common:
+  n_jobs: 8
+  n_repetitions: 10

@@ -1,41 +1,94 @@
+"""
+Refs:
+
+[1] CS-Shapley: Class-wise Shapley Values for Data Valuation in Classification (https://arxiv.org/abs/2211.06800)
+"""
+
+# TODO rename function, and object refs, when transferred to pyDVL.
+
 import numbers
-import warnings
-from typing import Tuple
+from typing import Optional, Tuple
 
 import numpy as np
-from numpy._typing import NDArray
-from pydvl.utils import Utility, random_powerset
+from pydvl.utils import Scorer, SupervisedModel, Utility, random_powerset
 from pydvl.value import ValuationStatus
 from pydvl.value.results import ValuationResult
 
-__all__ = ["class_wise_shapley"]
-
-from itertools import chain, combinations
+__all__ = ["class_wise_shapley", "CSScorer"]
 
 
-def powerset_wo_null(iterable):
+def _estimate_in_out_cls_accuracy(
+    model: SupervisedModel, x: np.ndarray, labels: np.ndarray, label: np.int_
+) -> Tuple[float, float]:
     """
-    powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)
+    Estimate the in and out of class accuracy as defined in [1], Equation 3.
+
+    :param model: A model to be used for predicting the labels.
+    :param x: The inputs to be used for measuring the accuracies. Has to match the labels.
+    :param labels: The labels ot be used for measuring the accuracies. It is divided further by the passed label.
+    :param label: The label of the class, which is currently viewed.
+    :return: A tuple, containing the in class accuracy as well as the out of class accuracy.
     """
-    xs = list(iterable)
-    # note we return an iterator rather than a list
-    return chain.from_iterable(combinations(xs, n) for n in range(1, len(xs) + 1))
+    n = len(x)
+    y_pred = model.predict(x)
+    label_set_match = labels == label
+    label_set = np.where(label_set_match)[0]
+    complement_label_set = np.where(~label_set_match)[0]
+
+    y_correct = y_pred == labels
+    acc_in_cls = np.sum(y_correct[label_set]) / n
+    acc_out_of_cls = np.sum(y_correct[complement_label_set]) / n
+    return acc_in_cls, acc_out_of_cls
+
+
+class CSScorer(Scorer):
+    """
+    A Scorer object to be used along with the 'class_wise_shapley' function.
+    """
+
+    def __init__(self):
+        self.label: Optional[np.int_] = None
+
+    def __call__(
+        self, model: SupervisedModel, x_test: np.ndarray, y_test: np.ndarray
+    ) -> float:
+        """
+        Estimates the in and out of class accuracies and aggregated them into one float number.
+        :param model: A model to be used for predicting the labels.
+        :param x_test: The inputs to be used for measuring the accuracies. Has to match the labels.
+        :param y_test:  The labels ot be used for measuring the accuracies. It is divided further by the passed label.
+        :return: The aggregated number specified by 'in_cls_acc * exp(out_cls_acc)'
+        """
+        if self.label is None:
+            raise ValueError(
+                "Please set the label in the class first. By using o.label = <value>."
+            )
+
+        in_cls_acc, out_cls_acc = _estimate_in_out_cls_accuracy(
+            model, x_test, y_test, self.label
+        )
+        return in_cls_acc * np.exp(out_cls_acc)
 
 
 def class_wise_shapley(
-    u: Utility, *, progress: bool = True, num_sets: int = 500, eps: float = 1e-4
+    u: Utility, *, progress: bool = True, num_sets: int = 10, eps: float = 1e-4
 ) -> ValuationResult:
     r"""Computes the class-wise Shapley value using the formulation with permutations:
 
-    :param u: Utility object with model, data, and scoring function
+    :param u: Utility object with model, data, and scoring function. The scoring function has to be of type CSScorer.
     :param progress: Whether to display progress bars for each job.
     :param num_sets: The number of sets to use in the truncated monte carlo estimator.
     :param eps: The threshold when updating using the truncated monte carlo estimator.
-    :return: Object with the data values.
+    :return: ValuationResult object with the data values.
     """
 
     if not all(map(lambda v: isinstance(v, numbers.Integral), u.data.y_train)):
         raise ValueError("The supplied dataset has to be a classification dataset.")
+
+    if not isinstance(u.scorer, CSScorer):
+        raise ValueError(
+            "Please set CSScorer object as scorer object of utility. See scoring argument of Utility."
+        )
 
     n_train = len(u.data)
     y_train = u.data.y_train
@@ -43,6 +96,7 @@ def class_wise_shapley(
 
     unique_labels = np.unique(y_train)
     for idx_label, label in enumerate(unique_labels):
+        u.scorer.label = label
         active_elements = y_train == label
         label_set = np.where(active_elements)[0]
         complement_label_set = np.where(~active_elements)[0]
@@ -53,10 +107,8 @@ def class_wise_shapley(
         ):
             permutation_label_set = np.random.permutation(label_set)
             train_set = np.concatenate((label_set, subset_complement))
-            in_cls_acc, out_of_cls_acc = estimate_data_value(u, train_set, label)
-
             data_value = 0
-            final_data_value = in_cls_acc * np.exp(out_of_cls_acc)
+            final_data_value = u(train_set)
 
             for j in range(len(label_set)):
                 if np.abs(final_data_value - data_value) < eps:
@@ -66,10 +118,7 @@ def class_wise_shapley(
                     train_set = np.concatenate(
                         (permutation_label_set[: j + 1], subset_complement)
                     )
-                    in_cls_acc, out_of_cls_acc = estimate_data_value(
-                        u, train_set, label
-                    )
-                    next_data_value = in_cls_acc * np.exp(out_of_cls_acc)
+                    next_data_value = u(train_set)
 
                 diff_data_value = next_data_value - data_value
                 values[permutation_label_set[j]] = (
@@ -80,7 +129,13 @@ def class_wise_shapley(
             last_permutation_label_set = permutation_label_set
 
         sigma_c = np.sum(values[label_set])
-        in_cls_acc, _ = estimate_data_value(u, np.arange(n_train), label)
+
+        # TODO: Phantom call to invoke train
+        u(list(range(n_train)))
+        in_cls_acc, _ = _estimate_in_out_cls_accuracy(
+            u.model, u.data.x_test, u.data.y_test, label
+        )
+
         values[label_set] *= in_cls_acc / sigma_c
 
     return ValuationResult(
@@ -90,29 +145,3 @@ def class_wise_shapley(
         stderr=None,
         data_names=u.data.data_names,
     )
-
-
-def estimate_data_value(
-    u: Utility, indices: NDArray[np.int_], label: np.int_
-) -> Tuple[float, float]:
-    x_train_s = u.data.x_train[indices]
-    y_train_s = u.data.y_train[indices]
-    u.model.fit(x_train_s, y_train_s)
-
-    x_dev = u.data.x_test
-    y_dev = u.data.y_test
-    y_dev_pred = u.model.predict(x_dev)
-    y_dev_matched = y_dev_pred == y_dev
-    cls_idx_dev = np.where(y_dev == label)[0]
-    n_dev = len(x_dev)
-    inv_cls_idx_dev = invert_idx(cls_idx_dev, n_dev)
-
-    acc_in_cls = np.sum(y_dev_matched[cls_idx_dev]) / n_dev
-    acc_out_of_cls = np.sum(y_dev_matched[inv_cls_idx_dev]) / n_dev
-    return acc_in_cls, acc_out_of_cls
-
-
-def invert_idx(p: np.ndarray, n: int) -> np.ndarray:
-    mask = np.ones(n, dtype=bool)
-    mask[p] = 0
-    return np.arange(n)[mask]

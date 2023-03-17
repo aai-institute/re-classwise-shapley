@@ -1,5 +1,7 @@
-budgets: [500]
-removal_percentages: [0.0, 0.05, 0.10, 0.20, 0.30, 0.40]
-method_names :
-- "Random"
-- "Class Wise"
+common:
+  budgets: [500]
+  n_repetitions: 3
+  removal_percentages: [ 0.0, 0.05, 0.10, 0.20, 0.30, 0.40 ]
+  method_names:
+    - "Random"
+    - "Class Wise"

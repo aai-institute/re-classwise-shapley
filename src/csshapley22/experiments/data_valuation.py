@@ -1,25 +1,15 @@
+from functools import partial
 from pathlib import Path
 
 import click
-import pandas as pd
 from dvc.api import params_show
 from dvc.repo import Repo
-from pydvl.reporting.scores import compute_removal_score
-from pydvl.utils import Scorer, Utility
-from pydvl.value.shapley.classwise import CSScorer
 
 from csshapley22.constants import RANDOM_SEED
-from csshapley22.dataset import create_diabetes_dataset, create_synthetic_dataset
-from csshapley22.metrics.weighted_reciprocal_average import (
-    weighted_reciprocal_diff_average,
-)
-from csshapley22.utils import (
-    compute_values,
-    convert_values_to_dataframe,
-    instantiate_model,
-    set_random_seed,
-    setup_logger,
-)
+from csshapley22.dataset import DatasetRegistry
+from csshapley22.experiments.experiment_one import run_experiment_one
+from csshapley22.utils import set_random_seed, setup_logger
+from csshapley22.valuation_methods import compute_values
 
 logger = setup_logger()
 
@@ -27,31 +17,31 @@ set_random_seed(RANDOM_SEED)
 
 
 @click.command()
-@click.option(
-    "--dataset-name", type=str, required=True, help="Name of the dataset to use"
-)
 @click.option("--model-name", type=str, required=True, help="Name of the model to use")
-@click.option("--budget", type=int, required=True, help="Computation budget")
-def run(dataset_name: str, model_name: str, budget: int):
+def run(model_name: str):
     logger.info("Starting data valuation experiment")
 
-    params = params_show()
+    params = params_show()["experiment_one"]
     logger.info(f"Using parameters:\n{params}")
 
-    n_jobs = params["common"]["n_jobs"]
+    valuation_methods = params["valuation_methods"]
+    datasets = params["datasets"]
 
-    data_valuation_params = params["data_valuation"]
-    n_repetitions = data_valuation_params["common"]["n_repetitions"]
-    method_names = data_valuation_params["common"]["method_names"]
+    datasets = {
+        dataset_name: DatasetRegistry[dataset_name](**dataset_kwargs)
+        for dataset_name, dataset_kwargs in datasets.items()
+    }
+    valuation_functions = {
+        valuation_method_name: partial(
+            compute_values, valuation_method=valuation_method_name
+        )
+        for valuation_method_name in valuation_methods.keys()
+    }
+    n_repetitions = params["settings"]["n_repetitions"]
 
     # Create the output directory
     experiment_output_dir = (
-        Path(Repo.find_root())
-        / "output"
-        / "data_valuation"
-        / f"dataset={dataset_name}"
-        / "results"
-        / f"{budget=}"
+        Path(Repo.find_root()) / "output" / "data_valuation" / "results"
     )
     experiment_output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -61,51 +51,21 @@ def run(dataset_name: str, model_name: str, budget: int):
         repetition_output_dir = experiment_output_dir / f"{repetition=}"
         repetition_output_dir.mkdir(parents=True, exist_ok=True)
 
-        all_values = []
-        all_scores = []
-
-        if dataset_name == "diabetes":
-            diabetes_dataset_params = data_valuation_params["diabetes"]
-            train_size = diabetes_dataset_params["train_size"]
-            dataset = create_diabetes_dataset(
-                train_size=train_size,
-            )
-        else:
-            raise ValueError(f"Unknown dataset '{dataset_name}'")
-
-        scorer = CSScorer()
-        model = instantiate_model(model_name)
-
-        logger.info("Creating utility")
-        utility = Utility(data=dataset, model=model, scorer=scorer)
-
-        for method_name in method_names:
-            logger.info(f"{method_name=}")
-            logger.info("Computing values")
-            values = compute_values(
-                method_name, utility=utility, n_jobs=n_jobs, budget=budget
-            )
-
-            logger.info("Converting values to DataFrame")
-            df = convert_values_to_dataframe(values)
-            df["method"] = method_name
-            all_values.append(df)
-
-            logger.info("Computing best data points removal score")
-            accuracy_utility = Utility(
-                data=dataset, model=model, scorer=Scorer(scoring="accuracy")
-            )
-            weighted_accuracy_drop = weighted_reciprocal_diff_average(
-                u=accuracy_utility, values=values, progress=True
-            )
-            all_scores.append(weighted_accuracy_drop)
-
+        result = run_experiment_one(
+            model_name=model_name,
+            datasets=datasets,
+            valuation_functions=valuation_functions,
+        )
         logger.info("Saving results to disk")
-        scores_df = pd.Series(all_scores)
-        scores_df.to_csv(repetition_output_dir / "scores.csv", index=False)
+        result.metric.to_csv(
+            repetition_output_dir / "weighted_accuracy_drops.csv", index=False
+        )
 
-        values_df = pd.concat(all_values)
-        values_df.to_csv(repetition_output_dir / "values.csv", index=False)
+        # result = run_experiment_two(
+        #     model_name=model_name,
+        #     datasets=datasets,
+        #     valuation_functions=valuation_functions,
+        # )
 
     logger.info("Finished data valuation experiment")
 

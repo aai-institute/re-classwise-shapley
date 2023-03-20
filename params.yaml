@@ -1,13 +1,16 @@
-data_valuation:
-  common:
-    budgets:
-    - 500
+experiment_one:
+  valuation_methods:
+
+    class_wise:
+    leave_one_out:
+    truncated_monte_carlo:
+
+  datasets:
+    click:
+      train_size: 0.8
+
+    diabetes:
+      train_size: 0.8
+
+  settings:
     n_repetitions: 3
-    method_names:
-    - Class Wise
-    - Leave One Out
-    - TMC
-  diabetes:
-    train_size: 0.8
-common:
-  n_jobs: 8

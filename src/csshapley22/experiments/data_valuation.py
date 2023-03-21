@@ -61,12 +61,6 @@ def run(model_name: str):
             repetition_output_dir / "weighted_accuracy_drops.csv", index=False
         )
 
-        # result = run_experiment_two(
-        #     model_name=model_name,
-        #     datasets=datasets,
-        #     valuation_functions=valuation_functions,
-        # )
-
     logger.info("Finished data valuation experiment")
 
 

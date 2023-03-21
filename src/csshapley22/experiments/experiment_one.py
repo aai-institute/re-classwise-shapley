@@ -1,6 +1,6 @@
 from copy import copy
 from dataclasses import dataclass
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Tuple
 
 import pandas as pd
 from pydvl.utils import Dataset, Scorer, Utility
@@ -23,7 +23,7 @@ class ExperimentOneResult:
 
 def run_experiment_one(
     model_name: str,
-    datasets: Dict[str, Dataset],
+    datasets: Dict[str, Tuple[Dataset, Dataset]],
     valuation_functions: Dict[str, List[Callable[[Utility], ValuationResult]]],
 ) -> ExperimentOneResult:
     base_frame = pd.DataFrame(
@@ -33,12 +33,12 @@ def run_experiment_one(
         metric=copy(base_frame), valuation_results=copy(base_frame)
     )
 
-    for dataset_idx, dataset in datasets.items():
+    for dataset_idx, (val_dataset, test_dataset) in datasets.items():
         scorer = CSScorer()
         model = instantiate_model(model_name)
 
         logger.info("Creating utility")
-        utility = Utility(data=dataset, model=model, scorer=scorer)
+        utility = Utility(data=val_dataset, model=model, scorer=scorer)
 
         for valuation_method_idx, valuation_method in valuation_functions.items():
             logger.info(f"{valuation_method=}")
@@ -49,7 +49,7 @@ def run_experiment_one(
 
             logger.info("Computing best data points removal score")
             accuracy_utility = Utility(
-                data=dataset, model=model, scorer=Scorer(scoring="accuracy")
+                data=val_dataset, model=model, scorer=Scorer(scoring="accuracy")
             )
             weighted_accuracy_drop = weighted_reciprocal_diff_average(
                 u=accuracy_utility, values=values, progress=True

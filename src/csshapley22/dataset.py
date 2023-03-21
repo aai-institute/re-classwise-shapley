@@ -1,6 +1,6 @@
 from enum import Enum
 from functools import partial
-from typing import Callable, Dict
+from typing import Callable, Dict, Tuple
 
 import numpy as np
 import openml
@@ -24,19 +24,97 @@ def flip_labels(
     return y, indices
 
 
-def create_openml_dataset(train_size: float, dataset_id: int) -> Dataset:
+def create_openml_dataset(
+    dataset_id: int, train_size: int, dev_size: int, test_size: int
+) -> Tuple[Dataset, Dataset]:
+    data = fetch_openml(data_id=dataset_id)
+    X = data.data
+    y = data.target
+
+    # sample some subsets for the datasets
+    num_data = train_size + dev_size + test_size
+    p = np.random.permutation(len(X))[:num_data]
+    train_idx = p[:train_size]
+    dev_idx = p[train_size : train_size + dev_size]
+    test_idx = p[train_size + dev_size :]
+
+    x_train = X.iloc[train_idx]
+    y_train = y.iloc[train_idx]
+    x_dev = X.iloc[dev_idx]
+    y_dev = y.iloc[dev_idx]
+    x_test = X.iloc[test_idx]
+    y_test = y.iloc[test_idx]
+
     le = preprocessing.LabelEncoder()
-    dataset = Dataset.from_sklearn(
-        fetch_openml(data_id=dataset_id), train_size=train_size
+    le.fit(np.concatenate((y_train, y_test, y_dev)))
+    y_train = le.transform(y_train)
+    y_test = le.transform(y_test)
+    y_dev = le.transform(y_dev)
+
+    val_dataset = Dataset(
+        x_train,
+        y_train,
+        x_dev,
+        y_dev,
+        feature_names=data.get("feature_names"),
+        target_names=data.get("target_names"),
+        description=data.get("DESCR"),
+    )
+    test_dataset = Dataset(
+        x_train,
+        y_train,
+        x_test,
+        y_test,
+        feature_names=data.get("feature_names"),
+        target_names=data.get("target_names"),
+        description=data.get("DESCR"),
     )
 
-    le.fit(np.concatenate((dataset.y_train, dataset.y_test)))
-    dataset.y_train = le.transform(dataset.y_train)
-    dataset.y_test = le.transform(dataset.y_test)
-    return dataset
+    return val_dataset, test_dataset
+
+
+def pca_feature_transformer(
+    dataset: Tuple[Dataset, Dataset]
+) -> Tuple[Dataset, Dataset]:
+    pass
+
+
+def label_binarization(datasets: Tuple[Dataset, Dataset]) -> Dataset:
+    pass
+
+
+def chain_transformer(
+    dataset_producer: Callable[[...], Dataset],
+    *transformers: Callable[[Tuple[Dataset, Dataset]], Tuple[Dataset, Dataset]]
+) -> Callable[[...], Tuple[Dataset, Dataset]]:
+    def _transformer(*args, **kwargs):
+        dataset = dataset_producer(*args, **kwargs)
+        for transformer in transformers:
+            dataset = transformer(dataset)
+
+        return dataset
+
+    return _transformer
 
 
 DatasetRegistry: Dict[str, Callable[[...], Dataset]] = {
     "diabetes": partial(create_openml_dataset, dataset_id=37),
     "click": partial(create_openml_dataset, dataset_id=1216),
+    "cpu": partial(create_openml_dataset, dataset_id=197),
+    "covertype": partial(create_openml_dataset, dataset_id=1596),
+    "phoneme": partial(create_openml_dataset, dataset_id=1489),
+    "fmnist": chain_transformer(
+        partial(create_openml_dataset, dataset_id=40996), pca_feature_transformer
+    ),
+    "cifar10": chain_transformer(
+        partial(create_openml_dataset, dataset_id=40927), pca_feature_transformer
+    ),
+    "mnist_binary": chain_transformer(
+        partial(create_openml_dataset, dataset_id=554),
+        pca_feature_transformer,
+        label_binarization,
+    ),
+    "mnist_mutiple": chain_transformer(
+        partial(create_openml_dataset, dataset_id=554), pca_feature_transformer
+    ),
 }

@@ -10,7 +10,7 @@ from sklearn import preprocessing
 from sklearn.datasets import fetch_openml, load_diabetes
 from sklearn.model_selection import train_test_split
 
-__all__ = ["create_diabetes_dataset"]
+__all__ = ["create_openml_dataset"]
 
 
 def flip_labels(
@@ -25,9 +25,9 @@ def flip_labels(
 
 
 def create_openml_dataset(
-    dataset_id: int, train_size: int, dev_size: int, test_size: int
+    openml_id: int, train_size: int, dev_size: int, test_size: int
 ) -> Tuple[Dataset, Dataset]:
-    data = fetch_openml(data_id=dataset_id)
+    data = fetch_openml(data_id=openml_id)
     X = data.data
     y = data.target
 
@@ -95,26 +95,3 @@ def chain_transformer(
         return dataset
 
     return _transformer
-
-
-DatasetRegistry: Dict[str, Callable[[...], Dataset]] = {
-    "diabetes": partial(create_openml_dataset, dataset_id=37),
-    "click": partial(create_openml_dataset, dataset_id=1216),
-    "cpu": partial(create_openml_dataset, dataset_id=197),
-    "covertype": partial(create_openml_dataset, dataset_id=1596),
-    "phoneme": partial(create_openml_dataset, dataset_id=1489),
-    "fmnist": chain_transformer(
-        partial(create_openml_dataset, dataset_id=40996), pca_feature_transformer
-    ),
-    "cifar10": chain_transformer(
-        partial(create_openml_dataset, dataset_id=40927), pca_feature_transformer
-    ),
-    "mnist_binary": chain_transformer(
-        partial(create_openml_dataset, dataset_id=554),
-        pca_feature_transformer,
-        label_binarization,
-    ),
-    "mnist_mutiple": chain_transformer(
-        partial(create_openml_dataset, dataset_id=554), pca_feature_transformer
-    ),
-}

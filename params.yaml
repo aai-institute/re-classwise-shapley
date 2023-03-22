@@ -5,31 +5,37 @@ experiment_one:
     leave_one_out:
     truncated_monte_carlo:
 
-  datasets:
-    diabetes:
-      train_size: 128
-      dev_size: 128
-      test_size: 512
+datasets:
+  diabetes:
+    openml_id: 37
+    train_size: 128
+    dev_size: 128
+    test_size: 512
 
-    click:
-      train_size: 500
-      dev_size: 500
-      test_size: 2000
 
-    cpu:
-      train_size: 500
-      dev_size: 500
-      test_size: 2000
+  click:
+    openml_id: 1216
+    train_size: 500
+    dev_size: 500
+    test_size: 2000
 
-    covertype:
-      train_size: 500
-      dev_size: 500
-      test_size: 2000
+  cpu:
+    openml_id: 197
+    train_size: 500
+    dev_size: 500
+    test_size: 2000
 
-    phoneme:
-      train_size: 500
-      dev_size: 500
-      test_size: 2000
+  covertype:
+    openml_id: 1596
+    train_size: 500
+    dev_size: 500
+    test_size: 2000
 
-  settings:
-    n_repetitions: 3
+  phoneme:
+    openml_id: 1489
+    train_size: 500
+    dev_size: 500
+    test_size: 2000
+
+settings:
+  n_repetitions: 3

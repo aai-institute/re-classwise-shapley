@@ -50,3 +50,10 @@ Make sure to install the pre-commit hooks:
 pre-commit install
 ```
 
+
+## Fetching datasets
+
+To fetch a dataset simply call `csshapley22/data/fetch.py`, which uses the `datasets` section
+of `params.yaml` to download and caches the corresponding data files. The string-based kwargs 
+configuration is used as an identifier, to verify later that a configuration has
+changed.

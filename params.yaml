@@ -1,41 +1,90 @@
 experiment_one:
-  valuation_methods:
+  datasets: all
 
-    class_wise:
-    leave_one_out:
-    truncated_monte_carlo:
-
-datasets:
-  diabetes:
-    openml_id: 37
-    train_size: 128
-    dev_size: 128
-    test_size: 512
-
-
-  click:
-    openml_id: 1216
-    train_size: 500
-    dev_size: 500
-    test_size: 2000
-
-  cpu:
-    openml_id: 197
-    train_size: 500
-    dev_size: 500
-    test_size: 2000
-
-  covertype:
-    openml_id: 1596
-    train_size: 500
-    dev_size: 500
-    test_size: 2000
-
-  phoneme:
-    openml_id: 1489
-    train_size: 500
-    dev_size: 500
-    test_size: 2000
 
 settings:
-  n_repetitions: 3
+  n_repetitions: 3resnet50(weights=ResNet50_Weights.DEFAULT)
+
+  valuation_methods:
+
+    cs_shapley:
+    beta_shapley:
+    loo:
+    tmc_shapley:
+
+  datasets:
+    diabetes:
+      openml_id: 37
+      train_size: 128
+      dev_size: 128
+      test_size: 512
+
+    click:
+      openml_id: 1216
+      train_size: 500
+      dev_size: 500
+      test_size: 2000
+
+    cpu:
+      openml_id: 197
+      train_size: 500
+      dev_size: 500
+      test_size: 2000
+
+    covertype:
+      openml_id: 1596
+      train_size: 500
+      dev_size: 500
+      test_size: 2000
+
+    phoneme:
+      openml_id: 1489
+      train_size: 500
+      dev_size: 500
+      test_size: 2000
+
+    fmnist_binary:
+      openml_id: 40996
+
+      preprocessor:
+        principal_resnet_components:
+          n_components: 32
+          size: 28
+
+      filters:
+        binarization:
+          label_zero: "0"
+          label_one: "6"
+
+      train_size: 500
+      dev_size: 500
+      test_size: 2000
+
+    mnist_binary:
+      openml_id: 554
+
+      preprocessor:
+        principal_resnet_components:
+          n_components: 32
+          size: 28
+
+      filters:
+        binarization:
+          label_zero: "1"
+          label_one: "7"
+
+      train_size: 500
+      dev_size: 500
+      test_size: 2000
+
+    mnist_multi:
+      openml_id: 554
+
+      preprocessor:
+        principal_resnet_components:
+          n_components: 32
+          size: 28
+
+      train_size: 500
+      dev_size: 500
+      test_size: 2000

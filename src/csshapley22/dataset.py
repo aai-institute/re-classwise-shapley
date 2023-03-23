@@ -10,6 +10,8 @@ from sklearn import preprocessing
 from sklearn.datasets import fetch_openml, load_diabetes
 from sklearn.model_selection import train_test_split
 
+from csshapley22.data.preprocess import FilterRegistry
+
 __all__ = ["create_openml_dataset"]
 
 
@@ -25,11 +27,16 @@ def flip_labels(
 
 
 def create_openml_dataset(
-    openml_id: int, train_size: int, dev_size: int, test_size: int
+    openml_id: int, train_size: int, dev_size: int, test_size: int, filters: Dict = None
 ) -> Tuple[Dataset, Dataset]:
     data = fetch_openml(data_id=openml_id)
-    X = data.data
-    y = data.target
+    X = data.data.to_numpy()
+    y = data.target.to_numpy()
+
+    if filters is not None:
+        for filter_name, filter_kwargs in filters.items():
+            data_filter = FilterRegistry[filter_name]
+            X, y = data_filter(X, y, **filter_kwargs)
 
     # sample some subsets for the datasets
     num_data = train_size + dev_size + test_size
@@ -38,12 +45,12 @@ def create_openml_dataset(
     dev_idx = p[train_size : train_size + dev_size]
     test_idx = p[train_size + dev_size :]
 
-    x_train = X.iloc[train_idx]
-    y_train = y.iloc[train_idx]
-    x_dev = X.iloc[dev_idx]
-    y_dev = y.iloc[dev_idx]
-    x_test = X.iloc[test_idx]
-    y_test = y.iloc[test_idx]
+    x_train = X[train_idx]
+    y_train = y[train_idx]
+    x_dev = X[dev_idx]
+    y_dev = y[dev_idx]
+    x_test = X[test_idx]
+    y_test = y[test_idx]
 
     le = preprocessing.LabelEncoder()
     le.fit(np.concatenate((y_train, y_test, y_dev)))

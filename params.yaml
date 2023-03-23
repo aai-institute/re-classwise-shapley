@@ -3,14 +3,23 @@ experiment_one:
 
 
 settings:
-  n_repetitions: 3resnet50(weights=ResNet50_Weights.DEFAULT)
+  n_repetitions: 3
 
   valuation_methods:
 
     cs_shapley:
+      n_updates: 50
+
     beta_shapley:
+      alpha: 1
+      beta: 16
+      n_updates: 50
+
     loo:
+
     tmc_shapley:
+      n_updates: 50
+      r_tol: 0.01
 
   datasets:
     diabetes:

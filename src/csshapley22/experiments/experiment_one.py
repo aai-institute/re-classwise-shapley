@@ -1,16 +1,16 @@
 from copy import copy
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Tuple
+from typing import Dict, Tuple
 
 import pandas as pd
 from pydvl.utils import Dataset, Scorer, Utility
-from pydvl.value import ValuationResult
 from pydvl.value.shapley.classwise import CSScorer
 
 from csshapley22.metrics.weighted_reciprocal_average import (
     weighted_reciprocal_diff_average,
 )
 from csshapley22.utils import instantiate_model, setup_logger
+from csshapley22.valuation_methods import compute_values
 
 logger = setup_logger()
 
@@ -24,10 +24,10 @@ class ExperimentOneResult:
 def run_experiment_one(
     model_name: str,
     datasets: Dict[str, Tuple[Dataset, Dataset]],
-    valuation_functions: Dict[str, List[Callable[[Utility], ValuationResult]]],
+    valuation_methods: Dict[str, Dict],
 ) -> ExperimentOneResult:
     base_frame = pd.DataFrame(
-        index=list(datasets.keys()), columns=list(valuation_functions.keys())
+        index=list(datasets.keys()), columns=list(valuation_methods.keys())
     )
     result = ExperimentOneResult(
         metric=copy(base_frame), valuation_results=copy(base_frame)
@@ -40,22 +40,28 @@ def run_experiment_one(
         logger.info("Creating utility")
         utility = Utility(data=val_dataset, model=model, scorer=scorer)
 
-        for valuation_method_idx, valuation_method in valuation_functions.items():
-            logger.info(f"{valuation_method=}")
-            logger.info("Computing values")
+        for valuation_method_name, valuation_method_kwargs in valuation_methods.items():
+            logger.info(f"{valuation_method_name=}")
+            logger.info(f"Computing values using '{valuation_method_name}'.")
 
-            values = valuation_method(utility)
-            result.valuation_results.loc[dataset_idx, valuation_method_idx] = values
+            values = compute_values(
+                utility,
+                valuation_method=valuation_method_name,
+                **valuation_method_kwargs,
+            )
+            result.valuation_results.loc[dataset_idx, valuation_method_name] = values
 
-            logger.info("Computing best data points removal score")
+            logger.info(
+                "Computing best data points removal score on separate test set."
+            )
             accuracy_utility = Utility(
-                data=val_dataset, model=model, scorer=Scorer(scoring="accuracy")
+                data=test_dataset, model=model, scorer=Scorer(scoring="accuracy")
             )
             weighted_accuracy_drop = weighted_reciprocal_diff_average(
                 u=accuracy_utility, values=values, progress=True
             )
             result.metric.loc[
-                dataset_idx, valuation_method_idx
+                dataset_idx, valuation_method_name
             ] = weighted_accuracy_drop
 
     return result

@@ -8,6 +8,7 @@ from dvc.repo import Repo
 from csshapley22.constants import RANDOM_SEED
 from csshapley22.data.fetch import fetch_datasets
 from csshapley22.experiments.experiment_one import run_experiment_one
+from csshapley22.experiments.experiment_two import run_experiment_two
 from csshapley22.utils import set_random_seed, setup_logger
 from csshapley22.valuation_methods import compute_values
 
@@ -39,6 +40,12 @@ def run(model_name: str):
 
         repetition_output_dir = experiment_output_dir / f"{repetition=}"
         repetition_output_dir.mkdir(parents=True, exist_ok=True)
+
+        result = run_experiment_two(
+            model_name=model_name,
+            datasets=datasets,
+            valuation_methods=valuation_methods,
+        )
 
         result = run_experiment_one(
             model_name=model_name,

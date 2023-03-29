@@ -5,6 +5,7 @@ from typing import Callable, Dict, Tuple, TypeVar
 
 import numpy as np
 import pandas as pd
+from numpy._typing import NDArray
 from pydvl.utils import Dataset, Scorer, SupervisedModel, Utility
 from pydvl.value import ValuationResult
 from pydvl.value.shapley.classwise import CSScorer
@@ -38,7 +39,7 @@ def _dispatch_experiment(
     datasets: ValTestSetFactory,
     valuation_methods: ValuationMethodsFactory,
     *,
-    data_pre_process_fn: Callable[[pd.Series], pd.Series] = None,
+    data_pre_process_fn: Callable[[NDArray[int]], NDArray[int]] = None,
     metric_fn: Callable[[Utility, ValuationResult], float],
 ) -> ExperimentResult:
     base_frame = pd.DataFrame(
@@ -82,7 +83,7 @@ def _dispatch_experiment(
 def experiment_wad(
     model: SupervisedModel,
     datasets: ValTestSetFactory,
-    valuation_methods: ValuationMethodsFactory,
+    valuation_methods_factory: ValuationMethodsFactory,
     test_model: SupervisedModel = None,
 ) -> ExperimentResult:
     """
@@ -91,7 +92,7 @@ def experiment_wad(
 
     :param model: Model which shall be used for evaluation.
     :param datasets: A dictionary containing validation and test set tuples
-    :param valuation_methods: All valuation methods to be used.
+    :param valuation_methods_factory: All valuation methods to be used.
     :param test_model: The current test model which shall be used.
     :return: An ExperimentResult object with the gathered data.
     """
@@ -101,7 +102,7 @@ def experiment_wad(
     ) -> float:
         eval_utility = Utility(
             data=test_utility.data,
-            model=test_model,
+            model=test_model if test_model is not None else model,
             scorer=Scorer(scoring="accuracy"),
         )
         weighted_accuracy_drop = weighted_reciprocal_diff_average(
@@ -112,7 +113,7 @@ def experiment_wad(
     result = _dispatch_experiment(
         model,
         datasets,
-        valuation_methods,
+        valuation_methods_factory,
         data_pre_process_fn=None,
         metric_fn=_weighted_accuracy_drop,
     )
@@ -123,13 +124,13 @@ def experiment_wad(
 def experiment_noise_removal(
     model: SupervisedModel,
     datasets: ValTestSetFactory,
-    valuation_methods: ValuationMethodsFactory,
+    valuation_methods_factory: ValuationMethodsFactory,
     perc_flip_labels: float = 0.2,
 ) -> ExperimentResult:
-    def _flip_labels(labels: pd.Series) -> pd.Series:
+    def _flip_labels(labels: NDArray[int]) -> NDArray[int]:
         num_data_indices = int(perc_flip_labels * len(labels))
         p = np.random.permutation(len(labels))[:num_data_indices]
-        labels.iloc[p] = 1 - labels.iloc[p]
+        labels[p] = 1 - labels[p]
         return labels
 
     def _roc_auc(test_utility: Utility, values: ValuationResult) -> float:
@@ -149,7 +150,7 @@ def experiment_noise_removal(
     result = _dispatch_experiment(
         model,
         datasets,
-        valuation_methods,
+        valuation_methods_factory,
         data_pre_process_fn=_flip_labels,
         metric_fn=_roc_auc,
     )

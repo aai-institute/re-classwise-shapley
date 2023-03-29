@@ -15,7 +15,7 @@ logger = setup_logger()
 
 def parse_valuation_methods_config(
     valuation_methods: Dict[str, Dict]
-) -> Dict[str, ValuationMethodsFactory]:
+) -> ValuationMethodsFactory:
     logger.info("Parsing valuation methods.")
     return {
         name: partial(
@@ -23,6 +23,8 @@ def parse_valuation_methods_config(
             valuation_method=name,
             **kwargs,
         )
+        if kwargs is not None
+        else partial(compute_values, valuation_method=name)
         for name, kwargs in valuation_methods.items()
     }
 

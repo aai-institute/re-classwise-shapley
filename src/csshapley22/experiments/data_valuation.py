@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 
 import click
@@ -28,7 +29,7 @@ def run():
 
     # preprocess valuation methods to be callable from utility to valuation result.
     valuation_methods = general_settings["valuation_methods"]
-    valuation_methods = parse_valuation_methods_config(valuation_methods)
+    valuation_methods_factory = parse_valuation_methods_config(valuation_methods)
 
     # preprocess datasets
     datasets_settings = general_settings["datasets"]
@@ -39,15 +40,16 @@ def run():
     model_generator_factory = parse_models_config(models)
 
     n_repetitions = general_settings["n_repetitions"]
+    date_iso_format = datetime.now().isoformat()
 
     # Create the output directory
-    experiment_output_dir = Path(Repo.find_root()) / "output" / "results"
-    experiment_output_dir.mkdir(parents=True, exist_ok=True)
+    experiment_output_dir = (
+        Path(Repo.find_root()) / "output" / "results" / date_iso_format
+    )
 
     for repetition in range(n_repetitions):
         logger.info(f"{repetition=}")
         repetition_output_dir = experiment_output_dir / f"{repetition=}"
-        repetition_output_dir.mkdir(parents=True, exist_ok=True)
 
         for model_name in models.keys():
             # Experiment One
@@ -56,7 +58,7 @@ def run():
             experiment_wad(
                 model=model,
                 datasets=datasets,
-                valuation_methods=valuation_methods,
+                valuation_methods_factory=valuation_methods_factory,
             ).store(experiment_one_path)
 
             # Experiment Two
@@ -65,7 +67,7 @@ def run():
             experiment_noise_removal(
                 model=model,
                 datasets=datasets,
-                valuation_methods=valuation_methods,
+                valuation_methods_factory=valuation_methods_factory,
             ).store(experiment_two_path)
 
             # Experiment Three
@@ -82,7 +84,7 @@ def run():
                 experiment_wad(
                     model=model,
                     datasets=datasets,
-                    valuation_methods=valuation_methods,
+                    valuation_methods_factory=valuation_methods_factory,
                     test_model=test_model,
                 ).store(experiment_three_test_path)
 

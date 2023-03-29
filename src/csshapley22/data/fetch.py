@@ -3,36 +3,15 @@ import os
 import pickle
 from typing import Dict, Tuple
 
-import click
-from dvc.api import params_show
 from pydvl.utils import Dataset
 
 from csshapley22.data.config import Config
-from csshapley22.data.preprocess import FilterRegistry, PreprocessorRegistry
+from csshapley22.data.preprocess import PreprocessorRegistry
 from csshapley22.data.utils import make_hash_sha256
 from csshapley22.dataset import create_openml_dataset
 from csshapley22.utils import set_random_seed, setup_logger
 
 logger = setup_logger()
-
-
-@click.command()
-def __fetch_all_datasets():
-    fetch_datasets()
-
-
-def fetch_datasets():
-    logger.info("Starting data valuation experiment")
-    settings = params_show()["settings"]
-    dataset_settings = settings["datasets"]
-
-    logger.info("Fetching datasets.")
-    collected_datasets = {}
-    for dataset_name, dataset_kwargs in dataset_settings.items():
-        validation_set, test_set = fetch_dataset(dataset_name, dataset_kwargs)
-        collected_datasets[dataset_name] = (validation_set, test_set)
-
-    return collected_datasets
 
 
 def fetch_dataset(dataset_name: str, dataset_kwargs: Dict) -> Tuple[Dataset, Dataset]:
@@ -89,7 +68,3 @@ def fetch_dataset(dataset_name: str, dataset_kwargs: Dict) -> Tuple[Dataset, Dat
         logger.info("Loaded datasets from disk.")
 
     return validation_set, test_set
-
-
-if __name__ == "__main__":
-    __fetch_all_datasets()

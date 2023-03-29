@@ -1,6 +1,5 @@
 import io
 from contextlib import redirect_stderr
-from enum import Enum
 
 from pydvl.utils import Utility
 from pydvl.value import (

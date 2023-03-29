@@ -55,17 +55,14 @@ def convert_values_to_dataframe(values: ValuationResult) -> pd.DataFrame:
     return df
 
 
-def instantiate_model(model_name: str) -> Pipeline:
-    # We do not set the random_state in the model itself
-    # because we are testing the method and not the model
-    if model_name == "GradientBoostingClassifier":
-        model = make_pipeline(GradientBoostingClassifier())
-    elif model_name == "LogisticRegression":
-        model = make_pipeline(
-            StandardScaler(), LogisticRegression(solver="liblinear", n_jobs=1)
-        )
+def instantiate_model(model_name: str, **model_kwargs) -> Pipeline:
+    if model_name == "gradient_boosting_classifier":
+        model = make_pipeline(GradientBoostingClassifier(**model_kwargs))
+    elif model_name == "logistic_regression":
+        model = make_pipeline(StandardScaler(), LogisticRegression(**model_kwargs))
     else:
         raise ValueError(f"Unknown model '{model_name}'")
+
     return model
 
 

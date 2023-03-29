@@ -1,17 +1,19 @@
 from copy import copy
 from dataclasses import dataclass
-from typing import Callable, Dict, Tuple
+from pathlib import Path
+from typing import Callable, Dict, Tuple, TypeVar
 
 import numpy as np
 import pandas as pd
-from pydvl.utils import Dataset, Scorer, Utility
+from pydvl.utils import Dataset, Scorer, SupervisedModel, Utility
 from pydvl.value import ValuationResult
 from pydvl.value.shapley.classwise import CSScorer
 
 from csshapley22.metrics.weighted_reciprocal_average import (
     weighted_reciprocal_diff_average,
 )
-from csshapley22.utils import instantiate_model, setup_logger
+from csshapley22.types import ValTestSetFactory, ValuationMethodsFactory
+from csshapley22.utils import setup_logger
 from csshapley22.valuation_methods import compute_values
 
 logger = setup_logger()
@@ -23,11 +25,18 @@ class ExperimentResult:
     metric: pd.DataFrame
     metric_name: str = None
 
+    def store(self, output_dir: Path) -> "ExperimentResult":
+        logger.info("Saving results to disk")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        self.metric.to_csv(output_dir / "metric.csv")
+        self.valuation_results.to_csv(output_dir / "valuation_results.csv")
+        return self
 
-def run_experiment(
-    model_name: str,
-    datasets: Dict[str, Tuple[Dataset, Dataset]],
-    valuation_methods: Dict[str, Dict],
+
+def _dispatch_experiment(
+    model: SupervisedModel,
+    datasets: ValTestSetFactory,
+    valuation_methods: ValuationMethodsFactory,
     *,
     data_pre_process_fn: Callable[[pd.Series], pd.Series] = None,
     metric_fn: Callable[[Utility, ValuationResult], float],
@@ -40,25 +49,21 @@ def run_experiment(
     )
 
     for dataset_idx, (val_dataset, test_dataset) in datasets.items():
+        # Create a mock scorer
         scorer = CSScorer()
-        model = instantiate_model(model_name)
 
         logger.info("Creating utility")
-        utility = Utility(data=val_dataset, model=model, scorer=scorer)
+        utility = Utility(data=val_dataset, model=model, scorer=scorer)  # type: ignore
 
         if data_pre_process_fn is not None:
             val_dataset.y_train = data_pre_process_fn(val_dataset.y_train)
             test_dataset.y_train = val_dataset.y_train
 
-        for valuation_method_name, valuation_method_kwargs in valuation_methods.items():
+        for valuation_method_name, valuation_method in valuation_methods.items():
             logger.info(f"{valuation_method_name=}")
             logger.info(f"Computing values using '{valuation_method_name}'.")
 
-            values = compute_values(
-                utility,
-                valuation_method=valuation_method_name,
-                **valuation_method_kwargs,
-            )
+            values = valuation_method(utility)
             result.valuation_results.loc[dataset_idx, valuation_method_name] = values
 
             logger.info(
@@ -74,17 +79,29 @@ def run_experiment(
     return result
 
 
-def run_experiment_one(
-    model_name: str,
-    datasets: Dict[str, Tuple[Dataset, Dataset]],
-    valuation_methods: Dict[str, Dict],
+def experiment_wad(
+    model: SupervisedModel,
+    datasets: ValTestSetFactory,
+    valuation_methods: ValuationMethodsFactory,
+    test_model: SupervisedModel = None,
 ) -> ExperimentResult:
+    """
+    Runs an experiment using the weighted accuracy drop (WAD) introduced in [1]. This function can be reused for the
+    first and third experiments inside the paper.
+
+    :param model: Model which shall be used for evaluation.
+    :param datasets: A dictionary containing validation and test set tuples
+    :param valuation_methods: All valuation methods to be used.
+    :param test_model: The current test model which shall be used.
+    :return: An ExperimentResult object with the gathered data.
+    """
+
     def _weighted_accuracy_drop(
         test_utility: Utility, values: ValuationResult
     ) -> float:
         eval_utility = Utility(
             data=test_utility.data,
-            model=test_utility.model,
+            model=test_model,
             scorer=Scorer(scoring="accuracy"),
         )
         weighted_accuracy_drop = weighted_reciprocal_diff_average(
@@ -92,8 +109,8 @@ def run_experiment_one(
         )
         return float(weighted_accuracy_drop)
 
-    result = run_experiment(
-        model_name,
+    result = _dispatch_experiment(
+        model,
         datasets,
         valuation_methods,
         data_pre_process_fn=None,
@@ -103,10 +120,10 @@ def run_experiment_one(
     return result
 
 
-def run_experiment_two(
-    model_name: str,
-    datasets: Dict[str, Tuple[Dataset, Dataset]],
-    valuation_methods: Dict[str, Dict],
+def experiment_noise_removal(
+    model: SupervisedModel,
+    datasets: ValTestSetFactory,
+    valuation_methods: ValuationMethodsFactory,
     perc_flip_labels: float = 0.2,
 ) -> ExperimentResult:
     def _flip_labels(labels: pd.Series) -> pd.Series:
@@ -129,8 +146,8 @@ def run_experiment_two(
         )
         return u(u.data.indices)
 
-    result = run_experiment(
-        model_name,
+    result = _dispatch_experiment(
+        model,
         datasets,
         valuation_methods,
         data_pre_process_fn=_flip_labels,

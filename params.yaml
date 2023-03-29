@@ -1,56 +1,79 @@
-experiment_one:
-  datasets: all
 
+experiment_3:
+  test_models: [
+    ""
+  ]
 
-settings:
+general:
+
   n_repetitions: 3
+
+  models:
+
+    logistic_regression: {
+      solver: liblinear,
+      n_jobs: 1
+    }
+
+    gradient_boosting_classifier: {
+      n_estimators: 32
+    }
 
   valuation_methods:
 
-    cs_shapley:
+    cs_shapley: {
       n_updates: 50
+    }
 
-    beta_shapley:
-      alpha: 1
-      beta: 16
+    beta_shapley: {
+      alpha: 1,
+      beta: 16,
       n_updates: 50
+    }
 
     loo:
 
-    tmc_shapley:
-      n_updates: 50
-      r_tol: 0.01
+    tmc_shapley: {
+        n_updates: 50,
+        r_tol: 0.01
+    }
 
   datasets:
-    diabetes:
-      openml_id: 37
-      train_size: 128
-      dev_size: 128
+
+    diabetes: {
+      openml_id: 37,
+      train_size: 128,
+      dev_size: 128,
       test_size: 512
+    }
 
-    click:
-      openml_id: 1216
-      train_size: 500
-      dev_size: 500
-      test_size: 2000
+    click: {
+      openml_id: 1216,
+      train_size: 500,
+      dev_size: 500,
+      test_size: 2000,
+    }
 
-    cpu:
-      openml_id: 197
-      train_size: 500
-      dev_size: 500
+    cpu: {
+      openml_id: 197,
+      train_size: 500,
+      dev_size: 500,
       test_size: 2000
+    }
 
-    covertype:
-      openml_id: 1596
-      train_size: 500
-      dev_size: 500
-      test_size: 2000
+    covertype: {
+      openml_id: 1596,
+      train_size: 500,
+      dev_size: 500,
+      test_size: 2000,
+    }
 
-    phoneme:
-      openml_id: 1489
-      train_size: 500
-      dev_size: 500
-      test_size: 2000
+    phoneme: {
+      openml_id: 1489,
+      train_size: 500,
+      dev_size: 500,
+      test_size: 2000,
+    }
 
     fmnist_binary:
       openml_id: 40996

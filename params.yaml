@@ -20,12 +20,28 @@ general:
 
   valuation_methods:
 
-    cs_shapley: {
-      n_updates: 50,
+    loo: {
       progress: True
     }
 
-    loo: {
+    classwise_shapley: {
+      n_updates: 500,
+      rtol: 1e-4,
+      normalize_values: True,
+      progress: True,
+      n_resample_complement_sets: 32
+    }
+
+    beta_shapley: {
+      alpha: 1.0,
+      beta: 1.0,
+      n_updates: 500,
+      progress: True
+    }
+
+    tmc_shapley: {
+      n_updates: 500,
+      rtol: 1e-4,
       progress: True
     }
 
@@ -43,20 +59,6 @@ general:
       train_size: 500,
       dev_size: 500,
       test_size: 2000,
-    }
-
-    cpu: {
-      openml_id: 197,
-      train_size: 500,
-      dev_size: 500,
-      test_size: 2000
-
-      filters: {
-        binarization: {
-          label_zero: "0",
-          label_one: "1"
-        }
-      },
     }
 
     covertype: {
@@ -93,6 +95,28 @@ general:
       train_size: 500,
       dev_size: 500,
       test_size: 2000,
+    }
+
+    cifar10: {
+      openml_id: 40927,
+
+      preprocessor: {
+        principal_resnet_components: {
+          n_components: 32,
+          size: 32
+        }
+      },
+
+      filters: {
+        binarization: {
+          label_zero: "1",
+          label_one: "9"
+        }
+      },
+
+      train_size: 500,
+      dev_size: 500,
+      test_size: 2000
     }
 
     mnist_binary: {

@@ -9,22 +9,21 @@ from csshapley22.data.config import Config
 from csshapley22.data.preprocess import PreprocessorRegistry
 from csshapley22.data.utils import make_hash_sha256
 from csshapley22.dataset import create_openml_dataset
-from csshapley22.utils import set_random_seed, setup_logger
+from csshapley22.log import setup_logger
+from csshapley22.utils import set_random_seed
 
 logger = setup_logger()
 
 
 def fetch_dataset(dataset_name: str, dataset_kwargs: Dict) -> Tuple[Dataset, Dataset]:
-    logger.info(f"Fetch dataset '{dataset_name}' into {Config.DATASET_PATH}.")
     dataset_idx = make_hash_sha256(dataset_kwargs)
     dataset_folder = Config.DATASET_PATH / dataset_idx
     validation_set_path = str(dataset_folder / "validation_set.pkl")
     test_set_path = str(dataset_folder / "test_set.pkl")
 
     if not dataset_folder.exists():
-        logger.info(
-            f"Dataset {dataset_name} with config {dataset_kwargs} doesn't exist."
-        )
+        logger.info(f"Dataset {dataset_name} doesn't exist.")
+        logger.debug(f"Dataset config is \n{dataset_kwargs}.")
         set_random_seed(dataset_kwargs.get("seed", 42))
 
         preprocessor_definitions = dataset_kwargs.pop("preprocessor", None)
@@ -52,19 +51,16 @@ def fetch_dataset(dataset_name: str, dataset_kwargs: Dict) -> Tuple[Dataset, Dat
             with open(set_path, "wb") as file:
                 pickle.dump(set, file)
 
-        logger.info("Stored datasets on disk.")
+        logger.info(f"Stored dataset '{dataset_name}' on disk.")
 
     else:
-        logger.info(
-            f"Dataset {dataset_name} with config {dataset_kwargs} already exists. Skip creation."
-        )
-
         with open(validation_set_path, "rb") as file:
             validation_set = pickle.load(file)
 
         with open(test_set_path, "rb") as file:
             test_set = pickle.load(file)
 
-        logger.info("Loaded datasets from disk.")
+        logger.info(f"Loaded dataset '{dataset_name}' from disk.")
+        logger.debug(f"Dataset config is \n{dataset_kwargs}.")
 
     return validation_set, test_set

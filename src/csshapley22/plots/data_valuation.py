@@ -5,12 +5,13 @@ import pandas as pd
 from dvc.api import params_show
 
 from csshapley22.constants import OUTPUT_DIR, RANDOM_SEED
+from csshapley22.log import setup_logger
 from csshapley22.plotting import (
     plot_utility_over_removal_percentages,
     plot_values_histogram,
     setup_plotting,
 )
-from csshapley22.utils import set_random_seed, setup_logger
+from csshapley22.utils import set_random_seed
 
 logger = setup_logger()
 

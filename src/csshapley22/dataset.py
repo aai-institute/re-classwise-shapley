@@ -27,7 +27,11 @@ def flip_labels(
 
 
 def create_openml_dataset(
-    openml_id: int, train_size: int, dev_size: int, test_size: int, filters: Dict = None
+    openml_id: int,
+    train_size: int,
+    dev_size: int,
+    test_size: int,
+    filters: Dict = None,
 ) -> Tuple[Dataset, Dataset]:
     data = fetch_openml(data_id=openml_id)
     X = data.data.to_numpy()

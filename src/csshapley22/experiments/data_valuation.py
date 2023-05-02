@@ -7,16 +7,20 @@ from dvc.repo import Repo
 
 from csshapley22.constants import RANDOM_SEED
 from csshapley22.experiments.all import experiment_noise_removal, experiment_wad
+from csshapley22.log import setup_logger
 from csshapley22.preprocess import (
     parse_datasets_config,
     parse_models_config,
     parse_valuation_methods_config,
 )
-from csshapley22.utils import set_random_seed, setup_logger
+from csshapley22.utils import set_random_seed, timeout
 
 logger = setup_logger()
 
 set_random_seed(RANDOM_SEED)
+
+DOUBLE_BREAK = 120 * "="
+SINGLE_BREAK = 120 * "-"
 
 
 @click.command()
@@ -35,9 +39,9 @@ def run():
     datasets_settings = general_settings["datasets"]
     datasets = parse_datasets_config(datasets_settings)
 
-    # preprocess models
-    models = general_settings["models"]
-    model_generator_factory = parse_models_config(models)
+    # preprocess models_config
+    models_config = general_settings["models"]
+    model_generator_factory = parse_models_config(models_config)
 
     n_repetitions = general_settings["n_repetitions"]
     date_iso_format = datetime.now().isoformat()
@@ -48,49 +52,114 @@ def run():
     )
 
     for repetition in range(n_repetitions):
-        logger.info(f"{repetition=}")
+        logger.info(DOUBLE_BREAK)
         repetition_output_dir = experiment_output_dir / f"{repetition=}"
 
-        for model_name in models.keys():
+        for model_name in models_config.keys():
+            logger.info(f"Executing repetition {repetition} for model '{model_name}'.")
             experiments_output_dir = repetition_output_dir / model_name
 
-            # Experiment One
-            model = model_generator_factory[model_name]()
-            experiment_one_path = experiments_output_dir / "wad"
-            experiment_wad(
-                model=model,
-                datasets=datasets,
-                valuation_methods_factory=valuation_methods_factory,
-            ).store(experiment_one_path)
+            _run_and_measure_experiment_one(
+                datasets,
+                model_name,
+                model_generator_factory,
+                valuation_methods_factory,
+                experiments_output_dir,
+            )
 
-            # Experiment Two
-            model = model_generator_factory[model_name]()
-            experiment_two_path = experiments_output_dir / "noise_removal"
-            experiment_noise_removal(
-                model=model,
-                datasets=datasets,
-                valuation_methods_factory=valuation_methods_factory,
-            ).store(experiment_two_path)
+            _run_and_measure_experiment_two(
+                datasets,
+                model_name,
+                model_generator_factory,
+                valuation_methods_factory,
+                experiments_output_dir,
+            )
 
-            # Experiment Three
-            model = model_generator_factory[model_name]()
             experiment_three_settings = params["experiment_3"]
             experiment_three_path = experiments_output_dir / "value_transfer"
 
             for test_model_name in experiment_three_settings["test_models"]:
-                if test_model_name not in models:
-                    raise ValueError(f"The model '{test_model_name}' doesn't exist.")
-
-                test_model = model_generator_factory[test_model_name]()
-                experiment_three_test_path = experiment_three_path / test_model_name
-                experiment_wad(
-                    model=model,
-                    datasets=datasets,
-                    valuation_methods_factory=valuation_methods_factory,
-                    test_model=test_model,
-                ).store(experiment_three_test_path)
+                _run_and_measure_experiment_three(
+                    datasets,
+                    model_name,
+                    test_model_name,
+                    model_generator_factory,
+                    valuation_methods_factory,
+                    experiment_three_path,
+                )
 
     logger.info("Finished data valuation experiment")
+
+
+def _run_and_measure_experiment_one(
+    datasets,
+    model_name,
+    model_generator_factory,
+    valuation_methods_factory,
+    experiments_output_dir,
+):
+    logger.info(SINGLE_BREAK)
+    logger.info(f"Task 1: Weighted absolute difference.")
+    logger.info(SINGLE_BREAK)
+
+    model = model_generator_factory[model_name]()
+    experiment_one_path = experiments_output_dir / "wad"
+    results = experiment_wad(
+        model=model,
+        datasets=datasets,
+        valuation_methods_factory=valuation_methods_factory,
+    )
+    results.store(experiment_one_path)
+    logger.info(f"Results are {results}.")
+    logger.info("Stored results of experiment one.")
+
+
+def _run_and_measure_experiment_two(
+    datasets,
+    model_name,
+    model_generator_factory,
+    valuation_methods_factory,
+    experiments_output_dir,
+):
+    logger.info(DOUBLE_BREAK)
+    logger.info(f"Calculating task 2: Noise removal for classification.")
+    model = model_generator_factory[model_name]()
+    experiment_two_path = experiments_output_dir / "noise_removal"
+    results = experiment_noise_removal(
+        model=model,
+        datasets=datasets,
+        valuation_methods_factory=valuation_methods_factory,
+    )
+    results.store(experiment_two_path)
+    logger.info(f"Results are {results}.")
+    logger.info("Stored results of experiment two.")
+
+
+def _run_and_measure_experiment_three(
+    datasets,
+    model_name,
+    test_model_name,
+    model_generator_factory,
+    valuation_methods_factory,
+    experiment_three_path,
+):
+    logger.info(DOUBLE_BREAK)
+    logger.info(
+        f"Calculating task 3: Value transfer to dfifferent model implementations."
+    )
+    logger.info(f"Testing against model '{test_model_name}'.")
+    model = model_generator_factory[model_name]()
+    test_model = model_generator_factory[test_model_name]()
+    experiment_three_test_path = experiment_three_path / test_model_name
+    results = experiment_wad(
+        model=model,
+        datasets=datasets,
+        valuation_methods_factory=valuation_methods_factory,
+        test_model=test_model,
+    )
+    results.store(experiment_three_test_path)
+    logger.info(f"Results are {results}.")
+    logger.info(f"Stored results of experiment three against'{test_model_name}'.")
 
 
 if __name__ == "__main__":

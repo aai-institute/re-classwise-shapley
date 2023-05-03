@@ -19,6 +19,10 @@ def compute_values(
     utility: Utility, valuation_method: str, **kwargs
 ) -> ValuationResult:
     progress = kwargs.get("progress", False)
+    n_jobs = 1
+    parallel_config = ParallelConfig(
+        backend="sequential", n_cpus_local=n_jobs, logging_level=logging.WARNING
+    )
     if valuation_method == "random":
         values = ValuationResult.from_random(size=len(utility.data))
 
@@ -27,13 +31,14 @@ def compute_values(
 
     elif valuation_method == "classwise_shapley":
         values = classwise_shapley(
-            utility.data.indices,
             utility,
-            progress=progress,
             done=MaxUpdates(kwargs["n_updates"]),
             truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),
-            normalize_score=kwargs["normalize_score"],
+            normalize_score=kwargs["normalize_values"],
             n_resample_complement_sets=kwargs["n_resample_complement_sets"],
+            n_jobs=n_jobs,
+            config=parallel_config,
+            progress=progress,
         )
 
     elif valuation_method == "beta_shapley":
@@ -43,6 +48,7 @@ def compute_values(
             done=MaxUpdates(kwargs["n_updates"]),
             alpha=kwargs["alpha"],
             beta=kwargs["beta"],
+            n_jobs=n_jobs,
             progress=progress,
         )
 
@@ -54,6 +60,8 @@ def compute_values(
                 mode=ShapleyMode.TruncatedMontecarlo,
                 truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),
                 done=MaxUpdates(kwargs["n_updates"]),
+                n_jobs=n_jobs,
+                config=parallel_config,
                 progress=progress,
             )
 

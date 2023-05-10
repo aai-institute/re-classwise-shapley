@@ -4,8 +4,8 @@ stages:
     cmd: python -m src.csshapley22.experiments.fetch_data
     deps:
     - path: src/csshapley22/experiments/fetch_data.py
-      md5: 605456cfd1893d39820ba10531554d65
-      size: 762
+      md5: 8d4fd24435a1f28daf8c34f5d2f6956b
+      size: 763
     outs:
     - path: output/data
       md5: 99ecca6fc5bc00070b2ced652e065c77.dir

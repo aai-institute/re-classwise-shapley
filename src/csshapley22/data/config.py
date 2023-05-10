@@ -2,4 +2,4 @@ from pathlib import Path
 
 
 class Config:
-    DATASET_PATH = Path("./data")
+    DATASET_PATH = Path("./output/data")

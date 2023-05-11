@@ -7,13 +7,13 @@ from dvc.api import params_show
 from dvc.repo import Repo
 
 from csshapley22.constants import RANDOM_SEED
-from csshapley22.experiments.all import experiment_noise_removal, experiment_wad
 from csshapley22.log import setup_logger
 from csshapley22.preprocess import (
     parse_datasets_config,
     parse_models_config,
     parse_valuation_methods_config,
 )
+from csshapley22.stages.all import experiment_noise_removal, experiment_wad
 from csshapley22.utils import set_random_seed, timeout
 
 logger = setup_logger()
@@ -45,12 +45,9 @@ def run():
     model_generator_factory = parse_models_config(models_config)
 
     n_repetitions = general_settings["n_repetitions"]
-    date_iso_format = datetime.now().isoformat()
 
     # Create the output directory
-    experiment_output_dir = (
-        Path(Repo.find_root()) / "output" / "results" / date_iso_format
-    )
+    experiment_output_dir = Path(Repo.find_root()) / "output" / "results"
 
     for repetition in range(n_repetitions):
         logger.info(DOUBLE_BREAK)

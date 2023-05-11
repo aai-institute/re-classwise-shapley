@@ -1,15 +1,23 @@
 stages:
   data-valuation-fetch-data:
-    cmd: python -m src.csshapley22.experiments.fetch_data
+    cmd: python -m src.csshapley22.stages.fetch_data
     deps:
-    - src/csshapley22/experiments/fetch_data.py
+    - src/csshapley22/stages/fetch_data.py
     outs:
     - output/raw
 
   data-valuation-preprocess-data:
-    cmd: python -m src.csshapley22.experiments.preprocess_data
+    cmd: python -m src.csshapley22.stages.preprocess_data
     deps:
-    - src/csshapley22/experiments/preprocess_data.py
+    - src/csshapley22/stages/preprocess_data.py
     - output/raw
     outs:
     - output/preprocessed
+
+  data-valuation-experiment:
+    cmd: python -m src.csshapley22.stages.data_valuation
+    deps:
+    - src/csshapley22/stages/data_valuation.py
+    - output/preprocessed
+    outs:
+    - output/results

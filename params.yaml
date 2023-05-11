@@ -1,3 +1,8 @@
+experiment_3:
+  test_models: [
+    "logistic_regression"
+  ]
+
 general:
 
   n_repetitions: 5

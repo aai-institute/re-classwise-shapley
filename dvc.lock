@@ -1,13 +1,28 @@
 schema: '2.0'
 stages:
-  data-valuation-fetch-download:
+  data-valuation-fetch-data:
     cmd: python -m src.csshapley22.experiments.fetch_data
     deps:
     - path: src/csshapley22/experiments/fetch_data.py
       md5: 8d4fd24435a1f28daf8c34f5d2f6956b
       size: 763
     outs:
-    - path: output/data
+    - path: output/raw
       md5: 99ecca6fc5bc00070b2ced652e065c77.dir
       size: 22559669
       nfiles: 12
+  data-valuation-preprocess-data:
+    cmd: python -m src.csshapley22.experiments.preprocess_data
+    deps:
+    - path: output/raw
+      md5: 99ecca6fc5bc00070b2ced652e065c77.dir
+      size: 22559669
+      nfiles: 12
+    - path: src/csshapley22/experiments/preprocess_data.py
+      md5: 9626d8b43009a7ff56723d8531a46b5e
+      size: 837
+    outs:
+    - path: output/preprocessed
+      md5: c596be5d9d509db5bc87f01e005532e1.dir
+      size: 799292
+      nfiles: 8

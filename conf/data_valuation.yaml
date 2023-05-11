@@ -1,5 +1,0 @@
-defaults:
-- data_valuation:
-  - common
-  - synthetic
-  - diabetes

@@ -21,3 +21,11 @@ stages:
     - output/preprocessed
     outs:
     - output/results
+
+  data-valuation-generate-plots:
+    cmd: python -m src.csshapley22.stages.generate_plots
+    deps:
+    - src/csshapley22/stages/generate_plots.py
+    - output/results
+    outs:
+    - output/plots

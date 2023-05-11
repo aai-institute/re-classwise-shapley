@@ -77,14 +77,15 @@ def run():
             experiment_three_path = experiments_output_dir / "value_transfer"
 
             for test_model_name in experiment_three_settings["test_models"]:
-                _run_and_measure_experiment_three(
-                    datasets,
-                    model_name,
-                    test_model_name,
-                    model_generator_factory,
-                    valuation_methods_factory,
-                    experiment_three_path,
-                )
+                if test_model_name != model_name:
+                    _run_and_measure_experiment_three(
+                        datasets,
+                        model_name,
+                        test_model_name,
+                        model_generator_factory,
+                        valuation_methods_factory,
+                        experiment_three_path,
+                    )
 
     logger.info("Finished data valuation experiment")
 

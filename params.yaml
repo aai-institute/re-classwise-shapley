@@ -1,6 +1,7 @@
 experiment_3:
   test_models: [
-    "logistic_regression"
+    "logistic_regression",
+    "gradient_boosting_classifier"
   ]
 
 general:
@@ -80,3 +81,63 @@ general:
       dev_size: 500,
       test_size: 2000,
     }
+
+
+#    cifar10: {
+#      openml_id: 40927,
+#
+#      preprocessor: {
+#        principal_resnet_components: {
+#          n_components: 32,
+#          size: 32
+#        }
+#      },
+#
+#      filters: {
+#        binarization: {
+#          label_zero: "1",
+#          label_one: "9"
+#        }
+#      },
+#
+#      train_size: 500,
+#      dev_size: 500,
+#      test_size: 2000
+#    }
+
+    mnist_binary: {
+      openml_id: 554,
+
+      preprocessor: {
+        principal_resnet_components: {
+          n_components: 32,
+          size: 28
+        }
+      },
+
+      filters: {
+        binarization: {
+          label_zero: "1",
+          label_one: "7"
+        }
+      },
+      train_size: 500,
+      dev_size: 500,
+      test_size: 2000
+    }
+
+    mnist_multi: {
+      openml_id: 554,
+
+      preprocessor: {
+        principal_resnet_components: {
+          n_components: 32,
+          size: 28
+        }
+      },
+
+      train_size: 500,
+      dev_size: 500,
+      test_size: 2000
+    }
+

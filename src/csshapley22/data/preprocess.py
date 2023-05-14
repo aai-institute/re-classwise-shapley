@@ -2,6 +2,7 @@ from typing import Tuple, Union
 
 import numpy as np
 import torch
+from numpy._typing import NDArray
 from pydvl.utils import Dataset
 from sklearn.decomposition import PCA
 from torchvision.models import ResNet18_Weights, resnet18
@@ -36,24 +37,6 @@ def principal_resnet_components(
     return pca.fit_transform(features)
 
 
-def dataset_principal_resnet_components(
-    val_set: Dataset, test_set: Dataset, n_components: int, size: int
-) -> Tuple[Dataset, Dataset]:
-    x_features = np.concatenate(
-        (val_set.x_train, val_set.x_test, test_set.x_test), axis=0
-    )
-    pca_x_features = principal_resnet_components(
-        x_features, n_components=n_components, size=size
-    )
-    len_train_set = len(val_set.x_train)
-    len_val_set = len(val_set.x_train)
-    test_set.x_train = pca_x_features[:len_train_set]
-    val_set.x_train = pca_x_features[:len_train_set]
-    val_set.x_test = pca_x_features[len_train_set : len_train_set + len_val_set]
-    test_set.x_test = pca_x_features[len_train_set + len_val_set]
-    return val_set, test_set
-
-
 def binarize_classes(
     X: np.ndarray,
     y: np.ndarray,
@@ -76,8 +59,6 @@ def binarize_classes(
     return X, y
 
 
-PreprocessorRegistry = {
-    "principal_resnet_components": dataset_principal_resnet_components
-}
+PreprocessorRegistry = {"principal_resnet_components": principal_resnet_components}
 
 FilterRegistry = {"binarization": binarize_classes}

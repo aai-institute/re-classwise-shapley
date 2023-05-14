@@ -21,7 +21,7 @@ set_random_seed(RANDOM_SEED)
 
 
 @click.command()
-def run():
+def render_plots():
     logger.info("Starting plotting of data valuation experiment")
 
     params = params_show()
@@ -74,4 +74,4 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    render_plots()

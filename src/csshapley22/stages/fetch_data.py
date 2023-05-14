@@ -4,7 +4,9 @@ import pickle
 from typing import Dict
 
 import click
+import numpy as np
 from dvc.api import params_show
+from sklearn.datasets import fetch_openml
 
 from csshapley22.constants import RANDOM_SEED
 from csshapley22.data.config import Config
@@ -28,34 +30,33 @@ def fetch_data():
     datasets_settings = general_settings["datasets"]
     for dataset_name, dataset_kwargs in datasets_settings.items():
         logger.info(f"Fetching dataset {dataset_name} with kwargs {dataset_kwargs}.")
-        fetch_single_dataset(dataset_name, dataset_kwargs)
+        fetch_single_dataset(dataset_name, dataset_kwargs["openml_id"])
 
 
-def fetch_single_dataset(dataset_name: str, dataset_kwargs: Dict):
-    dataset_idx = make_hash_sha256(dataset_kwargs)
-    dataset_folder = Config.RAW_PATH / dataset_idx
-    validation_set_path = str(dataset_folder / "validation_set.pkl")
-    test_set_path = str(dataset_folder / "test_set.pkl")
-
+def fetch_single_dataset(dataset_name: str, openml_id: int):
+    dataset_folder = Config.RAW_PATH / str(openml_id)
     os.makedirs(str(dataset_folder), exist_ok=True)
     logger.info(f"Dataset {dataset_name} doesn't exist.")
-    logger.debug(f"Dataset config is \n{dataset_kwargs}.")
-    set_random_seed(dataset_kwargs.get("seed", 42))
 
-    dataset_kwargs.pop("preprocessor", None)
-    validation_set, test_set = create_openml_dataset(**dataset_kwargs)
+    data = fetch_openml(data_id=openml_id)
+    x = data.data.to_numpy()
+    y = data.target.to_numpy()
 
-    with open(str(dataset_folder / "dataset_kwargs.json"), "w") as file:
-        json.dump(dataset_kwargs, file, sort_keys=True, indent=4)
+    np.save(dataset_folder / "x.npy", x)
+    np.save(dataset_folder / "y.npy", x)
+    logger.info(f"Stored dataset '{dataset_name}' on disk in folder '{dataset_folder}.")
 
-    for set_path, set in [
-        (validation_set_path, validation_set),
-        (test_set_path, test_set),
-    ]:
-        with open(set_path, "wb") as file:
-            pickle.dump(set, file)
-
-    logger.info(f"Stored dataset '{dataset_name}' on disk.")
+    with open(str(dataset_folder / "info.json"), "w") as file:
+        json.dump(
+            {
+                "feature_names": data.get("feature_names"),
+                "target_names": data.get("target_names"),
+                "description": data.get("DESCR"),
+            },
+            file,
+            sort_keys=True,
+            indent=4,
+        )
 
 
 if __name__ == "__main__":

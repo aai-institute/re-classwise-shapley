@@ -1,6 +1,6 @@
 from enum import Enum
 from functools import partial
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict, Tuple, Union
 
 import numpy as np
 import openml
@@ -25,55 +25,6 @@ def flip_labels(
     y = y.copy()
     y[indices] = np.logical_not(y[indices])
     return y, indices
-
-
-def create_openml_dataset(
-    openml_id: int,
-    train_size: int,
-    dev_size: int,
-    test_size: int,
-    filters: Dict = None,
-    stratified: bool = True,
-) -> Tuple[Dataset, Dataset]:
-    data = fetch_openml(data_id=openml_id)
-    X = data.data.to_numpy()
-    y = data.target.to_numpy()
-
-    if filters is not None:
-        for filter_name, filter_kwargs in filters.items():
-            data_filter = FilterRegistry[filter_name]
-            X, y = data_filter(X, y, **filter_kwargs)
-
-    (x_train, y_train), (x_dev, y_dev), (x_test, y_test) = subsample(
-        X, y, train_size, dev_size, test_size, stratified=stratified
-    )
-
-    le = preprocessing.LabelEncoder()
-    le.fit(np.concatenate((y_train, y_test, y_dev)))
-    y_train = le.transform(y_train)
-    y_test = le.transform(y_test)
-    y_dev = le.transform(y_dev)
-
-    val_dataset = Dataset(
-        x_train,
-        y_train,
-        x_dev,
-        y_dev,
-        feature_names=data.get("feature_names"),
-        target_names=data.get("target_names"),
-        description=data.get("DESCR"),
-    )
-    test_dataset = Dataset(
-        x_train,
-        y_train,
-        x_test,
-        y_test,
-        feature_names=data.get("feature_names"),
-        target_names=data.get("target_names"),
-        description=data.get("DESCR"),
-    )
-
-    return val_dataset, test_dataset
 
 
 def subsample(

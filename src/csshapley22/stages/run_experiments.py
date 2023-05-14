@@ -7,14 +7,14 @@ from dvc.api import params_show
 from dvc.repo import Repo
 
 from csshapley22.constants import RANDOM_SEED
+from csshapley22.experiments import experiment_noise_removal, experiment_wad
 from csshapley22.log import setup_logger
 from csshapley22.preprocess import (
     parse_datasets_config,
     parse_models_config,
     parse_valuation_methods_config,
 )
-from csshapley22.stages.all import experiment_noise_removal, experiment_wad
-from csshapley22.utils import set_random_seed, timeout
+from csshapley22.utils import set_random_seed
 
 logger = setup_logger()
 
@@ -25,7 +25,7 @@ SINGLE_BREAK = 120 * "-"
 
 
 @click.command()
-def run():
+def run_experiments():
     logger.info("Starting data valuation experiment")
 
     params = params_show()
@@ -56,6 +56,14 @@ def run():
         for model_name in models_config.keys():
             logger.info(f"Executing repetition {repetition} for model '{model_name}'.")
             experiments_output_dir = repetition_output_dir / model_name
+
+            _run_and_measure_experiment_one(
+                datasets,
+                model_name,
+                model_generator_factory,
+                valuation_methods_factory,
+                experiments_output_dir,
+            )
 
             _run_and_measure_experiment_two(
                 datasets,
@@ -154,4 +162,4 @@ def _run_and_measure_experiment_three(
 
 
 if __name__ == "__main__":
-    run()
+    run_experiments()

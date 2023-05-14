@@ -10,8 +10,6 @@ from sklearn.datasets import fetch_openml
 
 from csshapley22.constants import RANDOM_SEED
 from csshapley22.data.config import Config
-from csshapley22.data.utils import make_hash_sha256
-from csshapley22.dataset import create_openml_dataset
 from csshapley22.log import setup_logger
 from csshapley22.utils import set_random_seed
 
@@ -29,7 +27,9 @@ def fetch_data():
     # fetch datasets
     datasets_settings = general_settings["datasets"]
     for dataset_name, dataset_kwargs in datasets_settings.items():
-        logger.info(f"Fetching dataset {dataset_name} with kwargs {dataset_kwargs}.")
+        logger.info(
+            f"Fetching dataset {dataset_name} with openml_id {dataset_kwargs['openml_id']}."
+        )
         fetch_single_dataset(dataset_name, dataset_kwargs["openml_id"])
 
 
@@ -43,7 +43,7 @@ def fetch_single_dataset(dataset_name: str, openml_id: int):
     y = data.target.to_numpy()
 
     np.save(dataset_folder / "x.npy", x)
-    np.save(dataset_folder / "y.npy", x)
+    np.save(dataset_folder / "y.npy", y)
     logger.info(f"Stored dataset '{dataset_name}' on disk in folder '{dataset_folder}.")
 
     with open(str(dataset_folder / "info.json"), "w") as file:

@@ -1,3 +1,4 @@
+import math as m
 from typing import Tuple, Union
 
 import numpy as np
@@ -6,6 +7,7 @@ from numpy._typing import NDArray
 from pydvl.utils import Dataset
 from sklearn.decomposition import PCA
 from torchvision.models import ResNet18_Weights, resnet18
+from tqdm import tqdm
 
 from csshapley22.log import setup_logger
 
@@ -26,11 +28,19 @@ def principal_resnet_components(
     """
     logger.info("Applying resnet18.")
     resnet = resnet18(weights=ResNet18_Weights.DEFAULT)
-    x = torch.tensor(x)
-    x = torch.cat(3 * [x.reshape([-1, 1, size, size])], axis=1)
-    features = resnet(x.type(torch.float))
-    features = features.detach().numpy()
 
+    collected_features = []
+    batch_size = 10000
+    num_batches = int(m.ceil(len(x) / batch_size))
+    for batch_num in tqdm(range(num_batches), desc="Processing batches"):
+        win_x = x[batch_num * batch_size : (batch_num + 1) * batch_size]
+        win_x = torch.tensor(win_x)
+        win_x = torch.cat(3 * [win_x.reshape([-1, 1, size, size])], axis=1)
+        features = resnet(win_x.type(torch.float))
+        features = features.detach().numpy()
+        collected_features.append(features)
+
+    features = np.concatenate(tuple(collected_features), axis=0)
     features = (features - features.mean()) / features.std()
     logger.info("Fitting PCA.")
     pca = PCA(n_components=n_components)

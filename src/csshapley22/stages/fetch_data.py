@@ -35,7 +35,11 @@ def fetch_data():
 
 def fetch_single_dataset(dataset_name: str, openml_id: int):
     dataset_folder = Config.RAW_PATH / str(openml_id)
-    os.makedirs(str(dataset_folder), exist_ok=True)
+    if os.path.exists(dataset_folder):
+        logger.info(f"Dataset {openml_id} exist.")
+        return
+
+    os.makedirs(str(dataset_folder))
     logger.info(f"Dataset {dataset_name} doesn't exist.")
 
     data = fetch_openml(data_id=openml_id)

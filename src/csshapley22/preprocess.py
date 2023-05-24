@@ -43,8 +43,7 @@ def parse_datasets_config(dataset_settings: Dict[str, Dict]) -> ValTestSetFactor
 
 
 def load_single_dataset(dataset_name: str, dataset_kwargs: Dict):
-    dataset_idx = str(order_dict(dataset_kwargs))
-    raw_folder = Config.PREPROCESSED_PATH / dataset_idx
+    raw_folder = Config.PREPROCESSED_PATH / dataset_name
     validation_set_path = str(raw_folder / "validation_set.pkl")
     test_set_path = str(raw_folder / "test_set.pkl")
 

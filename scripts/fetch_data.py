@@ -1,7 +1,5 @@
 import json
 import os
-import pickle
-from typing import Dict
 
 import click
 import numpy as np
@@ -18,23 +16,17 @@ set_random_seed(RANDOM_SEED)
 
 
 @click.command()
-def fetch_data():
+@click.option("--dataset-name", type=str, required=True)
+def fetch_data(dataset_name: str):
     logger.info("Starting downloading of data.")
-
     params = params_show()
-    general_settings = params["general"]
-
-    # fetch datasets
-    datasets_settings = general_settings["datasets"]
-    for dataset_name, dataset_kwargs in datasets_settings.items():
-        logger.info(
-            f"Fetching dataset {dataset_name} with openml_id {dataset_kwargs['openml_id']}."
-        )
-        fetch_single_dataset(dataset_name, dataset_kwargs["openml_id"])
+    open_ml_id = params["datasets"][dataset_name]["openml_id"]
+    logger.info(f"Fetching dataset {dataset_name} with openml_id {open_ml_id}.")
+    fetch_single_dataset(dataset_name, open_ml_id)
 
 
 def fetch_single_dataset(dataset_name: str, openml_id: int):
-    dataset_folder = Config.RAW_PATH / str(openml_id)
+    dataset_folder = Config.RAW_PATH / dataset_name
     if os.path.exists(dataset_folder):
         logger.info(f"Dataset {openml_id} exist.")
         return

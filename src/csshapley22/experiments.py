@@ -34,6 +34,9 @@ class ExperimentResult:
         output_dir.mkdir(parents=True, exist_ok=True)
         self.metric.to_csv(output_dir / "metric.csv")
         self.valuation_results.to_csv(output_dir / "valuation_results.csv")
+        if self.graphs is not None:
+            self.graphs.to_pickle(output_dir / "graphs.pkl")
+
         return self
 
 

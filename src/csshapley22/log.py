@@ -8,5 +8,5 @@ def setup_logger(name: Optional[str] = None):
         level=logging.ERROR,
         format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
     )
-    logger.level = logging.INFO
+    logger.level = logging.DEBUG
     return logger

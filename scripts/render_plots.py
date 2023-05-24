@@ -21,14 +21,15 @@ set_random_seed(RANDOM_SEED)
 
 
 @click.command()
-def render_plots():
+@click.argument("experiment-name", type=str, nargs=1)
+@click.option("--dataset-name", type=str, required=True)
+def render_plots(experiment_name: str, dataset_name: str):
     logger.info("Starting plotting of data valuation experiment")
 
     params = params_show()
     logger.info(f"Using parameters:\n{params}")
 
     data_valuation_params = params["data_valuation"]
-    dataset_type = data_valuation_params["dataset"]
     removal_percentages = data_valuation_params["removal_percentages"]
     method_names = data_valuation_params["method_names"]
 

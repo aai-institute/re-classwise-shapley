@@ -1,19 +1,17 @@
 import json
 import os
 import pickle
-from typing import Dict, Union
+from typing import Dict
 
 import click
 import numpy as np
 from dvc.api import params_show
-from numpy._typing import NDArray
 from pydvl.utils import Dataset
 from sklearn import preprocessing
 
 from csshapley22.constants import RANDOM_SEED
 from csshapley22.data.config import Config
 from csshapley22.data.preprocess import FilterRegistry, PreprocessorRegistry
-from csshapley22.data.utils import make_hash_sha256
 from csshapley22.dataset import subsample
 from csshapley22.log import setup_logger
 from csshapley22.utils import order_dict, set_random_seed
@@ -23,27 +21,19 @@ set_random_seed(RANDOM_SEED)
 
 
 @click.command()
-def preprocess_data():
-    logger.info("Starting downloading of data.")
-
+@click.option("--dataset-name", type=str, required=True)
+def preprocess_data(dataset_name: str):
+    logger.info(f"Start preprocessing of '{dataset_name}'.")
     params = params_show()
-    general_settings = params["general"]
-
-    # fetch datasets
-    datasets_settings = general_settings["datasets"]
-    for dataset_name, dataset_kwargs in datasets_settings.items():
-        logger.info(
-            f"Preprocessing dataset {dataset_name} with kwargs {dataset_kwargs}."
-        )
-        preprocess_dataset(dataset_name, dataset_kwargs)
+    datasets_settings = params["datasets"]
+    dataset_kwargs = datasets_settings[dataset_name]
+    preprocess_dataset(dataset_name, dataset_kwargs)
+    logger.info(f"Preprocessed '{dataset_name}' with configuration \n{dataset_kwargs}.")
 
 
 def preprocess_dataset(dataset_name: str, dataset_kwargs: Dict):
-    openml_id = dataset_kwargs["openml_id"]
-    dataset_folder = Config.RAW_PATH / str(openml_id)
-
-    dataset_idx = str(order_dict(dataset_kwargs))
-    preprocessed_folder = Config.PREPROCESSED_PATH / dataset_idx
+    dataset_folder = Config.RAW_PATH / dataset_name
+    preprocessed_folder = Config.PREPROCESSED_PATH / dataset_name
 
     x = np.load(dataset_folder / "x.npy")
     y = np.load(dataset_folder / "y.npy", allow_pickle=True)

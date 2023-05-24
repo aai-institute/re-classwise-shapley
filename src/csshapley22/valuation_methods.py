@@ -14,6 +14,10 @@ from pydvl.value import (
 )
 from pydvl.value.semivalues import SemiValueMode, compute_semivalues
 
+from csshapley22.log import setup_logger
+
+logger = setup_logger(__name__)
+
 
 def compute_values(
     utility: Utility, valuation_method: str, **kwargs
@@ -49,6 +53,7 @@ def compute_values(
             alpha=kwargs["alpha"],
             beta=kwargs["beta"],
             n_jobs=n_jobs,
+            config=parallel_config,
             progress=progress,
         )
 
@@ -69,5 +74,5 @@ def compute_values(
         raise NotImplementedError(
             f"The method {valuation_method} is not registered within."
         )
-
+    logger.info(f"Values: {values.values}")
     return values

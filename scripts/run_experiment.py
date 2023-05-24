@@ -25,72 +25,94 @@ SINGLE_BREAK = 120 * "-"
 
 
 @click.command()
-def run_experiments():
+@click.argument("experiment-name", type=str, nargs=1)
+@click.option("--dataset-name", type=str, required=True)
+def run_experiments(experiment_name: str, dataset_name: str):
     logger.info("Starting data valuation experiment")
 
     params = params_show()
     logger.info(f"Using parameters:\n{params}")
-    general_settings = params["general"]
 
     # preprocess valuation methods to be callable from utility to valuation result.
-    valuation_methods = general_settings["valuation_methods"]
+    valuation_methods = params["valuation_methods"]
     valuation_methods_factory = parse_valuation_methods_config(valuation_methods)
 
     # preprocess datasets
-    datasets_settings = general_settings["datasets"]
+    datasets_settings = {dataset_name: params["datasets"][dataset_name]}
     datasets = parse_datasets_config(datasets_settings)
 
     # preprocess models_config
-    models_config = general_settings["models"]
+    models_config = params["models"]
     model_generator_factory = parse_models_config(models_config)
-
-    n_repetitions = general_settings["n_repetitions"]
+    n_repetitions = params["global"]["n_repetitions"]
 
     # Create the output directory
-    experiment_output_dir = Path(Repo.find_root()) / "output" / "results"
+    experiment_output_dir = (
+        Path(Repo.find_root()) / "output" / "results" / experiment_name / dataset_name
+    )
 
-    for repetition in range(n_repetitions):
-        logger.info(DOUBLE_BREAK)
-        repetition_output_dir = experiment_output_dir / f"{repetition=}"
-
-        for model_name in models_config.keys():
+    for model_name in models_config.keys():
+        for repetition in range(n_repetitions):
+            logger.info(DOUBLE_BREAK)
             logger.info(f"Executing repetition {repetition} for model '{model_name}'.")
-            experiments_output_dir = repetition_output_dir / model_name
-
-            _run_and_measure_experiment_one(
-                datasets,
-                model_name,
-                model_generator_factory,
-                valuation_methods_factory,
-                experiments_output_dir,
+            experiments_output_dir = (
+                experiment_output_dir / model_name / f"{repetition=}"
             )
 
-            _run_and_measure_experiment_two(
-                datasets,
-                model_name,
-                model_generator_factory,
-                valuation_methods_factory,
-                experiments_output_dir,
-            )
+            try:
+                # TODO: Yeah, this is a bit hacky. But it works for now.
+                match experiment_name:
+                    case "wad_drop":
+                        _run_and_measure_experiment_wad_drop(
+                            datasets,
+                            model_name,
+                            model_generator_factory,
+                            valuation_methods_factory,
+                            experiments_output_dir,
+                        )
 
-            experiment_three_settings = params["experiment_3"]
-            experiment_three_path = experiments_output_dir / "value_transfer"
+                    case "noise_removal":
+                        _run_and_measure_experiment_noise_removal(
+                            datasets,
+                            model_name,
+                            model_generator_factory,
+                            valuation_methods_factory,
+                            experiments_output_dir,
+                        )
 
-            for test_model_name in experiment_three_settings["test_models"]:
-                if test_model_name != model_name:
-                    _run_and_measure_experiment_three(
-                        datasets,
-                        model_name,
-                        test_model_name,
-                        model_generator_factory,
-                        valuation_methods_factory,
-                        experiment_three_path,
-                    )
+                    case "wad_drop_transfer":
+                        experiment_three_settings = params["experiments"][
+                            "wad_drop_transfer"
+                        ]
+                        experiment_three_path = experiments_output_dir
 
-    logger.info("Finished data valuation experiment")
+                        for test_model_name, _ in experiment_three_settings[
+                            "transfer_models"
+                        ].items():
+                            if test_model_name != model_name:
+                                _run_and_measure_experiment_wad_drop_transfer(
+                                    datasets,
+                                    model_name,
+                                    test_model_name,
+                                    model_generator_factory,
+                                    valuation_methods_factory,
+                                    experiment_three_path,
+                                )
+
+                    case _:
+                        raise NotImplementedError(
+                            f"The experiment '{experiment_name}' is not implemented."
+                        )
+
+            except Exception as e:
+                logger.error(
+                    f"Error while executing experiment '{experiment_name}': {e}"
+                )
+                logger.info("Skipping experiment and continuing with next one.")
+                continue
 
 
-def _run_and_measure_experiment_one(
+def _run_and_measure_experiment_wad_drop(
     datasets,
     model_name,
     model_generator_factory,
@@ -102,7 +124,7 @@ def _run_and_measure_experiment_one(
     logger.info(SINGLE_BREAK)
 
     model = model_generator_factory[model_name]()
-    experiment_one_path = experiments_output_dir / "wad"
+    experiment_one_path = experiments_output_dir
     results = experiment_wad(
         model=model,
         datasets=datasets,
@@ -113,7 +135,7 @@ def _run_and_measure_experiment_one(
     logger.info("Stored results of experiment one.")
 
 
-def _run_and_measure_experiment_two(
+def _run_and_measure_experiment_noise_removal(
     datasets,
     model_name,
     model_generator_factory,
@@ -123,7 +145,7 @@ def _run_and_measure_experiment_two(
     logger.info(DOUBLE_BREAK)
     logger.info(f"Calculating task 2: Noise removal for classification.")
     model = model_generator_factory[model_name]()
-    experiment_two_path = experiments_output_dir / "noise_removal"
+    experiment_two_path = experiments_output_dir
     results = experiment_noise_removal(
         model=model,
         datasets=datasets,
@@ -134,7 +156,7 @@ def _run_and_measure_experiment_two(
     logger.info("Stored results of experiment two.")
 
 
-def _run_and_measure_experiment_three(
+def _run_and_measure_experiment_wad_drop_transfer(
     datasets,
     model_name,
     test_model_name,

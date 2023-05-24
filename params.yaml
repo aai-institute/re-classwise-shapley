@@ -1,130 +1,127 @@
-experiment_3:
-  test_models: [
-    "logistic_regression",
-    "gradient_boosting_classifier"
-  ]
-
-general:
-
+global:
+  n_jobs: 1
   n_repetitions: 5
 
-  models:
+experiments:
+  wad_drop:
+  noise_removal:
+  wad_drop_transfer:
+    transfer_models:
+      logistic_regression:
+      gradient_boosting_classifier:
 
-    logistic_regression: {
-      solver: liblinear,
-      n_jobs: 1
-    }
+models:
+  logistic_regression: {
+    solver: liblinear,
+  }
+  gradient_boosting_classifier: {
+    n_estimators: 32
+  }
 
-    gradient_boosting_classifier: {
-      n_estimators: 32
-    }
+valuation_methods:
+  classwise_shapley: {
+    n_updates: 500,
+    normalize_values: True,
+    n_resample_complement_sets: 3,
+    rtol: 1e-4,
+    progress: True
+  }
+  loo: {
+    progress: True
+  }
+  beta_shapley: {
+    alpha: 16.0,
+    beta: 1.0,
+    n_updates: 500,
+  }
+  tmc_shapley: {
+    rtol: 1e-4,
+    n_updates: 500,
+    progress: True
+  }
 
-  valuation_methods:
-
-    loo: {
-      progress: True
-    }
-
-    classwise_shapley: {
-      n_updates: 500,
-      normalize_values: True,
-      n_resample_complement_sets: 32,
-      rtol: 1e-4,
-      progress: True
-    }
-
-    beta_shapley: {
-      alpha: 16.0,
-      beta: 1.0,
-      n_updates: 500,
-      progress: True
-    }
-
-    tmc_shapley: {
-      rtol: 1e-4,
-      n_updates: 500,
-      progress: True
-    }
-
-
-  datasets:
-
-    diabetes: {
-      openml_id: 37,
-      train_size: 128,
-      dev_size: 128,
-      test_size: 512
-    }
-
-    click: {
-      openml_id: 1216,
-      train_size: 500,
-      dev_size: 500,
-      test_size: 2000,
-    }
-
-    phoneme: {
-      openml_id: 1489,
-      train_size: 500,
-      dev_size: 500,
-      test_size: 2000,
-    }
-
-    fmnist_binary: {
-      openml_id: 40996,
-
-      preprocessor: {
-        principal_resnet_components: {
-          n_components: 32,
-          size: 28
-        }
-      },
-
-      filters: {
-        binarization: {
-          label_zero: "0",
-          label_one: "1"
-        }
-      },
-
-      train_size: 500,
-      dev_size: 500,
-      test_size: 2000,
-    }
-
-    mnist_binary: {
-      openml_id: 554,
-
-      preprocessor: {
-        principal_resnet_components: {
-          n_components: 32,
-          size: 28
-        }
-      },
-
-      filters: {
-        binarization: {
-          label_zero: "1",
-          label_one: "7"
-        }
-      },
-      train_size: 500,
-      dev_size: 500,
-      test_size: 2000
-    }
-
-    mnist_multi: {
-      openml_id: 554,
-
-      preprocessor: {
-        principal_resnet_components: {
-          n_components: 32,
-          size: 28
-        }
-      },
-
-      train_size: 500,
-      dev_size: 500,
-      test_size: 2000
-    }
-
+datasets:
+  diabetes: {
+    openml_id: 37,
+    train_size: 128,
+    dev_size: 128,
+    test_size: 512
+  }
+  click: {
+    openml_id: 1216,
+    train_size: 500,
+    dev_size: 500,
+    test_size: 2000,
+  }
+  phoneme: {
+    openml_id: 1489,
+    train_size: 500,
+    dev_size: 500,
+    test_size: 2000,
+  }
+  fmnist_binary: {
+    openml_id: 40996,
+    preprocessor: {
+      principal_resnet_components: {
+        n_components: 32,
+        size: 28
+      }
+    },
+    filters: {
+      binarization: {
+        label_zero: "0",
+        label_one: "1"
+      }
+    },
+    train_size: 500,
+    dev_size: 500,
+    test_size: 2000,
+  }
+  cifar10: {
+    openml_id: 40927,
+    preprocessor: {
+      principal_resnet_components: {
+        n_components: 32,
+        size: 32
+      }
+    },
+    filters: {
+      binarization: {
+        label_zero: "1",
+        label_one: "9"
+      }
+    },
+    train_size: 500,
+    dev_size: 500,
+    test_size: 2000
+  }
+  mnist_binary: {
+    openml_id: 554,
+    preprocessor: {
+      principal_resnet_components: {
+        n_components: 32,
+        size: 28
+      }
+    },
+    filters: {
+      binarization: {
+        label_zero: "1",
+        label_one: "7"
+      }
+    },
+    train_size: 500,
+    dev_size: 500,
+    test_size: 2000
+  }
+  mnist_multi: {
+    openml_id: 554,
+    preprocessor: {
+      principal_resnet_components: {
+        n_components: 32,
+        size: 28
+      }
+    },
+    train_size: 500,
+    dev_size: 500,
+    test_size: 2000
+  }

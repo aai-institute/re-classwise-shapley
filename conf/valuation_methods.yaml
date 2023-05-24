@@ -1,0 +1,4 @@
+defaults:
+- algorithms:
+  - classwise_shapley
+  - tmc_shapley

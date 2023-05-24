@@ -44,7 +44,9 @@ def principal_resnet_components(
     features = (features - features.mean()) / features.std()
     logger.info("Fitting PCA.")
     pca = PCA(n_components=n_components)
-    return pca.fit_transform(features)
+    features = pca.fit_transform(features)
+    features = (features - features.mean()) / features.std()
+    return features
 
 
 def binarize_classes(

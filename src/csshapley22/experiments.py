@@ -58,7 +58,7 @@ def _dispatch_experiment(
     for dataset_idx, (val_dataset, test_dataset) in datasets.items():
         logger.info(f"Loading dataset '{dataset_idx}'.")
         logger.debug("Creating utility")
-        scorer = Scorer("accuracy", default=1 / len(np.unique(val_dataset.y_train)))
+        scorer = ClasswiseScorer("accuracy", default=0.0)
         utility = Utility(data=val_dataset, model=model, scorer=scorer)  # type: ignore
 
         if data_pre_process_fn is not None:

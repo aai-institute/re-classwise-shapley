@@ -17,7 +17,7 @@ from csshapley22.metrics.weighted_reciprocal_average import (
     weighted_reciprocal_diff_average,
 )
 from csshapley22.types import ValTestSetFactory, ValuationMethodsFactory
-from csshapley22.utils import setup_logger
+from csshapley22.utils import setup_logger, timeout
 
 logger = setup_logger()
 
@@ -57,18 +57,19 @@ def _dispatch_experiment(
 
     for dataset_idx, (val_dataset, test_dataset) in datasets.items():
         logger.info(f"Loading dataset '{dataset_idx}'.")
-        logger.debug("Creating utility")
-        scorer = ClasswiseScorer("accuracy", default=0.0)
-        utility = Utility(data=val_dataset, model=model, scorer=scorer)  # type: ignore
+        logger.debug("Creating utility")  # type: ignore
 
         if data_pre_process_fn is not None:
             val_dataset.y_train = data_pre_process_fn(val_dataset.y_train)
             test_dataset.y_train = val_dataset.y_train
 
         for valuation_method_name, valuation_method in valuation_methods.items():
+            n_classes = len(np.unique(val_dataset.y_train))
+            scorer = Scorer("accuracy", default=1 / n_classes)
+            utility = Utility(data=val_dataset, model=model, scorer=scorer)
             logger.info(f"Computing values using '{valuation_method_name}'.")
 
-            # valuation_method = timeout(1800)(valuation_method)
+            valuation_method = timeout(3600)(valuation_method)
             values = valuation_method(utility)
             result.valuation_results.loc[dataset_idx, valuation_method_name] = values
 

@@ -33,6 +33,7 @@ valuation_methods:
     alpha: 16.0,
     beta: 1.0,
     n_updates: 500,
+    progress: True
   }
   tmc_shapley: {
     rtol: 1e-4,

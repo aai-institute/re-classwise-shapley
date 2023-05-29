@@ -15,17 +15,12 @@ models:
     solver: liblinear,
   }
   gradient_boosting_classifier: {
-    n_estimators: 32
+    n_estimators: 40,
+    min_samples_leaf: 6,
+    max_depth: 2
   }
 
 valuation_methods:
-  classwise_shapley: {
-    n_updates: 500,
-    normalize_values: True,
-    n_resample_complement_sets: 3,
-    rtol: 1e-4,
-    progress: True
-  }
   loo: {
     progress: True
   }

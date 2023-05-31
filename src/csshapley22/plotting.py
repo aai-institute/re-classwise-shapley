@@ -9,7 +9,7 @@ from matplotlib.axes import Axes
 
 __all__ = [
     "setup_plotting",
-    "plot_utility_over_num_removals",
+    "plot_curve",
     "plot_values_histogram",
 ]
 
@@ -91,10 +91,12 @@ def plot_values_histogram(
         )
 
 
-def plot_utility_over_num_removals(
+def plot_curve(
     scores_df: pd.DataFrame,
     *,
     output_dir: Path,
+    label_x: str,
+    label_y: str,
 ) -> None:
     mean_colors = ["dodgerblue", "darkorange", "limegreen", "indianred", "darkorchid"]
     shade_colors = ["lightskyblue", "gold", "seagreen", "firebrick", "plum"]
@@ -110,8 +112,8 @@ def plot_utility_over_num_removals(
             abscissa=abscissa,
             mean_color=mean_colors[i],
             shade_color=shade_colors[i],
-            xlabel="Num points removed",
-            ylabel="Accuracy",
+            xlabel=label_x,
+            ylabel=label_y,
             label=method_name,
             ax=ax,
         )
@@ -126,6 +128,6 @@ def plot_utility_over_num_removals(
     )
     fig.tight_layout()
     fig.savefig(
-        output_dir / f"utility_over_num_removals.pdf",
+        output_dir / f"{label_x}_{label_y}.pdf",
         bbox_inches="tight",
     )

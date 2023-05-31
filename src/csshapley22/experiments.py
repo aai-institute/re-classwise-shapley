@@ -33,9 +33,9 @@ class ExperimentResult:
         logger.info("Saving results to disk")
         output_dir.mkdir(parents=True, exist_ok=True)
         self.metric.to_csv(output_dir / "metric.csv")
-        self.valuation_results.to_csv(output_dir / "valuation_results.csv")
+        self.valuation_results.to_pickle(output_dir / "valuation_results.pkl")
         if self.graphs is not None:
-            self.graphs.to_pickle(output_dir / "graphs.pkl")
+            self.graphs.to_pickle(output_dir / "scores.pkl")
 
         return self
 
@@ -68,7 +68,7 @@ def _dispatch_experiment(
             utility = Utility(data=val_dataset, model=model, scorer=scorer)
             logger.info(f"Computing values using '{valuation_method_name}'.")
 
-            valuation_method = timeout(3600)(valuation_method)
+            # valuation_method = timeout(10800)(valuation_method)
             values = valuation_method(utility)
             result.valuation_results.loc[dataset_idx, valuation_method_name] = values
 

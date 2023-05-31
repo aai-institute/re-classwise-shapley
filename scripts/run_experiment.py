@@ -1,5 +1,3 @@
-import logging
-from datetime import datetime
 from pathlib import Path
 
 import click
@@ -109,7 +107,7 @@ def run_experiments(experiment_name: str, dataset_name: str):
                     f"Error while executing experiment '{experiment_name}': {e}"
                 )
                 logger.info("Skipping experiment and continuing with next one.")
-                continue
+                raise e
 
 
 def _run_and_measure_experiment_wad_drop(
@@ -132,7 +130,7 @@ def _run_and_measure_experiment_wad_drop(
     )
     results.store(experiment_one_path)
     logger.info(f"Results are {results}.")
-    logger.info("Stored results of experiment one.")
+    logger.info(f"Stored results of experiment one in {experiment_one_path}.")
 
 
 def _run_and_measure_experiment_noise_removal(
@@ -153,7 +151,7 @@ def _run_and_measure_experiment_noise_removal(
     )
     results.store(experiment_two_path)
     logger.info(f"Results are {results}.")
-    logger.info("Stored results of experiment two.")
+    logger.info(f"Stored results of experiment two in {experiment_two_path}.")
 
 
 def _run_and_measure_experiment_wad_drop_transfer(
@@ -180,7 +178,9 @@ def _run_and_measure_experiment_wad_drop_transfer(
     )
     results.store(experiment_three_test_path)
     logger.info(f"Results are {results}.")
-    logger.info(f"Stored results of experiment three against'{test_model_name}'.")
+    logger.info(
+        f"Stored results of experiment three against '{test_model_name}' in {experiment_three_test_path}."
+    )
 
 
 if __name__ == "__main__":

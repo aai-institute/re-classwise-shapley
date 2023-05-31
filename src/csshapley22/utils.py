@@ -9,6 +9,9 @@ from typing import Callable, Optional, ParamSpec, TypeVar, cast
 import numpy as np
 import pandas as pd
 import torch
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
 
 __all__ = [
     "set_random_seed",
@@ -58,6 +61,12 @@ def instantiate_model(model_name: str, **model_kwargs) -> Pipeline:
         model = make_pipeline(GradientBoostingClassifier(**model_kwargs))
     elif model_name == "logistic_regression":
         model = make_pipeline(StandardScaler(), LogisticRegression(**model_kwargs))
+    elif model_name == "knn":
+        model = make_pipeline(StandardScaler(), KNeighborsClassifier(**model_kwargs))
+    elif model_name == "svm":
+        model = make_pipeline(StandardScaler(), SVC(**model_kwargs))
+    elif model_name == "mlp":
+        model = make_pipeline(StandardScaler(), MLPClassifier(**model_kwargs))
     else:
         raise ValueError(f"Unknown model '{model_name}'")
 

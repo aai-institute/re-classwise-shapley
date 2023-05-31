@@ -30,10 +30,15 @@ def run_experiments(experiment_name: str, dataset_name: str):
 
     params = params_show()
     logger.info(f"Using parameters:\n{params}")
+    global_settings = params["global"]
+    n_repetitions = global_settings["n_repetitions"]
+    del global_settings["n_repetitions"]
 
     # preprocess valuation methods to be callable from utility to valuation result.
     valuation_methods = params["valuation_methods"]
-    valuation_methods_factory = parse_valuation_methods_config(valuation_methods)
+    valuation_methods_factory = parse_valuation_methods_config(
+        valuation_methods, global_settings
+    )
 
     # preprocess datasets
     datasets_settings = {dataset_name: params["datasets"][dataset_name]}
@@ -42,7 +47,6 @@ def run_experiments(experiment_name: str, dataset_name: str):
     # preprocess models_config
     models_config = params["models"]
     model_generator_factory = parse_models_config(models_config)
-    n_repetitions = params["global"]["n_repetitions"]
 
     # Create the output directory
     experiment_output_dir = (
@@ -84,6 +88,14 @@ def run_experiments(experiment_name: str, dataset_name: str):
                         ]
                         experiment_three_path = experiments_output_dir
 
+                        # preprocess models_config
+                        test_models_config = params["experiments"]["wad_drop_transfer"][
+                            "transfer_models"
+                        ]
+                        test_model_generator_factory = parse_models_config(
+                            test_models_config
+                        )
+
                         for test_model_name, _ in experiment_three_settings[
                             "transfer_models"
                         ].items():
@@ -93,6 +105,7 @@ def run_experiments(experiment_name: str, dataset_name: str):
                                     model_name,
                                     test_model_name,
                                     model_generator_factory,
+                                    test_model_generator_factory,
                                     valuation_methods_factory,
                                     experiment_three_path,
                                 )
@@ -159,6 +172,7 @@ def _run_and_measure_experiment_wad_drop_transfer(
     model_name,
     test_model_name,
     model_generator_factory,
+    test_model_generator_factory,
     valuation_methods_factory,
     experiment_three_path,
 ):
@@ -168,7 +182,7 @@ def _run_and_measure_experiment_wad_drop_transfer(
     )
     logger.info(f"Testing against model '{test_model_name}'.")
     model = model_generator_factory[model_name]()
-    test_model = model_generator_factory[test_model_name]()
+    test_model = test_model_generator_factory[test_model_name]()
     experiment_three_test_path = experiment_three_path / test_model_name
     results = experiment_wad(
         model=model,

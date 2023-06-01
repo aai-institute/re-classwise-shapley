@@ -33,7 +33,7 @@ def principal_resnet_components(
 
     # Apply it to the input image
     collected_features = []
-    batch_size = 100
+    batch_size = 1000
     num_batches = int(m.ceil(len(x) / batch_size))
     for batch_num in tqdm(range(num_batches), desc="Processing batches"):
         win_x = x[batch_num * batch_size : (batch_num + 1) * batch_size]

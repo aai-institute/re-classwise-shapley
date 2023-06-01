@@ -1,8 +1,8 @@
 global:
   n_repetitions: 5
-  n_jobs: 2
+  n_jobs: 50
   backend: ray
-  temp_dir: /tmp/ray
+  temp_dir: /raid/tmp/ray
 
 experiments:
   wad_drop:
@@ -47,10 +47,24 @@ models:
 
 valuation_methods:
   classwise_shapley: {
-    n_updates: 3,
+    n_updates: 500,
     normalize_values: True,
     n_resample_complement_sets: 3,
     rtol: 1e-4,
+    progress: True
+  }
+  loo: {
+    progress: True
+  }
+  beta_shapley: {
+    alpha: 16.0,
+    beta: 1.0,
+    n_updates: 500,
+    progress: True
+  }
+  tmc_shapley: {
+    rtol: 1e-4,
+    n_updates: 500,
     progress: True
   }
 

@@ -44,15 +44,15 @@ stages:
       outs:
       - output/results/wad_drop/${key}
 
-#  data-valuation-wad-drop-generate-plots:
-#    foreach: ${datasets}
-#    do:
-#      cmd: python -m scripts.generate_plots wad_drop --dataset-name ${key}
-#      deps:
-#        - scripts/generate_plots.py
-#        - output/results/wad_drop/${key}
-#      outs:
-#        - output/plots/wad_drop/${key}
+  data-valuation-wad-drop-generate-plots:
+    foreach: ${datasets}
+    do:
+      cmd: python -m scripts.generate_plots wad_drop --dataset-name ${key}
+      deps:
+        - scripts/generate_plots.py
+        - output/results/wad_drop/${key}
+      outs:
+        - output/plots/wad_drop/${key}
 
   data-valuation-noise-removal-run-experiment:
     foreach: ${datasets}
@@ -64,15 +64,15 @@ stages:
       outs:
         - output/results/noise_removal/${key}
 
-#  data-valuation-noise-removal-generate-plots:
-#    foreach: ${datasets}
-#    do:
-#      cmd: python -m scripts.generate_plots noise_removal --dataset-name ${key}
-#      deps:
-#        - scripts/generate_plots.py
-#        - output/results/noise_removal/${key}
-#      outs:
-#        - output/plots/noise_removal/${key}
+  data-valuation-noise-removal-generate-plots:
+    foreach: ${datasets}
+    do:
+      cmd: python -m scripts.generate_plots noise_removal --dataset-name ${key}
+      deps:
+        - scripts/generate_plots.py
+        - output/results/noise_removal/${key}
+      outs:
+        - output/plots/noise_removal/${key}
 
   data-valuation-wad-drop-transfer-run-experiment:
     foreach: ${datasets}
@@ -84,12 +84,12 @@ stages:
       outs:
         - output/results/wad_drop_transfer/${key}
 
-#  data-valuation-wad-drop-transfer-generate-plots:
-#    foreach: ${datasets}
-#    do:
-#      cmd: python -m scripts.generate_plots wad_drop_transfer --dataset-name ${key}
-#      deps:
-#        - scripts/generate_plots.py
-#        - output/results/wad_drop_transfer/${key}
-#      outs:
-#        - output/plots/wad_drop_transfer/${key}
+  data-valuation-wad-drop-transfer-generate-plots:
+    foreach: ${datasets}
+    do:
+      cmd: python -m scripts.generate_plots wad_drop_transfer --dataset-name ${key}
+      deps:
+        - scripts/generate_plots.py
+        - output/results/wad_drop_transfer/${key}
+      outs:
+        - output/plots/wad_drop_transfer/${key}

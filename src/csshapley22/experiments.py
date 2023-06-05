@@ -190,13 +190,17 @@ def experiment_noise_removal(
         )
 
         metric = u(u.data.indices)
-        precision, recall, thresholds = precision_recall_curve(
-            u.data.y_test,
-            u.model.predict_proba(test_utility.data.x_test)[:, 1],
-        )
-        graph = pd.Series(precision, index=recall)
-        graph = graph[~graph.index.duplicated(keep="first")]
-        graph = graph.sort_index(ascending=True)
+        if len(np.unique(u.data.y_test)) == 2:
+            precision, recall, thresholds = precision_recall_curve(
+                u.data.y_test,
+                u.model.predict_proba(test_utility.data.x_test)[:, 1],
+            )
+            graph = pd.Series(precision, index=recall)
+            graph = graph[~graph.index.duplicated(keep="first")]
+            graph = graph.sort_index(ascending=True)
+        else:
+            graph = None
+
         return metric, graph
 
     result = _dispatch_experiment(

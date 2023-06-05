@@ -10,7 +10,7 @@ from pydvl.value import (
     RelativeTruncation,
     ShapleyMode,
     ValuationResult,
-    classwise_shapley,
+    compute_classwise_shapley_values,
     compute_shapley_values,
     naive_loo,
 )
@@ -41,7 +41,7 @@ def compute_values(
 
     elif valuation_method == "classwise_shapley":
         utility.scorer = ClasswiseScorer("accuracy", default=0.0)
-        values = classwise_shapley(
+        values = compute_classwise_shapley_values(
             utility,
             done=MaxUpdates(kwargs["n_updates"]),
             truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),

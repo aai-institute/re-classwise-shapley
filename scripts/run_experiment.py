@@ -25,7 +25,7 @@ SINGLE_BREAK = 120 * "-"
 @click.command()
 @click.argument("experiment-name", type=str, nargs=1)
 @click.option("--dataset-name", type=str, required=True)
-def run_experiments(experiment_name: str, dataset_name: str):
+def run_experiment(experiment_name: str, dataset_name: str):
     logger.info("Starting data valuation experiment")
 
     params = params_show()
@@ -198,4 +198,4 @@ def _run_and_measure_experiment_wad_drop_transfer(
 
 
 if __name__ == "__main__":
-    run_experiments()
+    run_experiment()

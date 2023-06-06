@@ -1,6 +1,6 @@
 import pickle
 
-from sklearn.metrics import precision_recall_curve, roc_auc_score
+from sklearn.metrics import auc
 
 from csshapley22.log import setup_logger
 
@@ -9,19 +9,19 @@ setup_logger()
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Dict, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 from numpy._typing import NDArray
-from pydvl.utils import ClasswiseScorer, Dataset, Scorer, SupervisedModel, Utility
+from pydvl.utils import Dataset, Scorer, SupervisedModel, Utility
 from pydvl.value.result import ValuationResult
 
 from csshapley22.metrics.weighted_reciprocal_average import (
     weighted_reciprocal_diff_average,
 )
 from csshapley22.types import ValTestSetFactory, ValuationMethodsFactory
-from csshapley22.utils import setup_logger, timeout
+from csshapley22.utils import setup_logger
 
 logger = setup_logger()
 
@@ -170,6 +170,17 @@ def experiment_noise_removal(
     valuation_methods_factory: ValuationMethodsFactory,
     perc_flip_labels: float = 0.2,
 ) -> ExperimentResult:
+    def pr_curve_ranking(target_list: List[int], ranked_list: List[int]):
+        p, r = [], []
+        for idx in range(1, len(ranked_list) + 1):
+            partial_list = ranked_list[:idx]
+            intersection = list(set(target_list) & set(partial_list))
+            r.append(1.0 * len(intersection) / len(target_list))
+            p.append(1.0 * len(intersection) / len(partial_list))
+
+        score = auc(r, p)
+        return p, r, score
+
     def _flip_labels(labels: NDArray[int]) -> Tuple[NDArray[int], Dict]:
         num_data_indices = int(perc_flip_labels * len(labels))
         p = np.random.permutation(len(labels))[:num_data_indices]
@@ -179,21 +190,14 @@ def experiment_noise_removal(
     def _roc_auc(
         test_utility: Utility, values: ValuationResult, info: Dict
     ) -> Tuple[float, pd.Series]:
-        y_true = np.zeros(len(test_utility.data.y_train), dtype=int)
-        y_true[info["idx"]] = 1
-
-        y_pred = np.zeros(len(test_utility.data.y_train), dtype=int)
-        y_pred[np.argsort(values)[: info["num_flipped"]]] = 1
-
+        ranked_list = list(np.argsort(values))
+        ranked_list = test_utility.data.indices[ranked_list]
+        precision, recall, score = pr_curve_ranking(info["idx"], ranked_list)
         logger.debug("Computing precision-recall curve on separate test set..")
-        precision, recall, thresholds = precision_recall_curve(
-            y_true,
-            y_pred.astype(float),
-        )
         graph = pd.Series(precision, index=recall)
         graph = graph[~graph.index.duplicated(keep="first")]
         graph = graph.sort_index(ascending=True)
-        return roc_auc_score(y_true, y_pred), graph
+        return score, graph
 
     result = _dispatch_experiment(
         model,

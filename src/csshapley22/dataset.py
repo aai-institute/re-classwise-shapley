@@ -1,19 +1,8 @@
-from enum import Enum
-from functools import partial
-from typing import Callable, Dict, Tuple, Union
+from typing import Callable, Tuple
 
 import numpy as np
-import openml
-from numpy import ndarray
 from numpy.typing import NDArray
 from pydvl.utils.dataset import Dataset
-from sklearn import preprocessing
-from sklearn.datasets import fetch_openml, load_diabetes
-from sklearn.model_selection import train_test_split
-
-from csshapley22.data.preprocess import FilterRegistry
-
-__all__ = ["create_openml_dataset"]
 
 
 def flip_labels(
@@ -31,7 +20,8 @@ def subsample(
     features: NDArray[np.float_],
     labels: NDArray[np.int_],
     *sizes: int,
-    stratified: bool = True
+    stratified: bool = True,
+    seed: int = None
 ) -> tuple[tuple[NDArray[np.float_], NDArray[np.int_]], ...]:
     """
     Sub-samples a dataset into different sets. It supports normal sampling and
@@ -44,6 +34,8 @@ def subsample(
         subset.
     :return: A tuple
     """
+    if seed is not None:
+        np.random.seed(seed)
 
     if stratified:
         p = np.random.permutation(len(features))

@@ -1,8 +1,7 @@
-import io
 import logging
+import math as m
 import os
 import shutil
-from contextlib import redirect_stderr
 
 from pydvl.utils import ClasswiseScorer, ParallelConfig, Utility
 from pydvl.value import (
@@ -43,7 +42,7 @@ def compute_values(
         utility.scorer = ClasswiseScorer("accuracy", default=0.0)
         values = compute_classwise_shapley_values(
             utility,
-            done=MaxUpdates(kwargs["n_updates"]),
+            done=MaxUpdates(n_updates=int(m.ceil(int(kwargs["n_updates"]) / n_jobs))),
             truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),
             normalize_score=kwargs["normalize_values"],
             n_resample_complement_sets=kwargs["n_resample_complement_sets"],
@@ -56,7 +55,7 @@ def compute_values(
         values = compute_semivalues(
             u=utility,
             mode=SemiValueMode.BetaShapley,
-            done=MaxUpdates(kwargs["n_updates"]),
+            done=MaxUpdates(n_updates=int(m.ceil(int(kwargs["n_updates"]) / n_jobs))),
             alpha=kwargs["alpha"],
             beta=kwargs["beta"],
             n_jobs=n_jobs,
@@ -65,17 +64,15 @@ def compute_values(
         )
 
     elif valuation_method == "tmc_shapley":
-        f = io.StringIO()
-        with redirect_stderr(f):
-            values = compute_shapley_values(
-                utility,
-                mode=ShapleyMode.TruncatedMontecarlo,
-                truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),
-                done=MaxUpdates(kwargs["n_updates"]),
-                n_jobs=n_jobs,
-                config=parallel_config,
-                progress=progress,
-            )
+        values = compute_shapley_values(
+            utility,
+            mode=ShapleyMode.PermutationMontecarlo,
+            truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),
+            done=MaxUpdates(n_updates=int(m.ceil(int(kwargs["n_updates"]) / n_jobs))),
+            n_jobs=n_jobs,
+            config=parallel_config,
+            progress=progress,
+        )
 
     else:
         raise NotImplementedError(

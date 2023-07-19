@@ -43,10 +43,12 @@ def render_plots(experiment_name: str, dataset_name: str):
                 output_dir=model_plots_output_dir,
                 label_x="Number of removed instances",
                 label_y="Accuracy",
+                title=f"Experiment 1: Weighted-Accuracy Drop for model '{model_name}'",
             )
             plot_values_histogram(
                 valuation_results,
                 output_dir=model_plots_output_dir,
+                title=f"Experiment 1: Histogram for model '{model_name}'",
             )
         elif experiment_name == "noise_removal":
             metrics, valuation_results, curves = load_results(
@@ -58,10 +60,12 @@ def render_plots(experiment_name: str, dataset_name: str):
                 output_dir=model_plots_output_dir,
                 label_x="Recall",
                 label_y="Precision",
+                title=f"Experiment 2: Precision-Recall curve for model '{model_name}'",
             )
             plot_values_histogram(
                 valuation_results,
                 output_dir=model_plots_output_dir,
+                title=f"Experiment 2: Histogram for model '{model_name}'",
             )
 
         elif experiment_name == "wad_drop_transfer":
@@ -75,13 +79,16 @@ def render_plots(experiment_name: str, dataset_name: str):
                 os.makedirs(sub_plots_output_dir, exist_ok=True)
                 plot_curve(
                     curves,
-                    output_dir=model_plots_output_dir,
+                    output_dir=sub_plots_output_dir,
                     label_x="Number of removed instances",
                     label_y="Accuracy",
+                    title=f"Experiment 3: Weighted-Accuracy Drop of model '{sub_folder}' \\ "
+                    f"used by values from model '{model_name}'",
                 )
                 plot_values_histogram(
                     valuation_results,
                     output_dir=sub_plots_output_dir,
+                    title=f"Experiment 3: Histogram for model '{model_name}'",
                 )
 
         logger.info("Finished plotting.")

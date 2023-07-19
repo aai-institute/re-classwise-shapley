@@ -60,22 +60,22 @@ def shaded_mean_normal_confidence_interval(
 
 
 def plot_values_histogram(
-    values_df: pd.DataFrame,
-    *,
-    output_dir: Path,
+    values_df: pd.DataFrame, *, output_dir: Path, title: str = None
 ) -> None:
     for method_name in values_df.columns:
         fig, ax = plt.subplots()
         df = values_df.loc[:, method_name].reset_index(drop=True)
         df = df.apply(lambda s: s)
 
-        sns.histplot(
-            data=np.concatenate(tuple(df.to_numpy())),
+        data = np.concatenate(tuple(df.to_numpy()))
+        ax = sns.histplot(
+            data=data,
             multiple="layer",
             kde=True,
             ax=ax,
         )
-        plt.legend()
+        ymin, ymax = ax.get_ylim()
+        plt.legend(bbox_to_anchor=(0.5, 0.05))
         sns.move_legend(
             ax,
             "lower center",
@@ -84,7 +84,12 @@ def plot_values_histogram(
             frameon=False,
         )
         ax.set_xlabel("Value")
+        if title is not None:
+            plt.title(title + f" and method '{method_name}'")
+
         fig.tight_layout()
+        ymin, ymax = ax.get_ylim()
+        ax.vlines(np.mean(data), color="r", ymin=ymin, ymax=ymax)
         fig.savefig(
             output_dir / f"values_histogram_{method_name=}.pdf",
             bbox_inches="tight",
@@ -97,12 +102,18 @@ def plot_curve(
     output_dir: Path,
     label_x: str,
     label_y: str,
+    title: str = None,
 ) -> None:
     mean_colors = ["dodgerblue", "darkorange", "limegreen", "indianred", "darkorchid"]
     shade_colors = ["lightskyblue", "gold", "seagreen", "firebrick", "plum"]
+    color_pos = ["beta_shapley", "loo", "tmc_shapley", "classwise_shapley", "random"]
+    color_pos = {v: i for i, v in enumerate(color_pos)}
 
     fig, ax = plt.subplots()
     for i, method_name in enumerate(scores_df.columns):
+        mean_color = mean_colors[color_pos[method_name]]
+        shade_color = shade_colors[color_pos[method_name]]
+
         scores = scores_df.loc[:, method_name].apply(lambda s: pd.Series(s))
         abscissa = list(scores.columns)
         abscissa = abscissa[: int(len(abscissa) / 2)]
@@ -110,14 +121,16 @@ def plot_curve(
         shaded_mean_normal_confidence_interval(
             scores,
             abscissa=abscissa,
-            mean_color=mean_colors[i],
-            shade_color=shade_colors[i],
+            mean_color=mean_color,
+            shade_color=shade_color,
             xlabel=label_x,
             ylabel=label_y,
             label=method_name,
             ax=ax,
         )
     plt.legend(loc="lower left")
+    if title is not None:
+        plt.title(title)
     sns.move_legend(
         ax,
         "lower center",

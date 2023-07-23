@@ -103,6 +103,7 @@ def plot_curve(
     label_x: str,
     label_y: str,
     title: str = None,
+    plot_name: str = None,
 ) -> None:
     mean_colors = ["dodgerblue", "darkorange", "limegreen", "indianred", "darkorchid"]
     shade_colors = ["lightskyblue", "gold", "seagreen", "firebrick", "plum"]
@@ -110,6 +111,7 @@ def plot_curve(
     color_pos = {v: i for i, v in enumerate(color_pos)}
 
     fig, ax = plt.subplots()
+
     for i, method_name in enumerate(scores_df.columns):
         mean_color = mean_colors[color_pos[method_name]]
         shade_color = shade_colors[color_pos[method_name]]
@@ -133,14 +135,12 @@ def plot_curve(
         plt.title(title)
     sns.move_legend(
         ax,
-        "lower center",
-        bbox_to_anchor=(0.5, 1),
-        ncol=3,
-        title="Method",
+        "upper left",
+        bbox_to_anchor=(1, 1),
+        ncol=1,
         frameon=False,
     )
-    fig.tight_layout()
     fig.savefig(
-        output_dir / f"{label_x}_{label_y}.pdf",
+        output_dir / f"{plot_name}_{label_x}_{label_y}.pdf",
         bbox_inches="tight",
     )

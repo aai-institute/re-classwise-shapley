@@ -9,6 +9,7 @@ from typing import Callable, Optional, ParamSpec, TypeVar, cast
 import numpy as np
 import pandas as pd
 import torch
+from numpy._typing import NDArray
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
@@ -20,6 +21,7 @@ __all__ = [
     "timeout",
 ]
 
+from pydvl.utils import SupervisedModel
 from pydvl.value import ValuationResult
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
@@ -56,7 +58,7 @@ def convert_values_to_dataframe(values: ValuationResult) -> pd.DataFrame:
     return df
 
 
-def instantiate_model(model_name: str, **model_kwargs) -> Pipeline:
+def instantiate_model(model_name: str, **model_kwargs) -> SupervisedModel:
     if model_name == "gradient_boosting_classifier":
         model = make_pipeline(GradientBoostingClassifier(**model_kwargs))
     elif model_name == "logistic_regression":
@@ -70,7 +72,29 @@ def instantiate_model(model_name: str, **model_kwargs) -> Pipeline:
     else:
         raise ValueError(f"Unknown model '{model_name}'")
 
-    return model
+    return WrapperModel(model)
+
+
+class WrapperModel:
+    def __init__(self, model: SupervisedModel):
+        self.model = model
+        self._unique_cls = None
+
+    def fit(self, x: NDArray[np.float_], y: NDArray[np.int_]):
+        if len(np.unique(y)) == 1:
+            self._unique_cls = y[0]
+        else:
+            self._unique_cls = None
+            self.model.fit(x, y)
+
+    def predict(self, x: NDArray[np.float_]) -> NDArray[np.int_]:
+        if self._unique_cls is None:
+            return self.model.predict(x)
+        else:
+            return np.ones(len(x), dtype=int) * self._unique_cls
+
+    def score(self, x: NDArray[np.float_], y: NDArray[np.int_]) -> float:
+        return self.model.score(x, y)
 
 
 def get_git_revision_hash() -> str:

@@ -26,18 +26,15 @@ def parse_valuation_methods_config(
     if global_kwargs is None:
         global_kwargs = {}
 
+    res = {}
     logger.info("Parsing valuation methods...")
-    return {
-        name: partial(
-            compute_values,
-            valuation_method=name,
-            **kwargs,
-            **global_kwargs,
+    for name, kwargs in valuation_methods.items():
+        valuation_method = kwargs.pop("valuation_method")
+        res[name] = partial(
+            compute_values, valuation_method=valuation_method, **kwargs, **global_kwargs
         )
-        if kwargs is not None
-        else partial(compute_values, valuation_method=name, **global_kwargs)
-        for name, kwargs in valuation_methods.items()
-    }
+
+    return res
 
 
 def parse_datasets_config(dataset_settings: Dict[str, Dict]) -> ValTestSetFactory:

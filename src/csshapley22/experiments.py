@@ -117,16 +117,18 @@ def _dispatch_experiment(
             curves[metric_name] = graph
 
         result.metric.loc[dataset_idx, valuation_method_name] = [metrics]
-        if result.metric is not None:
-            result.metric = result.metric.applymap(lambda x: x[0])
 
         if len(curves) > 0 and any([v is not None for v in curves]):
             if result.curves is None:
                 result.curves = copy(base_frame)
 
             result.curves.loc[dataset_idx, valuation_method_name] = [curves]
-            if result.curves is not None:
-                result.curves = result.curves.applymap(lambda x: x[0])
+
+    if result.metric is not None:
+        result.metric = result.metric.applymap(lambda x: x[0])
+
+    if result.curves is not None:
+        result.curves = result.curves.applymap(lambda x: x[0])
 
     return result
 

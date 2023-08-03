@@ -1,13 +1,3 @@
-vars:
-  - activated_datasets: [
-      "click",
-      "diabetes",
-      "phoneme",
-      "fmnist_binary",
-      "mnist_binary",
-      "mnist_multi"
-    ]
-
 stages:
   data-valuation-fetch-data:
     foreach: ${datasets}
@@ -74,22 +64,22 @@ stages:
       outs:
         - output/plots/noise_removal/${key}
 
-  data-valuation-wad-drop-transfer-run-experiment:
-    foreach: ${datasets}
-    do:
-      cmd: python -m scripts.run_experiment wad_drop_transfer --dataset-name ${key}
-      deps:
-        - scripts/run_experiment.py
-        - output/preprocessed/${key}
-      outs:
-        - output/results/wad_drop_transfer/${key}
-
-  data-valuation-wad-drop-transfer-generate-plots:
-    foreach: ${datasets}
-    do:
-      cmd: python -m scripts.render_plots wad_drop_transfer --dataset-name ${key}
-      deps:
-        - scripts/render_plots.py
-        - output/results/wad_drop_transfer/${key}
-      outs:
-        - output/plots/wad_drop_transfer/${key}
+#  data-valuation-wad-drop-transfer-run-experiment:
+#    foreach: ${datasets}
+#    do:
+#      cmd: python -m scripts.run_experiment wad_drop_transfer --dataset-name ${key}
+#      deps:
+#        - scripts/run_experiment.py
+#        - output/preprocessed/${key}
+#      outs:
+#        - output/results/wad_drop_transfer/${key}
+#
+#  data-valuation-wad-drop-transfer-generate-plots:
+#    foreach: ${datasets}
+#    do:
+#      cmd: python -m scripts.render_plots wad_drop_transfer --dataset-name ${key}
+#      deps:
+#        - scripts/render_plots.py
+#        - output/results/wad_drop_transfer/${key}
+#      outs:
+#        - output/plots/wad_drop_transfer/${key}

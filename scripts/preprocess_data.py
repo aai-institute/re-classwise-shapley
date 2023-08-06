@@ -4,7 +4,9 @@ from typing import Dict
 
 import click
 import numpy as np
+import pandas as pd
 from dvc.api import params_show
+from sklearn import preprocessing
 
 from csshapley22.constants import RANDOM_SEED
 from csshapley22.data.config import Config
@@ -53,9 +55,14 @@ def preprocess_dataset(dataset_name: str, dataset_kwargs: Dict):
             preprocessor_kwargs,
         ) in preprocessor_definitions.items():
             preprocessor = PreprocessorRegistry[preprocessor_name]
-            x = preprocessor(x, **preprocessor_kwargs)
+            x, y = preprocessor(x, y, **preprocessor_kwargs)
 
     os.makedirs(preprocessed_folder, exist_ok=True)
+    le = preprocessing.LabelEncoder()
+    le.fit(y)
+    y = le.transform(y)
+    info["label_distribution"] = (pd.value_counts(y) / len(y)).to_dict()
+
     np.save(preprocessed_folder / "x.npy", x)
     np.save(preprocessed_folder / "y.npy", y)
     logger.info(

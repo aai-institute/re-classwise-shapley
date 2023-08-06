@@ -80,11 +80,6 @@ def _encode_and_pack_into_datasets(x, y, train_size, val_size, test_size, strati
     (x_train, y_train), (x_dev, y_dev), (x_test, y_test) = subsample(
         x, y, train_size, val_size, test_size, stratified=stratified
     )
-    le = preprocessing.LabelEncoder()
-    le.fit(y)
-    y_train = le.transform(y_train)
-    y_test = le.transform(y_test)
-    y_dev = le.transform(y_dev)
     perm_train = np.random.permutation(len(x_train))
     perm_dev = np.random.permutation(len(x_dev))
     perm_test = np.random.permutation(len(x_test))

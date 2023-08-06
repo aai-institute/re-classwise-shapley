@@ -1,7 +1,7 @@
 global:
   n_repetitions: 5
-  n_jobs: 64
-  backend: ray
+  n_jobs: 40
+  backend: joblib
   temp_dir: /raid/tmp/ray
 
 experiments:
@@ -17,16 +17,16 @@ experiments:
         min_samples_leaf: 6,
         max_depth: 2
       }
-      knn: {
-        n_neighbors: 5,
-        weights: uniform
-      }
-      svm: {
-        kernel: rbf
-      }
-      mlp: {
-
-      }
+#      knn: {
+#        n_neighbors: 5,
+#        weights: uniform
+#      }
+#      svm: {
+#        kernel: rbf
+#      }
+#      mlp: {
+#
+#      }
 
 models:
   logistic_regression: {
@@ -37,17 +37,17 @@ models:
     min_samples_leaf: 6,
     max_depth: 2
   }
-  knn: {
-    n_neighbors: 5,
-    weights: uniform
-  }
-  svm: {
-    kernel: rbf
-  }
+#  knn: {
+#    n_neighbors: 5,
+#    weights: uniform
+#  }
+#  svm: {
+#    kernel: rbf
+#  }
 
 valuation_methods:
   random: {
-    valuation_method: "random"
+    valuation_method: "random",
   }
   loo: {
     valuation_method: "loo",
@@ -57,40 +57,30 @@ valuation_methods:
     valuation_method: "classwise_shapley",
     n_updates: 500,
     normalize_values: True,
-    n_resample_complement_sets: 10,
+    n_resample_complement_sets: 5,
     rtol: 1e-4,
-    progress: False
+    progress: True
   }
   classwise_shapley_add_idx: {
     valuation_method: "classwise_shapley",
     n_updates: 500,
     normalize_values: True,
-    n_resample_complement_sets: 10,
+    n_resample_complement_sets: 5,
     use_default_scorer_value: False,
     rtol: 1e-4,
-    progress: False
-  }
-  classwise_shapley_add_idx_empty_set: {
-    valuation_method: "classwise_shapley",
-    n_updates: 500,
-    normalize_values: True,
-    n_resample_complement_sets: 10,
-    use_default_scorer_value: False,
-    min_elements_per_label: 0,
-    rtol: 1e-4,
-    progress: False
+    progress: True
   }
   beta_shapley: {
     valuation_method: "beta_shapley",
     alpha: 16.0,
     beta: 1.0,
-    n_updates: 500,
+    n_updates: 2500,
     progress: False
   }
   tmc_shapley: {
     valuation_method: "tmc_shapley",
     rtol: 1e-4,
-    n_updates: 500,
+    n_updates: 2500,
     progress: False
   }
 
@@ -100,6 +90,17 @@ datasets:
     train_size: 128,
     dev_size: 128,
     test_size: 512
+  }
+  cpu: {
+    openml_id: 197,
+    train_size: 500,
+    dev_size: 500,
+    test_size: 2000,
+    preprocessor: {
+      threshold_y: {
+        threshold: 89,
+      }
+    },
   }
   click: {
     openml_id: 1216,

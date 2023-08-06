@@ -1,7 +1,11 @@
+import os
+import random
+import time
 from typing import Callable, Tuple
 
 import numpy as np
 from numpy.typing import NDArray
+from pydvl.utils import set_time_pid_seed
 from pydvl.utils.dataset import Dataset
 
 
@@ -36,6 +40,9 @@ def subsample(
     """
     if seed is not None:
         np.random.seed(seed)
+        random.seed(seed)
+    else:
+        set_time_pid_seed()
 
     if stratified:
         p = np.random.permutation(len(features))
@@ -50,7 +57,11 @@ def subsample(
 
         for i, size in enumerate(sizes):
             absolute_set_sizes = (relative_set_sizes * size).astype(np.int_)
-            absolute_set_sizes[-1] = size - np.sum(absolute_set_sizes[:-1])
+            missing_elements = size - np.sum(absolute_set_sizes)
+            absolute_set_sizes[np.argsort(absolute_set_sizes)[:missing_elements]] += 1
+
+            if np.sum(absolute_set_sizes) != size:
+                raise ValueError("There is an error in sampling.")
 
             for j in range(len(unique_labels)):
                 label_idx = label_indices[j]

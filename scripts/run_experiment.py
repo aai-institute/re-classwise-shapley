@@ -5,6 +5,7 @@ from dvc.api import params_show
 from dvc.repo import Repo
 
 from csshapley22.constants import RANDOM_SEED
+from csshapley22.data.config import Config
 from csshapley22.experiments import experiment_noise_removal, experiment_wad
 from csshapley22.log import setup_logger
 from csshapley22.preprocess import (
@@ -50,7 +51,7 @@ def run_experiment(experiment_name: str, dataset_name: str):
 
     # Create the output directory
     experiment_output_dir = (
-        Path(Repo.find_root()) / "output" / "results" / experiment_name / dataset_name
+        Path(Repo.find_root()) / Config.RESULT_PATH / experiment_name / dataset_name
     )
 
     for model_name in models_config.keys():

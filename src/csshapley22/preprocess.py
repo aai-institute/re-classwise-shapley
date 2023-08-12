@@ -1,10 +1,10 @@
-import pickle
+import os
+import time
 from functools import partial
 from typing import Dict
 
 import numpy as np
 from pydvl.utils import Dataset
-from sklearn import preprocessing
 
 from csshapley22.data.config import Config
 from csshapley22.dataset import subsample
@@ -77,8 +77,9 @@ def parse_models_config(models_config: Dict[str, Dict]) -> ModelGeneratorFactory
 
 
 def _encode_and_pack_into_datasets(x, y, train_size, val_size, test_size, stratified):
+    seed = int(os.getpid() + time.time()) % (2**31 - 1)
     (x_train, y_train), (x_dev, y_dev), (x_test, y_test) = subsample(
-        x, y, train_size, val_size, test_size, stratified=stratified
+        x, y, train_size, val_size, test_size, stratified=stratified, seed=seed
     )
     perm_train = np.random.permutation(len(x_train))
     perm_dev = np.random.permutation(len(x_dev))

@@ -1,11 +1,8 @@
-import os
 import random
-import time
 from typing import Callable, Tuple
 
 import numpy as np
 from numpy.typing import NDArray
-from pydvl.utils import set_time_pid_seed
 from pydvl.utils.dataset import Dataset
 
 
@@ -40,9 +37,7 @@ def subsample(
     """
     if seed is not None:
         np.random.seed(seed)
-        random.seed(seed)
-    else:
-        set_time_pid_seed()
+        random.seed(seed + 1)
 
     if stratified:
         p = np.random.permutation(len(features))

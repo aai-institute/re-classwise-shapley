@@ -1,5 +1,5 @@
 global:
-  n_repetitions: 5
+  n_repetitions: 3
   n_jobs: 40
   backend: joblib
   temp_dir: /raid/tmp/ray
@@ -32,11 +32,6 @@ models:
   logistic_regression: {
     solver: liblinear,
   }
-  gradient_boosting_classifier: {
-    n_estimators: 40,
-    min_samples_leaf: 6,
-    max_depth: 2
-  }
 #  knn: {
 #    n_neighbors: 5,
 #    weights: uniform
@@ -46,18 +41,18 @@ models:
 #  }
 
 valuation_methods:
-  random: {
-    valuation_method: "random",
-  }
-  loo: {
-    valuation_method: "loo",
-    progress: False
-  }
+#  random: {
+#    valuation_method: "random",
+#  }
+#  loo: {
+#    valuation_method: "loo",
+#    progress: False
+#  }
   classwise_shapley: {
     valuation_method: "classwise_shapley",
     n_updates: 500,
     normalize_values: True,
-    n_resample_complement_sets: 5,
+    n_resample_complement_sets: 10,
     rtol: 1e-4,
     progress: True
   }
@@ -65,24 +60,24 @@ valuation_methods:
     valuation_method: "classwise_shapley",
     n_updates: 500,
     normalize_values: True,
-    n_resample_complement_sets: 5,
+    n_resample_complement_sets: 10,
     use_default_scorer_value: False,
     rtol: 1e-4,
     progress: True
   }
-  beta_shapley: {
-    valuation_method: "beta_shapley",
-    alpha: 16.0,
-    beta: 1.0,
-    n_updates: 2500,
-    progress: False
-  }
-  tmc_shapley: {
-    valuation_method: "tmc_shapley",
-    rtol: 1e-4,
-    n_updates: 2500,
-    progress: False
-  }
+#  beta_shapley: {
+#    valuation_method: "beta_shapley",
+#    alpha: 16.0,
+#    beta: 1.0,
+#    n_updates: 1000,
+#    progress: False
+#  }
+#  tmc_shapley: {
+#    valuation_method: "tmc_shapley",
+#    rtol: 1e-4,
+#    n_updates: 1000,
+#    progress: False
+#  }
 
 datasets:
   diabetes: {

@@ -1,0 +1,6 @@
+diabetes: {
+  openml_id: 37,
+  train_size: 128,
+  dev_size: 128,
+  test_size: 512
+}

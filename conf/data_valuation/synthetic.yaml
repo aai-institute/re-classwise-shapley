@@ -1,7 +1,0 @@
-defaults:
-- common.yaml
-
-dataset: "synthetic"
-n_features: 50
-n_train_samples: 200
-n_test_samples: 1000

@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -7,7 +7,27 @@ from pydvl.utils import Utility, maybe_progress
 from pydvl.value.result import ValuationResult
 from sklearn.metrics import auc
 
-__all__ = ["weighted_reciprocal_diff_average"]
+__all__ = ["pr_curve_ranking", "weighted_reciprocal_diff_average"]
+
+
+def pr_curve_ranking(
+    target_list: NDArray[np.int_], ranked_list: NDArray[np.int_]
+) -> Tuple[NDArray[np.float_], NDArray[np.float_], float]:
+    """
+    Calculates the precision-recall curve for a given target list and ranked list.
+    Also calculates the area under the curve (AUC).
+    :param target_list: The list of target indices. A subset of the ranked list.
+    :param ranked_list: The list of ranked indices.
+    :return: Tuple of precision, recall and AUC.
+    """
+    p, r = np.empty(len(ranked_list)), np.empty(len(ranked_list))
+    for idx in range(len(ranked_list)):
+        partial_list = ranked_list[: idx + 1]
+        intersection = list(set(target_list) & set(partial_list))
+        r[idx] = float(len(intersection) / len(target_list))
+        p[idx] = float(len(intersection) / len(partial_list))
+
+    return r, p, auc(r, p)
 
 
 def weighted_reciprocal_diff_average(
@@ -47,24 +67,3 @@ def weighted_reciprocal_diff_average(
     weighted_diff_scores = diff_scores / (np.arange(1, len(diff_scores) + 1))
     avg = np.sum(weighted_diff_scores)
     return float(avg), scores
-
-
-def pr_curve_ranking(
-    target_list: NDArray[np.int_], ranked_list: NDArray[np.int_]
-) -> Tuple[NDArray[np.float_], NDArray[np.float_], float]:
-    """
-    Calculates the precision-recall curve for a given target list and ranked list.
-    Also calculates the area under the curve (AUC).
-    :param target_list: The list of target indices. A subset of the ranked list.
-    :param ranked_list: The list of ranked indices.
-    :return: Tuple of precision, recall and AUC.
-    """
-    p, r = np.empty(len(ranked_list)), np.empty(len(ranked_list))
-    for idx in range(len(ranked_list)):
-        partial_list = ranked_list[: idx + 1]
-        intersection = list(set(target_list) & set(partial_list))
-        r[idx] = float(len(intersection) / len(target_list))
-        p[idx] = float(len(intersection) / len(partial_list))
-
-    score = auc(r, p)
-    return p, r, float(score)

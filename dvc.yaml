@@ -1,38 +1,44 @@
 stages:
-  data-valuation-fetch-data:
-    foreach: ${datasets}
-    do:
-      cmd: python -m scripts.fetch_data --dataset-name ${key}
-      deps:
-        - scripts/fetch_data.py
-      params:
-        - datasets
-        - datasets.${key}
-      outs:
-        - output/raw/${key}  # TODO: Change to openml_id
+  cs-shapley-fetch-data:
+    matrix:
+      dataset: ${active.datasets}
+    cmd: python -m scripts.fetch_data --dataset-name ${item.dataset}
+    deps:
+      - scripts/fetch_data.py
+    outs:
+      - output/raw/${item.dataset}
 
-  data-valuation-preprocess-data:
-    foreach: ${datasets}
-    do:
-      cmd: python -m scripts.preprocess_data --dataset-name ${key}
-      deps:
-        - scripts/preprocess_data.py
-        - output/raw/${key}
-      params:
-        - datasets
-        - datasets.${key}
-      outs:
-        - output/preprocessed/${key}
+  cs-shapley-preprocess-data:
+    matrix:
+      dataset: ${active.datasets}
+    cmd: python -m scripts.preprocess_data --dataset-name ${item.dataset}
+    deps:
+      - scripts/preprocess_data.py
+      - output/raw/${item.dataset}
+    outs:
+      - output/preprocessed/${item.dataset}
 
-  data-valuation-wad-drop-run-experiment:
-    foreach: ${datasets}
-    do:
-      cmd: python -m scripts.run_experiment wad_drop --dataset-name ${key}
-      deps:
-        - scripts/run_experiment.py
-        - output/preprocessed/${key}
-      outs:
-        - output/results/wad_drop/${key}
+  cs-shapley-wad-drop-experiment:
+    matrix:
+      dataset: ${active.datasets}
+      model: ${active.models}
+    cmd: python -m scripts.run_experiment_wad_drop --dataset-name ${item.dataset} --model-name ${item.model}
+    deps:
+      - scripts/run_experiment_wad_drop.py
+      - output/preprocessed/${item.dataset}
+    outs:
+      - output/results/wad_drop/${item.model}/${item.dataset}
+
+  cs-shapley-noise-removal-experiment:
+    matrix:
+      dataset: ${active.datasets}
+      model: ${active.models}
+    cmd: python -m scripts.run_experiment_noise_removal --dataset-name ${item.dataset} --model-name ${item.model}
+    deps:
+      - scripts/run_experiment_noise_removal.py
+      - output/preprocessed/${item.dataset}
+    outs:
+      - output/results/noise_removal/${item.model}/${item.dataset}
 
 #  data-valuation-wad-drop-generate-plots:
 #    foreach: ${datasets}

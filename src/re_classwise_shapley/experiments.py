@@ -7,7 +7,7 @@ from typing import Callable, Dict, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from numpy._typing import NDArray
+from numpy.typing import NDArray
 from pydvl.utils import Dataset, Scorer, SupervisedModel, Utility
 from pydvl.value.result import ValuationResult
 
@@ -15,7 +15,7 @@ from re_classwise_shapley.eval.metric import (
     pr_curve_ranking,
     weighted_reciprocal_diff_average,
 )
-from re_classwise_shapley.types import ValTestSetFactory, ValuationMethodsFactory
+from re_classwise_shapley.types import ValuationMethodsFactory
 from re_classwise_shapley.utils import setup_logger
 
 logger = setup_logger()
@@ -23,9 +23,9 @@ logger = setup_logger()
 
 @dataclass
 class ExperimentResult:
-    valuation_results: pd.DataFrame
-    metric: pd.DataFrame
-    curves: Optional[pd.DataFrame]
+    valuation_results: pd.Series
+    metric: pd.Series
+    curves: Optional[pd.Series]
     val_set: Dataset
     test_set: Dataset
     metric_name: str = None
@@ -53,7 +53,7 @@ class ExperimentResult:
 
 def _dispatch_experiment(
     model: SupervisedModel,
-    datasets: ValTestSetFactory,
+    val_test_set: Tuple[Dataset, Dataset],
     valuation_methods: ValuationMethodsFactory,
     *,
     data_pre_process_fn: Callable[[NDArray[int]], Tuple[NDArray[int], Dict]] = None,
@@ -62,22 +62,15 @@ def _dispatch_experiment(
         Callable[[Utility, ValuationResult, Dict], Tuple[float, Optional[pd.Series]]],
     ],
 ) -> ExperimentResult:
-    base_frame = pd.DataFrame(
-        index=list(datasets.keys()), columns=list(valuation_methods.keys())
-    )
-    dataset_idxs = list(datasets.keys())
-    assert len(dataset_idxs) == 1, "Only one dataset is supported for now."
-    dataset_idx = dataset_idxs[0]
-    dataset_factory = datasets[dataset_idx]
-    val_dataset, test_dataset = dataset_factory()
+    base_series = pd.Series(index=list(valuation_methods.keys()))
+    val_dataset, test_dataset = val_test_set
     result = ExperimentResult(
-        metric=copy(base_frame),
-        valuation_results=copy(base_frame),
+        metric=copy(base_series),
+        valuation_results=copy(base_series),
         curves=None,
         val_set=val_dataset,
         test_set=test_dataset,
     )
-    logger.info(f"Loading dataset '{dataset_idx}'.")
     logger.debug("Creating utility")  # type: ignore
 
     info = None
@@ -92,10 +85,10 @@ def _dispatch_experiment(
 
         # valuation_method = timeout(10800)(valuation_method)
         values = valuation_method(utility)
-        result.valuation_results.loc[dataset_idx, valuation_method_name] = values
+        result.valuation_results.loc[valuation_method_name] = values
 
         if values is None:
-            result.metric.loc[dataset_idx, valuation_method_name] = values
+            result.metric.loc[valuation_method_name] = values
             continue
 
         logger.info("Computing best data points removal score on separate test set.")
@@ -110,26 +103,26 @@ def _dispatch_experiment(
             metrics[metric_name] = metric
             curves[metric_name] = graph
 
-        result.metric.loc[dataset_idx, valuation_method_name] = [metrics]
+        result.metric.loc[valuation_method_name] = [metrics]
 
         if len(curves) > 0 and any([v is not None for v in curves]):
             if result.curves is None:
-                result.curves = copy(base_frame)
+                result.curves = copy(base_series)
 
-            result.curves.loc[dataset_idx, valuation_method_name] = [curves]
+            result.curves.loc[valuation_method_name] = [curves]
 
     if result.metric is not None:
-        result.metric = result.metric.applymap(lambda x: x[0])
+        result.metric = result.metric.apply(lambda x: x[0])
 
     if result.curves is not None:
-        result.curves = result.curves.applymap(lambda x: x[0])
+        result.curves = result.curves.apply(lambda x: x[0])
 
     return result
 
 
 def experiment_wad(
     model: SupervisedModel,
-    datasets: ValTestSetFactory,
+    val_test_set: Tuple[Dataset, Dataset],
     valuation_methods_factory: ValuationMethodsFactory,
     test_model: SupervisedModel = None,
     progress: bool = False,
@@ -139,7 +132,7 @@ def experiment_wad(
     first and third experiments inside the paper.
 
     :param model: Model which shall be used for evaluation.
-    :param datasets: A dictionary containing validation and test set tuples
+    :param val_test_set: Tuple of validation and test set.
     :param valuation_methods_factory: All valuation methods to be used.
     :param test_model: The current test model which shall be used.
     :param progress: Whether to display a progress bar.
@@ -167,7 +160,7 @@ def experiment_wad(
 
     result = _dispatch_experiment(
         model,
-        datasets,
+        val_test_set,
         valuation_methods_factory,
         data_pre_process_fn=None,
         metric_functions={  # type: ignore
@@ -181,7 +174,7 @@ def experiment_wad(
 
 def experiment_noise_removal(
     model: SupervisedModel,
-    datasets: ValTestSetFactory,
+    val_test_set: Tuple[Dataset, Dataset],
     valuation_methods_factory: ValuationMethodsFactory,
     perc_flip_labels: float = 0.2,
 ) -> ExperimentResult:
@@ -196,7 +189,7 @@ def experiment_noise_removal(
     ) -> Tuple[float, pd.Series]:
         ranked_list = list(np.argsort(values))
         ranked_list = test_utility.data.indices[ranked_list]
-        precision, recall, score = pr_curve_ranking(info["idx"], ranked_list)
+        recall, precision, score = pr_curve_ranking(info["idx"], ranked_list)
         logger.debug("Computing precision-recall curve on separate test set..")
         graph = pd.Series(precision, index=recall)
         graph = graph[~graph.index.duplicated(keep="first")]
@@ -205,7 +198,7 @@ def experiment_noise_removal(
 
     result = _dispatch_experiment(
         model,
-        datasets,
+        val_test_set,
         valuation_methods_factory,
         data_pre_process_fn=_flip_labels,
         metric_functions={"roc_precision_recall": _roc_auc},

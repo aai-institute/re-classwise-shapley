@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from dvc.parsing import make_definition
+
 
 class Config:
     """
@@ -13,3 +15,5 @@ class Config:
     PLOT_PATH = OUTPUT_PATH / "plots"
 
     LINE_LENGTH = 120
+    SINGLE_BREAK = "-" * LINE_LENGTH
+    DOUBLE_BREAK = "=" * LINE_LENGTH

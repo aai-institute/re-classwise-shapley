@@ -27,4 +27,4 @@ ModelGeneratorFactory = Dict[str, ModelGenerator]
 
 FloatIntStringArray = Union[NDArray[np.float_], NDArray[np.int_]]
 RawDataset = Tuple[NDArray[np.float_], FloatIntStringArray, Dict[str, Dict]]
-Seed = Optional[Union[int, np.random.SeedSequence]]
+Seed = Optional[Union[int, np.random.SeedSequence, np.random.Generator]]

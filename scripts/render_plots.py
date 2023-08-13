@@ -11,10 +11,14 @@ import pandas as pd
 from dvc.api import params_show
 from pandas.plotting import table
 
-from csshapley22.constants import OUTPUT_DIR, RANDOM_SEED
-from csshapley22.log import setup_logger
-from csshapley22.plotting import plot_curve, plot_values_histogram, setup_plotting
-from csshapley22.utils import set_random_seed
+from re_classwise_shapley.constants import OUTPUT_DIR, RANDOM_SEED
+from re_classwise_shapley.log import setup_logger
+from re_classwise_shapley.plotting import (
+    plot_curve,
+    plot_values_histogram,
+    setup_plotting,
+)
+from re_classwise_shapley.utils import set_random_seed
 
 logger = setup_logger()
 

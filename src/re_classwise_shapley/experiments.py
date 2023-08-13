@@ -1,16 +1,9 @@
 import pickle
-from functools import partial
-
-from sklearn.metrics import auc
-
-from csshapley22.log import setup_logger
-
-setup_logger()
-
 from copy import copy
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -18,11 +11,12 @@ from numpy._typing import NDArray
 from pydvl.utils import Dataset, Scorer, SupervisedModel, Utility
 from pydvl.value.result import ValuationResult
 
-from csshapley22.metrics.weighted_reciprocal_average import (
+from re_classwise_shapley.eval.metric import (
+    pr_curve_ranking,
     weighted_reciprocal_diff_average,
 )
-from csshapley22.types import ValTestSetFactory, ValuationMethodsFactory
-from csshapley22.utils import setup_logger
+from re_classwise_shapley.types import ValTestSetFactory, ValuationMethodsFactory
+from re_classwise_shapley.utils import setup_logger
 
 logger = setup_logger()
 
@@ -191,17 +185,6 @@ def experiment_noise_removal(
     valuation_methods_factory: ValuationMethodsFactory,
     perc_flip_labels: float = 0.2,
 ) -> ExperimentResult:
-    def pr_curve_ranking(target_list: List[int], ranked_list: List[int]):
-        p, r = [], []
-        for idx in range(1, len(ranked_list) + 1):
-            partial_list = ranked_list[:idx]
-            intersection = list(set(target_list) & set(partial_list))
-            r.append(1.0 * len(intersection) / len(target_list))
-            p.append(1.0 * len(intersection) / len(partial_list))
-
-        score = auc(r, p)
-        return p, r, score
-
     def _flip_labels(labels: NDArray[int]) -> Tuple[NDArray[int], Dict]:
         num_data_indices = int(perc_flip_labels * len(labels))
         p = np.random.permutation(len(labels))[:num_data_indices]

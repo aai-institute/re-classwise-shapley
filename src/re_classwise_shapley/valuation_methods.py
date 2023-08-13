@@ -16,7 +16,7 @@ from pydvl.value import (
 )
 from pydvl.value.semivalues import SemiValueMode, compute_semivalues
 
-from csshapley22.log import setup_logger
+from re_classwise_shapley.log import setup_logger
 
 logger = setup_logger(__name__)
 

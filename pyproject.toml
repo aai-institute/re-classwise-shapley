@@ -1,20 +1,20 @@
 [tool.poetry]
-name = "csshapley22"
+name = "re_classwise_shapley"
 version = "0.1.0"
-description = ""
-authors = ["Anonymous"]
+description = "Reproduction of the paper 'CS-Shapley: Class-wise Shapley Values for Data Valuation in Classification'"
+authors = ["Markus Semmler"]
 license = "LGPL-3.0"
 readme = "README.md"
-packages = [{include = "csshapley22", from = "src"}]
+packages = [{ include = "re_classwise_shapley", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "~3.10"
 numpy = "^1.24.2"
 pandas = "^1.5.3"
-scikit-learn = "^1.2.1"
+scikit-learn = "^1.3.0"
 matplotlib = "^3.6.3"
 seaborn = "^0.12.2"
-dvc = "^2.58.1"
+dvc = "^3.15.2"
 tqdm = "^4.64.1"
 torch = "^2.0.0"
 torchvision = "^0.15.1"

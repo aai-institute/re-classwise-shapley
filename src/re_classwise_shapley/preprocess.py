@@ -6,16 +6,15 @@ from typing import Dict
 import numpy as np
 from pydvl.utils import Dataset
 
-from csshapley22.data.config import Config
-from csshapley22.dataset import subsample
-from csshapley22.log import setup_logger
-from csshapley22.types import (
+from re_classwise_shapley.data.util import stratified_sampling
+from re_classwise_shapley.log import setup_logger
+from re_classwise_shapley.model import instantiate_model
+from re_classwise_shapley.types import (
     ModelGeneratorFactory,
     ValTestSetFactory,
     ValuationMethodsFactory,
 )
-from csshapley22.utils import instantiate_model
-from csshapley22.valuation_methods import compute_values
+from re_classwise_shapley.valuation_methods import compute_values
 
 logger = setup_logger()
 
@@ -78,7 +77,7 @@ def parse_models_config(models_config: Dict[str, Dict]) -> ModelGeneratorFactory
 
 def _encode_and_pack_into_datasets(x, y, train_size, val_size, test_size, stratified):
     seed = int(os.getpid() + time.time()) % (2**31 - 1)
-    (x_train, y_train), (x_dev, y_dev), (x_test, y_test) = subsample(
+    (x_train, y_train), (x_dev, y_dev), (x_test, y_test) = stratified_sampling(
         x, y, train_size, val_size, test_size, stratified=stratified, seed=seed
     )
     perm_train = np.random.permutation(len(x_train))

@@ -1,7 +1,5 @@
 import logging
 import math as m
-import os
-import shutil
 
 from pydvl.utils import ClasswiseScorer, ParallelConfig, Utility
 from pydvl.value import (
@@ -17,12 +15,17 @@ from pydvl.value import (
 from pydvl.value.semivalues import SemiValueMode, compute_semivalues
 
 from re_classwise_shapley.log import setup_logger
+from re_classwise_shapley.types import Seed
 
 logger = setup_logger(__name__)
 
 
 def compute_values(
-    utility: Utility, valuation_method: str, **kwargs
+    utility: Utility,
+    valuation_method: str,
+    *,
+    seed: Seed = None,
+    **kwargs,
 ) -> ValuationResult:
     progress = kwargs.get("progress", False)
     tmp_dir = kwargs["temp_dir"]
@@ -86,11 +89,3 @@ def compute_values(
 
     logger.info(f"Values: {values.values}")
     return values
-
-
-def clear_folder(path: str):
-    for root, dirs, files in os.walk(path):
-        for f in files:
-            os.unlink(os.path.join(root, f))
-        for d in dirs:
-            shutil.rmtree(os.path.join(root, d))

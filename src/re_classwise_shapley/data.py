@@ -1,17 +1,40 @@
-import glob
-import json
-import os
-import shutil
-from pathlib import Path
-from typing import Tuple
+from typing import Dict, Tuple
 
 import numpy as np
 from numpy.typing import NDArray
+from pydvl.utils import Dataset
 
-from re_classwise_shapley.log import setup_logger
-from re_classwise_shapley.types import RawDataset, Seed
+from re_classwise_shapley.config import Config
+from re_classwise_shapley.io import load_dataset
+from re_classwise_shapley.types import Seed
 
-logger = setup_logger(__name__)
+
+def fetch_and_sample_val_test_dataset(
+    dataset_name: str, split_info: Dict, seed: Seed = None
+) -> Tuple[Dataset, Dataset]:
+    """
+    Fetches the dataset and samples the validation and test set.
+    :param dataset_name: Name of the dataset.
+    :param split_info: Dictionary containing the split information for train, val and
+        test set.
+    :param seed: Seed to use for permutation and sampling.
+    :return: Tuple containing the validation and test set.
+    """
+    rng = np.random.default_rng(seed)
+    val_size = split_info["val_size"]
+    train_size = split_info["train_size"]
+    test_size = split_info["test_size"]
+
+    preprocessed_folder = Config.PREPROCESSED_PATH / dataset_name
+    x, y, _ = load_dataset(preprocessed_folder)
+    p = rng.permutation(len(x))
+    x, y = x[p], y[p]
+    set_train, set_val, set_test = stratified_sampling(
+        x, y, (train_size, val_size, test_size), seed=seed.spawn(1)[0]
+    )
+    validation_set = Dataset(*set_train, *set_val)
+    test_set = Dataset(*set_train, *set_test)
+    return validation_set, test_set
 
 
 def stratified_sampling(
@@ -66,50 +89,3 @@ def stratified_sampling(
         for lst in data
     ]
     return tuple(data)
-
-
-def store_dataset(dataset: RawDataset, output_folder: Path):
-    """
-    Stores a dataset on disk.
-    :param dataset: Tuple of x, y and additional info.
-    :param output_folder: Path to the folder where the dataset should be stored.
-    """
-
-    try:
-        x, y, addition_info = dataset
-        logger.info(f"Storing dataset in folder '{output_folder}'.")
-        os.makedirs(str(output_folder))
-        np.save(str(output_folder / "x.npy"), x)
-        np.save(str(output_folder / "y.npy"), y)
-
-        for file_name, content in addition_info.items():
-            with open(str(output_folder / file_name), "w") as file:
-                json.dump(
-                    content,
-                    file,
-                    sort_keys=True,
-                    indent=4,
-                )
-
-    except KeyboardInterrupt as e:
-        logger.info(f"Removing folder '{output_folder}' due to keyboard interrupt.")
-        shutil.rmtree(str(output_folder), ignore_errors=True)
-        raise e
-
-
-def load_dataset(input_folder: Path) -> RawDataset:
-    """
-    Loads a dataset from disk.
-    :param input_folder: Path to the folder containing the dataset.
-    :return: Tuple of x, y and additional info.
-    """
-    x = np.load(str(input_folder / "x.npy"))
-    y = np.load(str(input_folder / "y.npy"), allow_pickle=True)
-
-    additional_info = {}
-    for file_path in glob.glob(str(input_folder) + "/*.json"):
-        with open(file_path, "r") as file:
-            file_name = os.path.basename(file_path)
-            additional_info[file_name] = json.load(file)
-
-    return x, y, additional_info

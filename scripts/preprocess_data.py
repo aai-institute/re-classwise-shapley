@@ -7,10 +7,10 @@ from dvc.api import params_show
 from sklearn import preprocessing
 
 from re_classwise_shapley.config import Config
-from re_classwise_shapley.data.filter import FilterRegistry
-from re_classwise_shapley.data.preprocess import PreprocessorRegistry
-from re_classwise_shapley.data.util import load_dataset, store_dataset
+from re_classwise_shapley.filter import FilterRegistry
+from re_classwise_shapley.io import load_dataset, store_dataset
 from re_classwise_shapley.log import setup_logger
+from re_classwise_shapley.preprocess import PreprocessorRegistry
 from re_classwise_shapley.types import RawDataset
 
 logger = setup_logger()

@@ -1,13 +1,22 @@
-from typing import Tuple
+from typing import Dict, Tuple
 
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
-from pydvl.utils import Utility, maybe_progress
+from pydvl.utils import Scorer, SupervisedModel, Utility, maybe_progress
 from pydvl.value.result import ValuationResult
 from sklearn.metrics import auc
 
-__all__ = ["pr_curve_ranking", "weighted_reciprocal_diff_average"]
+from re_classwise_shapley.log import setup_logger
+
+__all__ = [
+    "pr_curve_ranking",
+    "weighted_accuracy_drop",
+    "weighted_reciprocal_diff_average",
+]
+
+
+logger = setup_logger(__name__)
 
 
 def pr_curve_ranking(
@@ -28,6 +37,21 @@ def pr_curve_ranking(
         p[idx] = float(len(intersection) / len(partial_list))
 
     return r, p, auc(r, p)
+
+
+def roc_auc_pr_recall(
+    test_utility: Utility, values: ValuationResult, info: Dict
+) -> Tuple[float, pd.Series]:
+    ranked_list = list(np.argsort(values))
+    ranked_list = test_utility.data.indices[ranked_list]
+    recall, precision, score = pr_curve_ranking(info["idx"], ranked_list)
+    logger.debug("Computing precision-recall curve on separate test set..")
+    graph = pd.Series(precision, index=recall)
+    graph = graph[~graph.index.duplicated(keep="first")]
+    graph = graph.sort_index(ascending=True)
+    graph.index.name = "recall"
+    graph.name = "precision"
+    return score, graph
 
 
 def weighted_reciprocal_diff_average(
@@ -67,3 +91,28 @@ def weighted_reciprocal_diff_average(
     weighted_diff_scores = diff_scores / (np.arange(1, len(diff_scores) + 1))
     avg = np.sum(weighted_diff_scores)
     return float(avg), scores
+
+
+def weighted_accuracy_drop(
+    u: Utility,
+    values: ValuationResult,
+    info: Dict,
+    *,
+    progress: bool = False,
+    highest_first: bool = True,
+    transfer_model: SupervisedModel = None,
+) -> Tuple[float, pd.Series]:
+    u_eval = Utility(
+        data=u.data,
+        model=transfer_model if transfer_model is not None else u.model,
+        scorer=Scorer("accuracy", default=0),
+    )
+    wad, graph = weighted_reciprocal_diff_average(
+        u=u_eval,
+        values=values,
+        progress=progress,
+        highest_first=highest_first,
+    )
+    graph.index.name = "num_removed"
+    graph.name = "accuracy"
+    return float(wad), graph

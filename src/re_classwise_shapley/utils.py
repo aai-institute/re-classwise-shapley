@@ -1,26 +1,30 @@
 import os
 import random
+import shutil
+from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import torch
-
-__all__ = [
-    "set_random_seed",
-    "convert_values_to_dataframe",
-]
-
-from pydvl.value import ValuationResult
+from numpy.random import SeedSequence
 
 from re_classwise_shapley.log import setup_logger
 
 logger = setup_logger()
 
+__all__ = [
+    "init_random_seed",
+    "clear_folder",
+]
 
-def set_random_seed(seed: int) -> None:
+
+def init_random_seed(seed: int) -> SeedSequence:
     """Taken verbatim from:
     https://koustuvsinha.com//practices_for_reproducibility/
     """
+    seed_sequence = SeedSequence(seed)
+    rng = np.random.default_rng(seed_sequence)
+    seed = rng.integers(2**31 - 1, size=1)[0]
+
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -31,12 +35,16 @@ def set_random_seed(seed: int) -> None:
         torch.backends.cudnn.benchmark = False
     os.environ["PYTHONHASHSEED"] = str(seed)
 
+    return seed_sequence.spawn(1)[0]
 
-def convert_values_to_dataframe(values: ValuationResult) -> pd.DataFrame:
-    df = (
-        values.to_dataframe(column="value")
-        .drop(columns=["value_stderr"])
-        .T.reset_index(drop=True)
-    )
-    df = df[sorted(df.columns)]
-    return df
+
+def clear_folder(path: Path):
+    """
+    Clear the folder at the given path.
+    :param path: Path to the folder to clear.
+    """
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            os.unlink(os.path.join(root, f))
+        for d in dirs:
+            shutil.rmtree(os.path.join(root, d))

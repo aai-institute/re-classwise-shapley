@@ -134,3 +134,5 @@ dmypy.json
 # Jetbrains
 .idea
 /outbut_bak.zip
+
+output/**

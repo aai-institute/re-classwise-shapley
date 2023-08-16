@@ -21,17 +21,25 @@ from re_classwise_shapley.plotting import (
 
 logger = setup_logger()
 
-setup_plotting()
+COLOR_ENCODING = {
+    "random": "black",
+    "beta_shapley": "blue",
+    "loo": "orange",
+    "tmc_shapley": "green",
+    "classwise_shapley": "red",
+    "classwise_shapley_add_idx": "purple",
+}
 
 
 @click.command()
 @click.option("--experiment-name", type=str, required=True)
 @click.option("--model-name", type=str, required=True)
 @click.option("--sub-folder", type=str, required=False)
-def render_experiment(
+def render_plots(
     experiment_name: str, model_name: str, sub_folder: Optional[str] = None
 ):
     logger.info("Starting plotting of data valuation experiment")
+    setup_plotting()
 
     params = params_show()
     logger.info(f"Using parameters:\n{params}")
@@ -91,14 +99,6 @@ def render_experiment(
         for idx, dataset_name in enumerate(dataset_names):
             cax = ax[idx]
             dataset_results = results_per_dataset[dataset_name]
-            color_pos = {
-                "random": "black",
-                "beta_shapley": "blue",
-                "loo": "orange",
-                "tmc_shapley": "green",
-                "classwise_shapley": "red",
-                "classwise_shapley_add_idx": "purple",
-            }
             d = {}
             for valuation_method_name in valuation_method_names:
                 d[valuation_method_name] = (
@@ -110,7 +110,7 @@ def render_experiment(
                         axis=1,
                     ).sort_index(),
                     {
-                        "color": color_pos[valuation_method_name],
+                        "color": COLOR_ENCODING[valuation_method_name],
                         "plot_single": metric_name == "density",
                     },
                 )
@@ -131,4 +131,4 @@ def render_experiment(
 
 
 if __name__ == "__main__":
-    render_experiment()
+    render_plots()

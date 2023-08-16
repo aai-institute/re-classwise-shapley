@@ -1,0 +1,108 @@
+schema: '2.0'
+stages:
+  cs-shapley-fetch-data@diabetes:
+    cmd: python -m scripts.fetch_data --dataset-name diabetes
+    deps:
+    - path: scripts/fetch_data.py
+      hash: md5
+      md5: bc5cdaeb2c6e568072d6764288027037
+      size: 1706
+    outs:
+    - path: output/raw/diabetes
+      hash: md5
+      md5: 3e23427351eb2041c4ed0cf74f615aa9.dir
+      size: 55033
+      nfiles: 3
+  cs-shapley-preprocess-data@diabetes:
+    cmd: python -m scripts.preprocess_data --dataset-name diabetes
+    deps:
+    - path: output/raw/diabetes
+      hash: md5
+      md5: 3e23427351eb2041c4ed0cf74f615aa9.dir
+      size: 55033
+      nfiles: 3
+    - path: scripts/preprocess_data.py
+      hash: md5
+      md5: 58ee0b8e30b8ef059f83110a37b30614
+      size: 3103
+    outs:
+    - path: output/preprocessed/diabetes
+      hash: md5
+      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
+      size: 59554
+      nfiles: 5
+  cs-shapley-wad-drop-experiment@diabetes-logistic_regression:
+    cmd: python -m scripts.run_experiment_wad_drop --dataset-name diabetes --model-name
+      logistic_regression
+    deps:
+    - path: output/preprocessed/diabetes
+      hash: md5
+      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
+      size: 59554
+      nfiles: 5
+    - path: scripts/run_experiment_wad_drop.py
+      hash: md5
+      md5: 2ef19fcf43dc4b79c92bc5b8e0c9c6c5
+      size: 2981
+    outs:
+    - path: output/results/wad_drop/logistic_regression/diabetes
+      hash: md5
+      md5: a15f44a6b3ae71a77ad4d641a5a7f709.dir
+      size: 248390
+      nfiles: 18
+  cs-shapley-wad-drop-plots@logistic_regression:
+    cmd: python -m scripts.render_plots --experiment-name wad_drop --model-name logistic_regression
+    deps:
+    - path: output/results/wad_drop/logistic_regression
+      hash: md5
+      md5: e3e817cbcd94852069454965abf430e1.dir
+      size: 248390
+      nfiles: 18
+    - path: scripts/render_plots.py
+      hash: md5
+      md5: d56e8d93d22fb83960a26cb3c9bf74c9
+      size: 4309
+    outs:
+    - path: output/plots/wad_drop/logistic_regression
+      hash: md5
+      md5: 7c7db1185ecb565cdd8867915724a69d.dir
+      size: 107446
+      nfiles: 4
+  cs-shapley-noise-removal-experiment@diabetes-logistic_regression:
+    cmd: python -m scripts.run_experiment_noise_removal --dataset-name diabetes --model-name
+      logistic_regression
+    deps:
+    - path: output/preprocessed/diabetes
+      hash: md5
+      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
+      size: 59554
+      nfiles: 5
+    - path: scripts/run_experiment_noise_removal.py
+      hash: md5
+      md5: 0942927b5ee87aa100d1fff1fd839c3f
+      size: 1370
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes
+      hash: md5
+      md5: 2266f1f1bef7d5e718a319ea62473676.dir
+      size: 232942
+      nfiles: 15
+  cs-shapley-noise-removal-plots@logistic_regression:
+    cmd: python -m scripts.render_plots --experiment-name noise_removal --model-name
+      logistic_regression
+    deps:
+    - path: output/results/noise_removal/logistic_regression
+      hash: md5
+      md5: 51bc3e8efd4f84148bb221590747591b.dir
+      size: 232942
+      nfiles: 15
+    - path: scripts/render_plots.py
+      hash: md5
+      md5: d56e8d93d22fb83960a26cb3c9bf74c9
+      size: 4309
+    outs:
+    - path: output/plots/noise_removal/logistic_regression
+      hash: md5
+      md5: a51ea2dce7bcaa75a68fa8a6b5b90643.dir
+      size: 43320
+      nfiles: 2

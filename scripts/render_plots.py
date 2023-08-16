@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from typing import Optional
 
 import click
 import dataframe_image as dfi
@@ -10,6 +11,7 @@ import pandas as pd
 from dvc.api import params_show
 
 from re_classwise_shapley.config import Config
+from re_classwise_shapley.experiments import ExperimentResult
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.plotting import (
     plot_curve,
@@ -23,139 +25,110 @@ setup_plotting()
 
 
 @click.command()
-@click.argument("experiment-name", type=str, nargs=1)
-def render_plots(experiment_name: str):
+@click.option("--experiment-name", type=str, required=True)
+@click.option("--model-name", type=str, required=True)
+@click.option("--sub-folder", type=str, required=False)
+def render_experiment(
+    experiment_name: str, model_name: str, sub_folder: Optional[str] = None
+):
     logger.info("Starting plotting of data valuation experiment")
 
     params = params_show()
     logger.info(f"Using parameters:\n{params}")
-    active_datasets = params["active"]["datasets"]
-    plot_ax_index = {col: idx for idx, col in enumerate(active_datasets)}
-    figsize = (20, 6)
+    dataset_names = params["active"]["datasets"]
 
-    experiment_input_dir = Config.RESULT_PATH / experiment_name / active_datasets[0]
-    model_input_dir = experiment_input_dir / "logistic_regression"
-    metrics, valuation_results, curves = load_results(
-        model_input_dir,
-        load_scores=True,
-    )
-    plt_axes = {}
-    all_keys = curves.iloc[0, 0].keys()
+    experiment_path = Config.RESULT_PATH / experiment_name / model_name
+    output_dir = Config.PLOT_PATH / experiment_name / model_name
+    os.makedirs(output_dir, exist_ok=True)
 
-    for key in all_keys:
-        fig, ax = plt.subplots(2, 5, figsize=figsize)
-        ax = np.array(ax).flatten()
-        plt_axes[key] = (fig, ax)
+    if sub_folder is not None:
+        experiment_path /= sub_folder
+        output_dir /= sub_folder
 
-    for method_name in valuation_results.columns:
-        fig, ax = plt.subplots(2, 5, figsize=figsize)
-        ax = np.array(ax).flatten()
-        plt_axes[f"histogram_{method_name}"] = (fig, ax)
+    results_per_dataset = {}
+    for dataset_name in dataset_names:
+        dataset_path = experiment_path / dataset_name
+        n_repetitions = len(
+            [f for f in os.listdir(dataset_path) if f.startswith("repetition")]
+        )
 
-    for model_name in params["models"].keys():
-        plots_output_dir = Config.PLOT_PATH / experiment_name / model_name
-        key_metrics = {key: {} for key in all_keys}
-
-        for dataset_name in params["datasets"].keys():
-            dataset_index = plot_ax_index[dataset_name]
-            experiment_input_dir = Config.RESULT_PATH / experiment_name / dataset_name
-            model_input_dir = experiment_input_dir / model_name
-            os.makedirs(plots_output_dir, exist_ok=True)
-            dataset_letter = chr(ord("`") + dataset_index + 1)
-            metrics, valuation_results, curves = load_results(
-                model_input_dir,
-                load_scores=True,
+        results = []
+        for repetition in range(n_repetitions):
+            experiment_result = ExperimentResult.load(
+                experiment_path / dataset_name / f"{repetition=}"
             )
+            results.append(experiment_result)
 
-            for key in all_keys:
-                key_metrics[key][dataset_name] = metrics.applymap(
-                    lambda v: v[key]
-                ).mean(axis=0)
+        results_per_dataset[dataset_name] = results
 
-            if experiment_name == "wad_drop":
-                if not isinstance(curves.iloc[0, 0], dict):
-                    curves = curves.applymap(lambda s: {"highest_wad_drop": s})
+    num_datasets = len(dataset_names)
+    valuation_method_names = results_per_dataset[dataset_names[0]][
+        0
+    ].valuation_method_names
+    metric_names = results_per_dataset[dataset_names[0]][0].metric_names
+    h = 2
+    w = int(num_datasets / 2) + 1
 
-                for key in curves.iloc[0, 0].keys():
-                    fig, ax = plt_axes[key]
-                    plot_curve(
-                        curves.applymap(lambda s: [s[key]]).applymap(lambda x: x[0]),
-                        title=f"({dataset_letter}) {dataset_name}",
-                        ax=ax[dataset_index],
-                    )
-                    fig.suptitle(
-                        f"Experiment 1: Weighted-accuracy-drop (WAD) usign {key} for model '{model_name}'"
-                    )
+    for metric_name in metric_names:
+        mean_metric = pd.DataFrame(index=dataset_names, columns=valuation_method_names)
 
-                for method_name in valuation_results.columns:
-                    fig, ax = plt_axes[f"histogram_{method_name}"]
-                    plot_values_histogram(
-                        valuation_results.loc[:, method_name],
-                        title=f"({dataset_letter}) {dataset_name}",
-                        ax=ax[dataset_index],
-                    )
-                    fig.suptitle(
-                        f"Experiment 1: Histogram for model '{model_name}' and method '{method_name}'"
-                    )
+        for dataset_name in dataset_names:
+            for valuation_method_name in valuation_method_names:
+                m = np.mean(
+                    [
+                        result.metric[valuation_method_name][metric_name]
+                        for result in results_per_dataset[dataset_name]
+                    ]
+                )
+                mean_metric.loc[dataset_name, valuation_method_name] = m
 
-        key_metrics = {
-            key: pd.DataFrame(key_metrics[key]).T for key in key_metrics.keys()
-        }
-        for key in key_metrics.keys():
-            df = key_metrics[key]
-            df_styled = df.style.highlight_max(color="lightgreen", axis=1)
-            dfi.export(df_styled, plots_output_dir / f"metrics_{key}.png")
+        df_styled = mean_metric.style.highlight_max(color="lightgreen", axis=1)
+        dfi.export(df_styled, output_dir / f"metrics_{metric_name}.png")
 
-        for key, (fig, ax) in plt_axes.items():
-            fig.subplots_adjust(hspace=0.3)
-            fig.savefig(plots_output_dir / f"{key}.png")
+        fig, ax = plt.subplots(h, w, figsize=(20, 6))
+        ax = np.array(ax).flatten()
 
-        logger.info("Finished plotting.")
+        for idx, dataset_name in enumerate(dataset_names):
+            cax = ax[idx]
+            dataset_results = results_per_dataset[dataset_name]
+            color_pos = {
+                "random": "black",
+                "beta_shapley": "blue",
+                "loo": "orange",
+                "tmc_shapley": "green",
+                "classwise_shapley": "red",
+                "classwise_shapley_add_idx": "purple",
+            }
+            d = {}
+            for valuation_method_name in valuation_method_names:
+                d[valuation_method_name] = (
+                    pd.concat(
+                        [
+                            result.curves[valuation_method_name][metric_name]
+                            for result in dataset_results
+                        ],
+                        axis=1,
+                    ).sort_index(),
+                    {
+                        "color": color_pos[valuation_method_name],
+                        "plot_single": metric_name == "density",
+                    },
+                )
 
+            plot_curve(d, title=dataset_name, ax=cax)
+            handles, labels = cax.get_legend_handles_labels()
 
-def load_results(
-    model_input_dir: Path, *, sub_folder: str = None, load_scores: bool = False
-):
-    metrics = None
-    valuation_results = None
-    curves = None
+        ax[-1].grid(False)
+        ax[-1].axis("off")
+        ax[-1].legend(handles, labels, loc="center", fontsize=16)
 
-    for repetition in os.listdir(model_input_dir):
-        repetition_input_dir = model_input_dir / repetition
-        if sub_folder is not None:
-            repetition_input_dir = repetition_input_dir / sub_folder
-
-        it_metrics = pd.read_csv(repetition_input_dir / "metric.csv").iloc[:, 1:]
-        it_valuation_results = pd.read_pickle(
-            repetition_input_dir / "valuation_results.pkl"
+        fig.suptitle(
+            f"Experiment '{experiment_name}' with metric '{metric_name}' on model"
+            f" '{model_name}'."
         )
-
-        metrics = (
-            it_metrics if metrics is None else pd.concat((metrics, it_metrics), axis=0)
-        )
-        valuation_results = (
-            it_valuation_results
-            if valuation_results is None
-            else pd.concat((valuation_results, it_valuation_results), axis=0)
-        )
-
-        if load_scores:
-            it_curves = pd.read_pickle(repetition_input_dir / "curves.pkl")
-            curves = (
-                it_curves if curves is None else pd.concat((curves, it_curves), axis=0)
-            )
-    metrics = metrics.reset_index(drop=True)
-    valuation_results = valuation_results.reset_index(drop=True).applymap(
-        lambda x: x.values
-    )
-    metrics = metrics.applymap(lambda v: json.loads(v.replace("'", '"')))
-
-    if load_scores:
-        curves = curves.reset_index(drop=True)
-        return metrics, valuation_results, curves
-    else:
-        return metrics, valuation_results
+        fig.subplots_adjust(hspace=0.3)
+        fig.savefig(output_dir / f"curve_{metric_name}.png")
 
 
 if __name__ == "__main__":
-    render_plots()
+    render_experiment()

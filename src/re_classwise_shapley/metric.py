@@ -30,14 +30,14 @@ def pr_curve_ranking(
     :param ranked_list: The list of ranked indices.
     :return: Tuple of precision, recall and AUC.
     """
-    p, r = np.empty(len(ranked_list)), np.empty(len(ranked_list))
+    p, r = np.zeros(len(ranked_list) + 1), np.zeros(len(ranked_list) + 1)
     for idx in range(len(ranked_list)):
         partial_list = ranked_list[: idx + 1]
         intersection = list(set(target_list) & set(partial_list))
-        r[idx] = float(len(intersection) / len(target_list))
-        p[idx] = float(len(intersection) / len(partial_list))
+        p[idx + 1] = float(len(intersection) / len(partial_list))
+        r[idx + 1] = float(len(intersection) / len(target_list))
 
-    return r, p, auc(r, p)
+    return p, r, auc(r, p)
 
 
 def roc_auc_pr_recall(
@@ -45,7 +45,7 @@ def roc_auc_pr_recall(
 ) -> Tuple[float, pd.Series]:
     ranked_list = list(np.argsort(values))
     ranked_list = test_utility.data.indices[ranked_list]
-    recall, precision, score = pr_curve_ranking(info["idx"], ranked_list)
+    precision, recall, score = pr_curve_ranking(info["idx"], ranked_list)
     logger.debug("Computing precision-recall curve on separate test set..")
     graph = pd.Series(precision, index=recall)
     graph = graph[~graph.index.duplicated(keep="first")]
@@ -92,21 +92,6 @@ def weighted_reciprocal_diff_average(
     weighted_diff_scores = diff_scores / (np.arange(1, len(diff_scores) + 1))
     avg = np.sum(weighted_diff_scores)
     return float(avg), scores
-
-
-def valuation_result_density(
-    u: Utility,
-    values: ValuationResult,
-    info: Dict,
-    *,
-    bins: int = 100,
-):
-    min_x = np.min(values.values)
-    max_x = np.max(values.values)
-    x = np.linspace(min_x, max_x, bins)
-    kernel = gaussian_kde(values.values)
-    p = kernel(x)
-    return float(np.mean(x)), pd.Series(p, index=x)
 
 
 def weighted_accuracy_drop(

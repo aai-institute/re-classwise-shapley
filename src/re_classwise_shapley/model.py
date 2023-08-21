@@ -32,7 +32,7 @@ def instantiate_model(
     elif model_name == "knn":
         model = make_pipeline(
             StandardScaler(),
-            KNeighborsClassifier(**model_kwargs, random_state=random_state),
+            KNeighborsClassifier(**model_kwargs),
         )
     elif model_name == "svm":
         model = make_pipeline(

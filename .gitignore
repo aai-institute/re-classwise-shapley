@@ -137,3 +137,4 @@ dmypy.json
 
 output/raw
 output/preprocessed
+output/results

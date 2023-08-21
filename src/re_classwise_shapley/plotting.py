@@ -33,7 +33,7 @@ def shaded_mean_normal_confidence_interval(
     assert len(data.shape) == 2
     mean = data.mean(axis=1).sort_index()
     std = data.std(axis=1).sort_index()
-    standard_error = std / np.sqrt(data.shape[0])
+    standard_error = std / np.sqrt(data.shape[1])
     upper_bound = mean + 1.96 * standard_error
     lower_bound = mean - 1.96 * standard_error
 

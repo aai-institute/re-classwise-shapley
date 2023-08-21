@@ -43,10 +43,10 @@ def compute_values(
         values = naive_loo(utility, progress=progress)
 
     elif valuation_method == "classwise_shapley":
-        utility.scorer = ClasswiseScorer("accuracy", default=0.0)
+        utility.scorer = ClasswiseScorer("f1", default=0.0)
         values = compute_classwise_shapley_values(
             utility,
-            done=HistoryDeviation(n_steps=kwargs["n_updates"], rtol=0.05),
+            done=MaxUpdates(n_updates=int(kwargs["n_updates"])),
             truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),
             normalize_values=kwargs["normalize_values"],
             n_resample_complement_sets=kwargs["n_resample_complement_sets"],

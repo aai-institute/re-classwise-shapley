@@ -1,3 +1,4 @@
+import os
 from functools import partial
 from typing import Optional
 
@@ -6,7 +7,7 @@ from dvc.api import params_show
 
 from re_classwise_shapley.config import Config
 from re_classwise_shapley.experiments import run_and_store_experiment
-from re_classwise_shapley.metric import weighted_accuracy_drop
+from re_classwise_shapley.metric import weighted_metric_drop
 from re_classwise_shapley.model import instantiate_model
 from re_classwise_shapley.types import Seed
 
@@ -58,15 +59,23 @@ def run_experiment_wad_drop(
 
         return {
             "metrics": {  # type: ignore
-                "highest_wad_drop": partial(
-                    weighted_accuracy_drop,
+                "highest_accuracy_drop": partial(
+                    weighted_metric_drop,
                     highest_first=True,
                     transfer_model=transfer_model_high,
+                    metric="accuracy",
                 ),
-                "lowest_wad_drop": partial(
-                    weighted_accuracy_drop,
+                "lowest_accuracy_drop": partial(
+                    weighted_metric_drop,
                     highest_first=False,
                     transfer_model=transfer_model_low,
+                    metric="accuracy",
+                ),
+                "highest_f1_drop": partial(
+                    weighted_metric_drop,
+                    highest_first=True,
+                    transfer_model=transfer_model_high,
+                    metric="f1",
                 ),
             }
         }
@@ -77,6 +86,8 @@ def run_experiment_wad_drop(
         output_dir /= transfer_model_name
 
     output_dir /= dataset_name
+    os.makedirs(output_dir, exist_ok=True)
+
     run_and_store_experiment(
         experiment_name,
         dataset_name=dataset_name,

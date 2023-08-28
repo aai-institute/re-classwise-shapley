@@ -1,2 +1,2 @@
-metrics,random,loo,classwise_shapley,classwise_shapley_add_idx,beta_shapley,tmc_shapley
-precision_recall,0.1986486753541685,0.20578392596238265,0.7981905448536527,0.8245885958739774,0.7857134956693335,0.8301136274876375
+metrics,random,loo
+precision_recall,0.24122729817096095,0.3121225872954606

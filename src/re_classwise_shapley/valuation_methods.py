@@ -1,9 +1,9 @@
 import logging
 import math as m
 
-from pydvl.utils import ClasswiseScorer, ParallelConfig, Utility
+from pydvl.utils import ParallelConfig, Utility
 from pydvl.value import (
-    HistoryDeviation,
+    ClasswiseScorer,
     MaxUpdates,
     RelativeTruncation,
     ShapleyMode,

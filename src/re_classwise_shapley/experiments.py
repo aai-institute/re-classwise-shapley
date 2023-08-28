@@ -1,5 +1,6 @@
 import os
 import pickle
+import shutil
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
@@ -207,6 +208,8 @@ def run_and_store_experiment(
         active_valuation_methods=params["active"]["valuation_methods"],
         global_kwargs=params["settings"]["parallel"],
     )
+    os.makedirs(output_dir, exist_ok=True)
+    shutil.copyfile("params.yaml", output_dir / "params.yaml")
 
     for repetition in range(n_repetitions):
         logger.info(Config.SINGLE_BREAK)
@@ -233,7 +236,6 @@ def run_and_store_experiment(
                 seed=sub_seeds[3],
             )
             result.store(repetition_output_dir)
-
         except Exception as e:
             clear_folder(repetition_output_dir)
             logger.error(

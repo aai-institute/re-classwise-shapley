@@ -1,6 +1,6 @@
 settings:
   evaluation:
-    n_repetitions: 5
+    n_repetitions: 10
   random:
     seed: 42
 

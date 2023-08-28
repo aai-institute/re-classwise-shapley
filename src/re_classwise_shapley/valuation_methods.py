@@ -28,13 +28,11 @@ def compute_values(
     **kwargs,
 ) -> ValuationResult:
     progress = kwargs.get("progress", False)
-    tmp_dir = kwargs["temp_dir"]
     n_jobs = kwargs["n_jobs"]
     parallel_config = ParallelConfig(
         backend=kwargs["backend"],
         n_cpus_local=n_jobs,
         logging_level=logging.INFO,
-        _temp_dir=tmp_dir,
     )
     if valuation_method == "random":
         values = ValuationResult.from_random(size=len(utility.data))

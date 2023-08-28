@@ -30,12 +30,12 @@ def pr_curve_ranking(
     :param ranked_list: The list of ranked indices.
     :return: Tuple of precision, recall and AUC.
     """
-    p, r = np.zeros(len(ranked_list) + 1), np.zeros(len(ranked_list) + 1)
+    p, r = np.zeros(len(ranked_list)), np.zeros(len(ranked_list))
     for idx in range(len(ranked_list)):
         partial_list = ranked_list[: idx + 1]
         intersection = list(set(target_list) & set(partial_list))
-        p[idx + 1] = float(len(intersection) / len(partial_list))
-        r[idx + 1] = float(len(intersection) / len(target_list))
+        p[idx] = float(len(intersection) / len(partial_list))
+        r[idx] = float(len(intersection) / len(target_list))
 
     return p, r, auc(r, p)
 

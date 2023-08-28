@@ -1,16 +1,33 @@
 settings:
   evaluation:
     n_repetitions: 5
+  random:
+    seed: 42
 
   parallel:
     n_jobs: 60
     backend: joblib
-    temp_dir: /raid/tmp/ray
 
 active:
   models: [ "logistic_regression" ]
-  datasets: [ "cifar10", "click", "covertype", "cpu", "diabetes", "fmnist_binary", "mnist_binary", "mnist_multi", "phoneme" ]
-  valuation_methods: [ "random", "loo", "classwise_shapley", "classwise_shapley_add_idx", "beta_shapley", "tmc_shapley" ]
+  datasets: [
+    "cifar10",
+    "click",
+    "covertype",
+    "cpu", "diabetes",
+    "fmnist_binary",
+    "mnist_binary",
+    "mnist_multi",
+    "phoneme"
+  ]
+  valuation_methods: [
+    "random",
+    "loo",
+    "classwise_shapley",
+    "classwise_shapley_add_idx",
+    "beta_shapley",
+    "tmc_shapley"
+  ]
 
 experiments:
   wad_drop:

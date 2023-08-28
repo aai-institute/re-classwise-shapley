@@ -1,4 +1,5 @@
 from functools import partial
+from typing import Optional
 
 import click
 from dvc.api import params_show
@@ -13,11 +14,19 @@ from re_classwise_shapley.types import Seed
 @click.command()
 @click.option("--dataset-name", type=str, required=True)
 @click.option("--model-name", type=str, required=True)
+@click.option("--seed", type=int, required=False)
 def run_experiment_noise_removal(
     dataset_name: str,
     model_name: str,
+    seed: Optional[int] = None,
 ):
     experiment_name = "noise_removal"
+
+    seed = (
+        seed
+        if seed is not None
+        else abs(int(hash(experiment_name + dataset_name + model_name)))
+    )
 
     def kwargs_loader(seed: Seed = None):
         return {
@@ -32,7 +41,7 @@ def run_experiment_noise_removal(
         experiment_name,
         dataset_name=dataset_name,
         model_name=model_name,
-        seed=abs(int(hash(experiment_name + dataset_name + model_name))),
+        seed=seed,
         output_dir=Config.RESULT_PATH / experiment_name / model_name / dataset_name,
         loader_kwargs=kwargs_loader,
         n_repetitions=params["settings"]["evaluation"]["n_repetitions"],

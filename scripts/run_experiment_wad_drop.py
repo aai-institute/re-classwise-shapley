@@ -71,11 +71,11 @@ def run_experiment_wad_drop(
                     transfer_model=transfer_model_low,
                     metric="accuracy",
                 ),
-                "highest_f1_drop": partial(
+                "highest_f1_weighted_drop": partial(
                     weighted_metric_drop,
                     highest_first=True,
                     transfer_model=transfer_model_high,
-                    metric="f1",
+                    metric="f1_weighted",
                 ),
             }
         }

@@ -10,7 +10,7 @@ from pydvl.value import (
     ValuationResult,
     compute_classwise_shapley_values,
     compute_shapley_values,
-    naive_loo,
+    loo,
 )
 from pydvl.value.semivalues import SemiValueMode, compute_semivalues
 
@@ -38,7 +38,7 @@ def compute_values(
         values = ValuationResult.from_random(size=len(utility.data))
 
     elif valuation_method == "loo":
-        values = naive_loo(utility, progress=progress)
+        values = loo(utility, n_jobs=n_jobs, progress=progress)
 
     elif valuation_method == "classwise_shapley":
         utility.scorer = ClasswiseScorer("accuracy", default=0.0)

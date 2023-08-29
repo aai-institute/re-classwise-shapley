@@ -1,13 +1,18 @@
 import os
+import shutil
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional
 
 import click
 import dataframe_image as dfi
 import matplotlib.pyplot as plt
+import mlflow
 import numpy as np
 import pandas as pd
+from dotenv import load_dotenv
 from dvc.api import params_show
+from PIL import Image
 
 from re_classwise_shapley.config import Config
 from re_classwise_shapley.experiments import ExperimentResult
@@ -26,6 +31,28 @@ COLOR_ENCODING = {
 }
 
 
+def get_or_create_mlflow_experiment(experiment_name):
+    experiment = mlflow.get_experiment_by_name(experiment_name)
+    if not experiment:
+        experiment_id = mlflow.create_experiment(
+            experiment_name,
+        )
+    else:
+        experiment_id = experiment.experiment_id
+    return experiment_id
+
+
+def flatten_dict(d, parent_key="", separator="."):
+    items = {}
+    for k, v in d.items():
+        new_key = f"{parent_key}{separator}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.update(flatten_dict(v, new_key, separator=separator))
+        else:
+            items[new_key] = v
+    return items
+
+
 @click.command()
 @click.option("--experiment-name", type=str, required=True)
 @click.option("--model-name", type=str, required=True)
@@ -33,32 +60,44 @@ COLOR_ENCODING = {
 def render_plots(
     experiment_name: str, model_name: str, sub_folder: Optional[str] = None
 ):
+    load_dotenv()
     logger.info("Starting plotting of data valuation experiment")
     setup_plotting()
-
     experiment_path = Config.RESULT_PATH / experiment_name / model_name
-    output_dir = Config.PLOT_PATH / experiment_name / model_name
+    experiment_name = f"{experiment_name}.{model_name}"
+    mlflow.set_tracking_uri("http://localhost:5000")
 
     if sub_folder is not None:
         experiment_path /= sub_folder
-        output_dir /= sub_folder
+        experiment_name += f".{sub_folder}"
 
-    os.makedirs(output_dir, exist_ok=True)
-    results_per_dataset = load_results_per_dataset(experiment_path)
-    plot_metric_table(results_per_dataset, output_dir)
-    plot_metric_curves(
-        results_per_dataset,
-        f"Experiment '{experiment_name}' on model '{model_name}'",
-        output_dir,
-    )
+    tmp_dir = Path("tmp")
+    os.makedirs(tmp_dir, exist_ok=True)
+    experiment_id = get_or_create_mlflow_experiment(experiment_name)
+
+    with mlflow.start_run(
+        experiment_id=experiment_id,
+        run_name=datetime.now().isoformat(),
+    ):
+        params = params_show()
+        params = flatten_dict(params)
+        mlflow.log_params(params)
+
+        results_per_dataset = load_results_per_dataset(experiment_path)
+        plot_metric_table(results_per_dataset, tmp_dir)
+        plot_metric_curves(
+            results_per_dataset,
+            f"Experiment '{experiment_name}' on model '{model_name}'",
+        )
+
+    shutil.rmtree(tmp_dir)
 
 
-def plot_metric_curves(results_per_dataset: Dict, title: str, output_dir: Path):
+def plot_metric_curves(results_per_dataset: Dict, title: str):
     """
     Plot the metric curves for each dataset and valuation method.
     :param results_per_dataset:
     :param title:
-    :param output_dir:
     :return:
     """
     params = params_show()
@@ -104,7 +143,7 @@ def plot_metric_curves(results_per_dataset: Dict, title: str, output_dir: Path):
         ax[-1].legend(handles, labels, loc="center", fontsize=16)
         fig.suptitle(title + f" with metric '{metric_name}'")
         fig.subplots_adjust(hspace=0.3)
-        fig.savefig(output_dir / f"curve_{metric_name}.png")
+        mlflow.log_figure(fig, f"curve_{metric_name}.png")
 
 
 def plot_metric_table(results_per_dataset, output_dir):
@@ -126,9 +165,17 @@ def plot_metric_table(results_per_dataset, output_dir):
                     ]
                 )
                 mean_metric.loc[dataset_name, valuation_method_name] = m
+                mlflow.log_metric(
+                    f"{metric_name}_{dataset_name}_{valuation_method_name}", m
+                )
 
         df_styled = mean_metric.style.highlight_max(color="lightgreen", axis=1)
-        dfi.export(df_styled, output_dir / f"metrics_{metric_name}.png")
+        output_file = str(output_dir / f"metrics_{metric_name}.png")
+        dfi.export(df_styled, output_file)
+        with Image.open(output_file) as im:
+            mlflow.log_image(im, output_file)
+
+        os.remove(output_file)
 
 
 def load_results_per_dataset(experiment_path: Path):

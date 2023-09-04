@@ -30,7 +30,7 @@ def fetch_and_sample_val_test_dataset(
     p = rng.permutation(len(x))
     x, y = x[p], y[p]
     set_train, set_val, set_test = stratified_sampling(
-        x, y, (train_size, val_size, test_size), seed=seed.spawn(1)[0]
+        x, y, (train_size, val_size, test_size), seed=rng
     )
     validation_set = Dataset(*set_train, *set_val)
     test_set = Dataset(*set_train, *set_test)

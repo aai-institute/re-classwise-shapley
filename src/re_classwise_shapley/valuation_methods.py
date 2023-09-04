@@ -4,18 +4,18 @@ import math as m
 from pydvl.utils import ParallelConfig, Utility
 from pydvl.value import (
     ClasswiseScorer,
+    MaxChecks,
     MaxUpdates,
     RelativeTruncation,
     ShapleyMode,
     ValuationResult,
     compute_classwise_shapley_values,
+    compute_loo,
     compute_shapley_values,
-    loo,
 )
 from pydvl.value.semivalues import SemiValueMode, compute_semivalues
 
 from re_classwise_shapley.log import setup_logger
-from re_classwise_shapley.types import Seed
 
 logger = setup_logger(__name__)
 
@@ -24,7 +24,7 @@ def compute_values(
     utility: Utility,
     valuation_method: str,
     *,
-    seed: Seed = None,
+    seed: int = None,
     **kwargs,
 ) -> ValuationResult:
     progress = kwargs.get("progress", False)
@@ -35,10 +35,10 @@ def compute_values(
         logging_level=logging.INFO,
     )
     if valuation_method == "random":
-        values = ValuationResult.from_random(size=len(utility.data))
+        values = ValuationResult.from_random(size=len(utility.data), seed=seed)
 
     elif valuation_method == "loo":
-        values = loo(utility, n_jobs=n_jobs, progress=progress)
+        values = compute_loo(utility, n_jobs=n_jobs, progress=progress)
 
     elif valuation_method == "classwise_shapley":
         utility.scorer = ClasswiseScorer("accuracy", default=0.0)
@@ -47,12 +47,13 @@ def compute_values(
             done=MaxUpdates(n_updates=int(kwargs["n_updates"])),
             truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),
             normalize_values=kwargs["normalize_values"],
-            n_resample_complement_sets=kwargs["n_resample_complement_sets"],
+            done_sample_complements=MaxChecks(kwargs["n_resample_complement_sets"]),
             use_default_scorer_value=kwargs.get("use_default_scorer_value", True),
             min_elements_per_label=kwargs.get("min_elements_per_label", 1),
             n_jobs=n_jobs,
             config=parallel_config,
             progress=progress,
+            seed=seed,
         )
 
     elif valuation_method == "beta_shapley":
@@ -66,6 +67,7 @@ def compute_values(
             n_jobs=n_jobs,
             config=parallel_config,
             progress=progress,
+            seed=seed,
         )
 
     elif valuation_method == "tmc_shapley":
@@ -78,6 +80,7 @@ def compute_values(
             n_jobs=n_jobs,
             config=parallel_config,
             progress=progress,
+            seed=seed,
         )
 
     else:

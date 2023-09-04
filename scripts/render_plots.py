@@ -122,9 +122,7 @@ def plot_metric_curves(results_per_dataset: Dict, title: str):
                 d[valuation_method_name] = (
                     pd.concat(
                         [
-                            result.curves[valuation_method_name][metric_name].iloc[
-                                : int((ld + 1) / 2)
-                            ]
+                            result.curves[valuation_method_name][metric_name]
                             for result in dataset_results
                         ],
                         axis=1,

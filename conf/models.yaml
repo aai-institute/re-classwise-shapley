@@ -1,4 +1,0 @@
-defaults:
-- models:
-  - logistic_regression
-  - gradient_boosting_classifier

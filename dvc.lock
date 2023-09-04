@@ -1,227 +1,246 @@
 schema: '2.0'
 stages:
-  data-valuation-fetch-data@diabetes:
+  cs-shapley-fetch-data@diabetes:
     cmd: python -m scripts.fetch_data --dataset-name diabetes
     deps:
     - path: scripts/fetch_data.py
-      md5: d492112a33b7220d7ac2f3238116d3c4
-      size: 1738
-    params:
-      params.yaml:
-        datasets:
-          diabetes: &id001
-            openml_id: 37
-            train_size: 128
-            dev_size: 128
-            test_size: 512
-          click:
-            openml_id: 1216
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-          phoneme:
-            openml_id: 1489
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-          fmnist_binary:
-            openml_id: 40996
-            preprocessor:
-              principal_resnet_components:
-                n_components: 32
-                grayscale: true
-            filters:
-              binarization:
-                label_zero: '0'
-                label_one: '1'
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-          cifar10:
-            openml_id: 40927
-            preprocessor:
-              principal_resnet_components:
-                n_components: 32
-                grayscale: false
-            filters:
-              binarization:
-                label_zero: '1'
-                label_one: '9'
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-          mnist_binary:
-            openml_id: 554
-            preprocessor:
-              principal_resnet_components:
-                n_components: 32
-                grayscale: true
-            filters:
-              binarization:
-                label_zero: '1'
-                label_one: '7'
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-          mnist_multi:
-            openml_id: 554
-            preprocessor:
-              principal_resnet_components:
-                n_components: 32
-                grayscale: true
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-        datasets.diabetes: *id001
+      hash: md5
+      md5: bc5cdaeb2c6e568072d6764288027037
+      size: 1706
     outs:
     - path: output/raw/diabetes
+      hash: md5
       md5: 3e23427351eb2041c4ed0cf74f615aa9.dir
       size: 55033
       nfiles: 3
-  data-valuation-preprocess-data@diabetes:
+  cs-shapley-fetch-data@cpu:
+    cmd: python -m scripts.fetch_data --dataset-name cpu
+    deps:
+    - path: scripts/fetch_data.py
+      hash: md5
+      md5: bc5cdaeb2c6e568072d6764288027037
+      size: 1706
+    outs:
+    - path: output/raw/cpu
+      hash: md5
+      md5: deb3c5b158517073747fb31406dd962a.dir
+      size: 1445409
+      nfiles: 3
+  cs-shapley-fetch-data@covertype:
+    cmd: python -m scripts.fetch_data --dataset-name covertype
+    deps:
+    - path: scripts/fetch_data.py
+      hash: md5
+      md5: bc5cdaeb2c6e568072d6764288027037
+      size: 1706
+    outs:
+    - path: output/raw/covertype
+      hash: md5
+      md5: 35b4e811a5466fb6eaa2ef9728cbaa37.dir
+      size: 252166642
+      nfiles: 3
+  cs-shapley-preprocess-data@diabetes:
     cmd: python -m scripts.preprocess_data --dataset-name diabetes
     deps:
     - path: output/raw/diabetes
+      hash: md5
       md5: 3e23427351eb2041c4ed0cf74f615aa9.dir
       size: 55033
       nfiles: 3
     - path: scripts/preprocess_data.py
-      md5: 62de9f781258ae6dba5ef6b30181e862
-      size: 2893
-    params:
-      params.yaml:
-        datasets:
-          diabetes: &id002
-            openml_id: 37
-            train_size: 128
-            dev_size: 128
-            test_size: 512
-          click:
-            openml_id: 1216
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-          phoneme:
-            openml_id: 1489
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-          fmnist_binary:
-            openml_id: 40996
-            preprocessor:
-              principal_resnet_components:
-                n_components: 32
-                grayscale: true
-            filters:
-              binarization:
-                label_zero: '0'
-                label_one: '1'
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-          cifar10:
-            openml_id: 40927
-            preprocessor:
-              principal_resnet_components:
-                n_components: 32
-                grayscale: false
-            filters:
-              binarization:
-                label_zero: '1'
-                label_one: '9'
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-          mnist_binary:
-            openml_id: 554
-            preprocessor:
-              principal_resnet_components:
-                n_components: 32
-                grayscale: true
-            filters:
-              binarization:
-                label_zero: '1'
-                label_one: '7'
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-          mnist_multi:
-            openml_id: 554
-            preprocessor:
-              principal_resnet_components:
-                n_components: 32
-                grayscale: true
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-        datasets.diabetes: *id002
+      hash: md5
+      md5: 58ee0b8e30b8ef059f83110a37b30614
+      size: 3103
     outs:
     - path: output/preprocessed/diabetes
-      md5: 30830df663c83453701d76e8eb6d8b2e.dir
-      size: 55041
+      hash: md5
+      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
+      size: 59554
       nfiles: 5
-  data-valuation-fetch-data@mnist_binary:
-    cmd: python -m scripts.fetch_data --dataset-name mnist_binary
+  cs-shapley-preprocess-data@cpu:
+    cmd: python -m scripts.preprocess_data --dataset-name cpu
     deps:
-    - path: scripts/fetch_data.py
-      md5: c42255317ca8fab2bd5ab005057e99ce
-      size: 1778
-    params:
-      params.yaml:
-        datasets:
-          diabetes:
-            openml_id: 37
-            train_size: 128
-            dev_size: 128
-            test_size: 512
-          click:
-            openml_id: 1216
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-          phoneme:
-            openml_id: 1489
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-          fmnist_binary:
-            openml_id: 40996
-            preprocessor:
-              principal_resnet_components:
-                n_components: 32
-                size: 28
-            filters:
-              binarization:
-                label_zero: '0'
-                label_one: '1'
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-          mnist_binary: &id003
-            openml_id: 554
-            preprocessor:
-              principal_resnet_components:
-                n_components: 32
-                size: 28
-            filters:
-              binarization:
-                label_zero: '1'
-                label_one: '7'
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-          mnist_multi:
-            openml_id: 554
-            preprocessor:
-              principal_resnet_components:
-                n_components: 32
-                size: 28
-            train_size: 500
-            dev_size: 500
-            test_size: 2000
-        datasets.mnist_binary: *id003
-    outs:
-    - path: output/raw/554
-      md5: 79b71fe3a32af9e639e3bdf55b30a177.dir
-      size: 439199609
+    - path: output/raw/cpu
+      hash: md5
+      md5: deb3c5b158517073747fb31406dd962a.dir
+      size: 1445409
       nfiles: 3
+    - path: scripts/preprocess_data.py
+      hash: md5
+      md5: 58ee0b8e30b8ef059f83110a37b30614
+      size: 3103
+    outs:
+    - path: output/preprocessed/cpu
+      hash: md5
+      md5: 87f82f79e9233d8c4f0745f29d0ccfa2.dir
+      size: 1445557
+      nfiles: 5
+  cs-shapley-preprocess-data@covertype:
+    cmd: python -m scripts.preprocess_data --dataset-name covertype
+    deps:
+    - path: output/raw/covertype
+      hash: md5
+      md5: 35b4e811a5466fb6eaa2ef9728cbaa37.dir
+      size: 252166642
+      nfiles: 3
+    - path: scripts/preprocess_data.py
+      hash: md5
+      md5: 58ee0b8e30b8ef059f83110a37b30614
+      size: 3103
+    outs:
+    - path: output/preprocessed/covertype
+      hash: md5
+      md5: 86e47a7612235ffac15118ad7bd6bdc8.dir
+      size: 255651635
+      nfiles: 5
+  cs-shapley-wad-drop-experiment@diabetes-logistic_regression:
+    cmd: python -m scripts.run_experiment_wad_drop --dataset-name diabetes --model-name
+      logistic_regression
+    deps:
+    - path: output/preprocessed/diabetes
+      hash: md5
+      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
+      size: 59554
+      nfiles: 5
+    - path: scripts/run_experiment_wad_drop.py
+      hash: md5
+      md5: 97e7749850bf87f3cfeb9eecd1c11242
+      size: 2981
+    outs:
+    - path: output/results/wad_drop/logistic_regression/diabetes
+      hash: md5
+      md5: 4913aecdfd45b3e7b69c1c15824c2ffb.dir
+      size: 348552
+      nfiles: 27
+  cs-shapley-wad-drop-experiment@cpu-logistic_regression:
+    cmd: python -m scripts.run_experiment_wad_drop --dataset-name cpu --model-name
+      logistic_regression
+    deps:
+    - path: output/preprocessed/cpu
+      hash: md5
+      md5: 87f82f79e9233d8c4f0745f29d0ccfa2.dir
+      size: 1445557
+      nfiles: 5
+    - path: scripts/run_experiment_wad_drop.py
+      hash: md5
+      md5: 97e7749850bf87f3cfeb9eecd1c11242
+      size: 2981
+    outs:
+    - path: output/results/wad_drop/logistic_regression/cpu
+      hash: md5
+      md5: 83215e2c3feef6ab7a85fd2dc8048a35.dir
+      size: 2360276
+      nfiles: 27
+  cs-shapley-wad-drop-experiment@covertype-logistic_regression:
+    cmd: python -m scripts.run_experiment_wad_drop --dataset-name covertype --model-name
+      logistic_regression
+    deps:
+    - path: output/preprocessed/covertype
+      hash: md5
+      md5: 86e47a7612235ffac15118ad7bd6bdc8.dir
+      size: 255651635
+      nfiles: 5
+    - path: scripts/run_experiment_wad_drop.py
+      hash: md5
+      md5: 97e7749850bf87f3cfeb9eecd1c11242
+      size: 2981
+    outs:
+    - path: output/results/wad_drop/logistic_regression/covertype
+      hash: md5
+      md5: 89ff68c3079844a1ff8d01fab140c087.dir
+      size: 5133459
+      nfiles: 27
+  cs-shapley-wad-drop-plots@logistic_regression:
+    cmd: python -m scripts.render_plots --experiment-name wad_drop --model-name logistic_regression
+    deps:
+    - path: output/results/wad_drop/logistic_regression
+      hash: md5
+      md5: 8945d973332077431f5e7cf1beef5d71.dir
+      size: 7842287
+      nfiles: 81
+    - path: scripts/render_plots.py
+      hash: md5
+      md5: 2131d02ee8163669a6a938c34a60b783
+      size: 4397
+    outs:
+    - path: output/plots/wad_drop/logistic_regression
+      hash: md5
+      md5: f309e669ee9ca57238e9f8a9cb37adce.dir
+      size: 235134
+      nfiles: 4
+  cs-shapley-noise-removal-experiment@diabetes-logistic_regression:
+    cmd: python -m scripts.run_experiment_noise_removal --dataset-name diabetes --model-name
+      logistic_regression
+    deps:
+    - path: output/preprocessed/diabetes
+      hash: md5
+      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
+      size: 59554
+      nfiles: 5
+    - path: scripts/run_experiment_noise_removal.py
+      hash: md5
+      md5: 0942927b5ee87aa100d1fff1fd839c3f
+      size: 1370
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes
+      hash: md5
+      md5: 2ef4c59b0c6a29dfc446c82112932c4e.dir
+      size: 317578
+      nfiles: 21
+  cs-shapley-noise-removal-experiment@cpu-logistic_regression:
+    cmd: python -m scripts.run_experiment_noise_removal --dataset-name cpu --model-name
+      logistic_regression
+    deps:
+    - path: output/preprocessed/cpu
+      hash: md5
+      md5: 87f82f79e9233d8c4f0745f29d0ccfa2.dir
+      size: 1445557
+      nfiles: 5
+    - path: scripts/run_experiment_noise_removal.py
+      hash: md5
+      md5: 0942927b5ee87aa100d1fff1fd839c3f
+      size: 1370
+    outs:
+    - path: output/results/noise_removal/logistic_regression/cpu
+      hash: md5
+      md5: 8e0ff2bff68c266bfd946e8c3178dd66.dir
+      size: 2312557
+      nfiles: 21
+  cs-shapley-noise-removal-experiment@covertype-logistic_regression:
+    cmd: python -m scripts.run_experiment_noise_removal --dataset-name covertype --model-name
+      logistic_regression
+    deps:
+    - path: output/preprocessed/covertype
+      hash: md5
+      md5: 86e47a7612235ffac15118ad7bd6bdc8.dir
+      size: 255651635
+      nfiles: 5
+    - path: scripts/run_experiment_noise_removal.py
+      hash: md5
+      md5: 0942927b5ee87aa100d1fff1fd839c3f
+      size: 1370
+    outs:
+    - path: output/results/noise_removal/logistic_regression/covertype
+      hash: md5
+      md5: cde9876c3900cf471eee7de3287c3214.dir
+      size: 5085662
+      nfiles: 21
+  cs-shapley-noise-removal-plots@logistic_regression:
+    cmd: python -m scripts.render_plots --experiment-name noise_removal --model-name
+      logistic_regression
+    deps:
+    - path: output/results/noise_removal/logistic_regression
+      hash: md5
+      md5: 6e475ec23361b684daff2720a87ed6ad.dir
+      size: 7715797
+      nfiles: 63
+    - path: scripts/render_plots.py
+      hash: md5
+      md5: 2131d02ee8163669a6a938c34a60b783
+      size: 4397
+    outs:
+    - path: output/plots/noise_removal/logistic_regression
+      hash: md5
+      md5: 09e36f67dc4ca309f20ada4fb54abcfc.dir
+      size: 102530
+      nfiles: 2

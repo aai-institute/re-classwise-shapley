@@ -1,85 +1,79 @@
 stages:
-  data-valuation-fetch-data:
-    foreach: ${datasets}
-    do:
-      cmd: python -m scripts.fetch_data --dataset-name ${key}
-      deps:
-        - scripts/fetch_data.py
-      params:
-        - datasets
-        - datasets.${key}
-      outs:
-        - output/raw/${key}  # TODO: Change to openml_id
+  cs-shapley-fetch-data:
+    matrix:
+      dataset: ${active.datasets}
+    cmd: python -m scripts.fetch_data --dataset-name ${item.dataset}
+    deps:
+      - scripts/fetch_data.py
+    outs:
+      - output/raw/${item.dataset}
 
-  data-valuation-preprocess-data:
-    foreach: ${datasets}
-    do:
-      cmd: python -m scripts.preprocess_data --dataset-name ${key}
-      deps:
-        - scripts/preprocess_data.py
-        - output/raw/${key}
-      params:
-        - datasets
-        - datasets.${key}
-      outs:
-        - output/preprocessed/${key}
+  cs-shapley-preprocess-data:
+    matrix:
+      dataset: ${active.datasets}
+    cmd: python -m scripts.preprocess_data --dataset-name ${item.dataset}
+    deps:
+      - scripts/preprocess_data.py
+      - output/raw/${item.dataset}
+    outs:
+      - output/preprocessed/${item.dataset}
 
-  data-valuation-wad-drop-run-experiment:
-    foreach: ${datasets}
-    do:
-      cmd: python -m scripts.run_experiment wad_drop --dataset-name ${key}
-      deps:
-        - scripts/run_experiment.py
-        - output/preprocessed/${key}
-      outs:
-        - output/results/wad_drop/${key}
+  cs-shapley-wad-drop-experiment:
+    matrix:
+      dataset: ${active.datasets}
+      model: ${active.models}
+    cmd: python -m scripts.run_experiment_wad_drop --dataset-name ${item.dataset} --model-name ${item.model} --seed ${settings.random.seed}
+    deps:
+      - scripts/run_experiment_wad_drop.py
+      - output/preprocessed/${item.dataset}
+    outs:
+      - output/results/wad_drop/${item.model}/${item.dataset}
 
-#  data-valuation-wad-drop-generate-plots:
-#    foreach: ${datasets}
-#    do:
-#      cmd: python -m scripts.render_plots wad_drop --dataset-name ${key}
-#      deps:
-#        - scripts/render_plots.py
-#        - output/results/wad_drop/${key}
-#      outs:
-#        - output/plots/wad_drop/${key}
+  cs-shapley-wad-drop-plots:
+    matrix:
+      model: ${active.models}
+    cmd: python -m scripts.render_plots --experiment-name wad_drop --model-name ${item.model}
+    deps:
+      - scripts/render_plots.py
+      - output/results/wad_drop/${item.model}
 
-#  data-valuation-noise-removal-run-experiment:
-#    foreach: ${datasets}
-#    do:
-#      cmd: python -m scripts.run_experiment noise_removal --dataset-name ${key}
-#      deps:
-#        - scripts/run_experiment.py
-#        - output/preprocessed/${key}
-#      outs:
-#        - output/results/noise_removal/${key}
+  cs-shapley-noise-removal-experiment:
+    matrix:
+      dataset: ${active.datasets}
+      model: ${active.models}
+    cmd: python -m scripts.run_experiment_noise_removal --dataset-name ${item.dataset} --model-name ${item.model}  --seed ${settings.random.seed}
+    deps:
+      - scripts/run_experiment_noise_removal.py
+      - output/preprocessed/${item.dataset}
+    outs:
+      - output/results/noise_removal/${item.model}/${item.dataset}
 
-#  data-valuation-noise-removal-generate-plots:
-#    foreach: ${datasets}
-#    do:
-#      cmd: python -m scripts.render_plots noise_removal --dataset-name ${key}
-#      deps:
-#        - scripts/render_plots.py
-#        - output/results/noise_removal/${key}
-#      outs:
-#        - output/plots/noise_removal/${key}
+  cs-shapley-noise-removal-plots:
+    matrix:
+      model: ${active.models}
+    cmd: python -m scripts.render_plots --experiment-name noise_removal --model-name ${item.model}
+    deps:
+      - scripts/render_plots.py
+      - output/results/noise_removal/${item.model}
 
-#  data-valuation-wad-drop-transfer-run-experiment:
-#    foreach: ${datasets}
-#    do:
-#      cmd: python -m scripts.run_experiment wad_drop_transfer --dataset-name ${key}
-#      deps:
-#        - scripts/run_experiment.py
-#        - output/preprocessed/${key}
-#      outs:
-#        - output/results/wad_drop_transfer/${key}
-#
-#  data-valuation-wad-drop-transfer-generate-plots:
-#    foreach: ${datasets}
-#    do:
-#      cmd: python -m scripts.render_plots wad_drop_transfer --dataset-name ${key}
-#      deps:
-#        - scripts/render_plots.py
-#        - output/results/wad_drop_transfer/${key}
-#      outs:
-#        - output/plots/wad_drop_transfer/${key}
+  cs-shapley-wad-drop-transfer-experiment:
+    matrix:
+      dataset: ${active.datasets}
+      model: ${active.models}
+      transfer_model: ${experiments.wad_drop_transfer.transfer_models}
+    cmd: python -m scripts.run_experiment_wad_drop --dataset-name ${item.dataset} --model-name ${item.model} --transfer-model-name ${item.transfer_model}  --seed ${settings.random.seed}
+    deps:
+      - scripts/run_experiment_wad_drop.py
+      - output/preprocessed/${item.dataset}
+    outs:
+      - output/results/wad_drop_transfer/${item.model}/${item.transfer_model}/${item.dataset}
+
+  cs-shapley-wad-drop-transfer-plots:
+    matrix:
+      model: ${active.models}
+      transfer_model: ${experiments.wad_drop_transfer.transfer_models}
+
+    cmd: python -m scripts.render_plots --experiment-name wad_drop_transfer --model-name ${item.model} --sub-folder ${item.transfer_model}
+    deps:
+      - scripts/render_plots.py
+      - output/results/wad_drop_transfer/${item.model}/${item.transfer_model}

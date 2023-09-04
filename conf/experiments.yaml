@@ -1,5 +1,0 @@
-defaults:
-- experiments:
-  - wad_drop
-  - noise_removal
-  - wad_drop_transfer

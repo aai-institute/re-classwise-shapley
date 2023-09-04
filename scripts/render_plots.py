@@ -84,7 +84,7 @@ def render_plots(
         mlflow.log_params(params)
 
         results_per_dataset = load_results_per_dataset(experiment_path)
-        plot_metric_table(results_per_dataset, tmp_dir)
+        plot_metric_table(results_per_dataset)
         plot_metric_curves(
             results_per_dataset,
             f"Experiment '{experiment_name}' on model '{model_name}'",
@@ -146,7 +146,7 @@ def plot_metric_curves(results_per_dataset: Dict, title: str):
         mlflow.log_figure(fig, f"curve_{metric_name}.png")
 
 
-def plot_metric_table(results_per_dataset, output_dir):
+def plot_metric_table(results_per_dataset):
     params = params_show()
     dataset_names = params["active"]["datasets"]
     valuation_method_names = results_per_dataset[dataset_names[0]][
@@ -170,7 +170,7 @@ def plot_metric_table(results_per_dataset, output_dir):
                 )
 
         df_styled = mean_metric.style.highlight_max(color="lightgreen", axis=1)
-        output_file = str(output_dir / f"metrics_{metric_name}.png")
+        output_file = str(f"metrics_{metric_name}.png")
         dfi.export(df_styled, output_file)
         with Image.open(output_file) as im:
             mlflow.log_image(im, output_file)

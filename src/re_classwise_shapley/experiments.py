@@ -1,4 +1,7 @@
 import os
+
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+
 import pickle
 import shutil
 from copy import deepcopy
@@ -201,7 +204,7 @@ def run_and_store_experiment(
     n_repetitions: int = 1,
 ):
     params = params_show()
-    set_affinity(list(range(int(params["settings"]["parallel"]["n_jobs"]))))
+    # set_affinity(list(range(int(params["settings"]["parallel"]["n_jobs"]))))
     logger.info(Config.DOUBLE_BREAK)
     logger.info(f"Start {experiment_name=} with '{model_name=}' on '{dataset_name=}.")
 

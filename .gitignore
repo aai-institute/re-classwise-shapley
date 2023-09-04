@@ -138,5 +138,5 @@ dmypy.json
 output/raw
 output/preprocessed
 output/*.zip
-
+output
 mlruns

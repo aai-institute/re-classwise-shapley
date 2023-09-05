@@ -1,11 +1,12 @@
 settings:
   evaluation:
-    n_repetitions: 20
+    n_repetitions: 1
+
   random:
     seed: 42  # 42 
 
   parallel:
-    n_jobs: 92
+    n_jobs: 90
     backend: joblib
 
 active:
@@ -14,7 +15,8 @@ active:
     "cifar10",
     "click",
     "covertype",
-    "cpu", "diabetes",
+    "cpu",
+    "diabetes",
     "fmnist_binary",
     "mnist_binary",
     "mnist_multi",
@@ -24,14 +26,17 @@ active:
     "random",
     "loo",
     "classwise_shapley",
-    "classwise_shapley_add_idx",
     "beta_shapley",
-    "tmc_shapley"
+    "tmc_shapley",
+    "banzhaf_shapley",
+    "owen_sampling_shapley",
+    "least_core",
   ]
 
 experiments:
   wad_drop:
   noise_removal:
+    perc_flip_labels: 0.2
   wad_drop_transfer:
     transfer_models:
       [ "logistic_regression", "knn", "gradient_boosting_classifier", "svm", "mlp" ]
@@ -71,20 +76,10 @@ valuation_methods:
       n_updates: 500,
       normalize_values: True,
       n_resample_complement_sets: 1,
-      rtol: 1e-4,
-      progress: True
-    }
-  }
-  classwise_shapley_add_idx: {
-    algorithm: "classwise_shapley",
-    kwargs: {
-      n_updates: 500,
-      normalize_values: True,
-      n_resample_complement_sets: 1,
       use_default_scorer_value: False,
       rtol: 1e-4,
       progress: True
-    },
+    }
   }
   beta_shapley: {
     algorithm: "beta_shapley",
@@ -95,11 +90,33 @@ valuation_methods:
       progress: False
     }
   }
+  banzhaf_shapley: {
+    algorithm: "banzhaf_shapley",
+    kwargs: {
+      n_updates: 500,
+      progress: False
+    }
+  }
   tmc_shapley: {
     algorithm: "tmc_shapley",
     kwargs: {
       rtol: 1e-4,
       n_updates: 500,
+      progress: False
+    }
+  }
+  owen_sampling_shapley: {
+    algorithm: "owen_sampling_shapley",
+    kwargs: {
+      n_updates: 10,
+      max_q: 50,
+      progress: False
+    }
+  }
+  least_core: {
+    algorithm: "least_core",
+    kwargs: {
+      n_updates: 5000,
       progress: False
     }
   }

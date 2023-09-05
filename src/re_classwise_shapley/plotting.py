@@ -31,11 +31,10 @@ def shaded_mean_normal_confidence_interval(
 ) -> Axes:
     """Modified version of the `shaded_mean_std()` function defined in pyDVL."""
     assert len(data.shape) == 2
-    mean = data.mean(axis=1).sort_index()
-    std = data.std(axis=1).sort_index()
-    standard_error = std / np.sqrt(data.shape[1])
-    upper_bound = mean + 1.96 * standard_error
-    lower_bound = mean - 1.96 * standard_error
+    data = data.sort_index()
+    mean = data.mean(axis=1)
+    upper_bound = np.quantile(data, q=0.975, axis=1)
+    lower_bound = np.quantile(data, q=0.025, axis=1)
 
     if ax is None:
         fig, ax = plt.subplots()

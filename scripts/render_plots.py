@@ -83,6 +83,11 @@ def render_plots(
         params = flatten_dict(params)
         mlflow.log_params(params)
 
+        zip_filename = f"results.{experiment_name}.zip"
+        shutil.make_archive(zip_filename, "zip", experiment_path)
+        mlflow.log_artifact(zip_filename)
+        os.remove(zip_filename)
+
         results_per_dataset = load_results_per_dataset(experiment_path)
         plot_metric_table(results_per_dataset)
         plot_metric_curves(
@@ -118,7 +123,6 @@ def plot_metric_curves(results_per_dataset: Dict, title: str):
             dataset_results = results_per_dataset[dataset_name]
             d = {}
             for valuation_method_name in valuation_method_names:
-                ld = len(dataset_results[0].curves[valuation_method_name][metric_name])
                 d[valuation_method_name] = (
                     pd.concat(
                         [

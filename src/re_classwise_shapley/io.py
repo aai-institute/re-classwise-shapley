@@ -83,9 +83,7 @@ def parse_valuation_method_dict(
 
     if active_valuation_methods is not None:
         valuation_method_configs = {
-            k: v
-            for k, v in valuation_method_configs.items()
-            if k in active_valuation_methods
+            k: valuation_method_configs[k] for k in active_valuation_methods
         }
 
     function = dict()

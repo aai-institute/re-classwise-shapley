@@ -18,16 +18,19 @@ def run_experiment_noise_removal(
     model_name: str,
 ):
     experiment_name = "noise_removal"
+    params = params_show()
+    perc_flip_labels = params["experiments"][experiment_name]["perc_flip_labels"]
 
     def kwargs_loader(seed: int = None):
         return {
-            "label_preprocessor": partial(flip_labels, perc_flip_labels=0.2, seed=seed),
+            "label_preprocessor": partial(
+                flip_labels, perc_flip_labels=perc_flip_labels, seed=seed
+            ),
             "metrics": {
                 "precision_recall": roc_auc_pr_recall,
             },
         }
 
-    params = params_show()
     run_and_store_experiment(
         experiment_name,
         dataset_name=dataset_name,

@@ -19,6 +19,7 @@ def run_experiment_noise_removal(
 ):
     experiment_name = "noise_removal"
     params = params_show()
+    n_repetitions = params["settings"]["evaluation"]["n_repetitions"]
     perc_flip_labels = params["experiments"][experiment_name]["perc_flip_labels"]
 
     def kwargs_loader(seed: int = None):
@@ -37,7 +38,7 @@ def run_experiment_noise_removal(
         model_name=model_name,
         output_dir=Config.RESULT_PATH / experiment_name / model_name / dataset_name,
         loader_kwargs=kwargs_loader,
-        n_repetitions=params["settings"]["evaluation"]["n_repetitions"],
+        n_repetitions=n_repetitions,
     )
 
 

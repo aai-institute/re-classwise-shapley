@@ -62,7 +62,6 @@ def compute_values(
         )
 
     elif valuation_method == "beta_shapley":
-        n_updates *= len(utility.data)
         values = compute_semivalues(
             u=utility,
             mode=SemiValueMode.BetaShapley,

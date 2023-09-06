@@ -1,5 +1,6 @@
 import logging
 import math as m
+import os
 
 from pydvl.utils import ParallelConfig, Utility
 from pydvl.value import (
@@ -23,6 +24,14 @@ from re_classwise_shapley.log import setup_logger
 logger = setup_logger(__name__)
 
 
+def set_num_threads(n_threads: int):
+    os.environ["OMP_NUM_THREADS"] = n_threads
+    os.environ["OPENBLAS_NUM_THREADS"] = n_threads
+    os.environ["MKL_NUM_THREADS"] = n_threads
+    os.environ["VECLIB_MAXIMUM_THREADS"] = n_threads
+    os.environ["NUMEXPR_NUM_THREADS"] = n_threads
+
+
 def compute_values(
     utility: Utility,
     valuation_method: str,
@@ -40,12 +49,13 @@ def compute_values(
         logging_level=logging.INFO,
     )
     progress = kwargs.get("progress", False)
+    set_num_threads(1)
 
     if valuation_method == "loo":
-        return compute_loo(utility, n_jobs=n_jobs, progress=progress)
+        values = compute_loo(utility, n_jobs=n_jobs, progress=progress)
 
-    n_updates = int(kwargs.get("n_updates"))
-    if valuation_method == "classwise_shapley":
+    elif valuation_method == "classwise_shapley":
+        n_updates = int(kwargs.get("n_updates"))
         utility.scorer = ClasswiseScorer("accuracy", default=0.0)
         values = compute_classwise_shapley_values(
             utility,
@@ -62,6 +72,7 @@ def compute_values(
         )
 
     elif valuation_method == "beta_shapley":
+        n_updates = int(kwargs.get("n_updates"))
         values = compute_semivalues(
             u=utility,
             mode=SemiValueMode.BetaShapley,
@@ -76,6 +87,7 @@ def compute_values(
         )
 
     elif valuation_method == "banzhaf_shapley":
+        n_updates = int(kwargs.get("n_updates"))
         values = compute_semivalues(
             u=utility,
             mode=SemiValueMode.Banzhaf,
@@ -88,6 +100,7 @@ def compute_values(
         )
 
     elif valuation_method == "tmc_shapley":
+        n_updates = int(kwargs.get("n_updates"))
         values = compute_shapley_values(
             utility,
             mode=ShapleyMode.PermutationMontecarlo,
@@ -100,6 +113,7 @@ def compute_values(
         )
 
     elif valuation_method == "owen_sampling_shapley":
+        n_updates = int(kwargs.get("n_updates"))
         n_updates = int(m.ceil(n_updates / n_jobs))
         values = compute_shapley_values(
             utility,
@@ -111,6 +125,7 @@ def compute_values(
             max_q=kwargs.get("max_q"),
         )
     elif valuation_method == "least_core":
+        n_updates = int(kwargs.get("n_updates"))
         values = compute_least_core_values(
             utility, n_iterations=n_updates, n_jobs=n_jobs, progress=progress
         )
@@ -120,5 +135,6 @@ def compute_values(
             f"The method {valuation_method} is not registered within."
         )
 
+    set_num_threads(n_jobs)
     logger.info(f"Values: {values.values}")
     return values

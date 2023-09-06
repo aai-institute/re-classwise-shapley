@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Dict, Tuple
 
 import numpy as np
@@ -111,7 +112,7 @@ def weighted_metric_drop(
 ) -> Tuple[float, pd.Series]:
     u_eval = Utility(
         data=u.data,
-        model=transfer_model if transfer_model is not None else u.model,
+        model=deepcopy(transfer_model),
         scorer=Scorer(metric, default=0),
     )
     wad, graph = weighted_reciprocal_diff_average(

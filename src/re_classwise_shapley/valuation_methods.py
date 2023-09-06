@@ -25,11 +25,19 @@ logger = setup_logger(__name__)
 
 
 def set_num_threads(n_threads: int):
-    os.environ["OMP_NUM_THREADS"] = n_threads
-    os.environ["OPENBLAS_NUM_THREADS"] = n_threads
-    os.environ["MKL_NUM_THREADS"] = n_threads
-    os.environ["VECLIB_MAXIMUM_THREADS"] = n_threads
-    os.environ["NUMEXPR_NUM_THREADS"] = n_threads
+    os.environ["OMP_NUM_THREADS"] = str(n_threads)
+    os.environ["OPENBLAS_NUM_THREADS"] = str(n_threads)
+    os.environ["MKL_NUM_THREADS"] = str(n_threads)
+    os.environ["VECLIB_MAXIMUM_THREADS"] = str(n_threads)
+    os.environ["NUMEXPR_NUM_THREADS"] = str(n_threads)
+
+
+def unset_threads():
+    del os.environ["OMP_NUM_THREADS"]
+    del os.environ["OPENBLAS_NUM_THREADS"]
+    del os.environ["MKL_NUM_THREADS"]
+    del os.environ["VECLIB_MAXIMUM_THREADS"]
+    del os.environ["NUMEXPR_NUM_THREADS"]
 
 
 def compute_values(
@@ -135,6 +143,6 @@ def compute_values(
             f"The method {valuation_method} is not registered within."
         )
 
-    set_num_threads(n_jobs)
+    unset_threads()
     logger.info(f"Values: {values.values}")
     return values

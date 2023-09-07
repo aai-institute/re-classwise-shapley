@@ -168,8 +168,8 @@ def plot_metric_curves(results_per_dataset: Dict, title: str):
                 plot_curve(d, fig, row, col)
                 idx += 1
 
-        for axis in fig.layout:
-            if "xaxis" in axis:
+        for idx, axis in enumerate(fig.layout):
+            if idx != 9 and "xaxis" in axis:
                 fig.layout[axis].update(matches="x")
 
         # # Add common x-label

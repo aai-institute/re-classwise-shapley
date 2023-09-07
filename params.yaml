@@ -36,7 +36,7 @@ active:
 experiments:
   wad_drop:
     transfer_models:
-      [ "logistic_regression", "knn", "svm" ]
+      [ "logistic_regression", "knn" ]
   noise_removal:
     perc_flip_labels: 0.2
 

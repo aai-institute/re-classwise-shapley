@@ -12,7 +12,6 @@ from re_classwise_shapley.preprocess import flip_labels
 @click.command()
 @click.option("--dataset-name", type=str, required=True)
 @click.option("--model-name", type=str, required=True)
-@click.option("--seed", type=int, required=False)
 def run_experiment_noise_removal(
     dataset_name: str,
     model_name: str,

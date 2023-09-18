@@ -57,6 +57,7 @@ def sample_data(
         dataset_name, sampler_kwargs, seed=seed_sequence[0]
     )
 
+    preprocess_info = None
     if "preprocessors" in experiment_config:
         preprocess_info, val_set = apply_preprocessors(
             val_set, experiment_config["preprocessors"], seed_sequence
@@ -68,7 +69,7 @@ def sample_data(
     with open(output_dir / "test_set.pkl", "wb") as file:
         pickle.dump(test_set, file)
 
-    if len(preprocess_info) > 0:
+    if preprocess_info and len(preprocess_info) > 0:
         with open(output_dir / "preprocess_info.json", "w") as file:
             json.dump(preprocess_info, file, indent=4, sort_keys=True)
 

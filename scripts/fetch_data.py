@@ -16,17 +16,20 @@ logger = setup_logger()
 @click.option("--dataset-name", type=str, required=True)
 def fetch_data(dataset_name: str):
     """
-    Fetches a dataset from openml and stores it on disk.
-    :param dataset_name: The name of the dataset to fetch.
+    Fetches a single dataset from openml and stores it on disk. The openml id is taken
+    from the `params.datasets.openml_id` section.
+
+    Args:
+        dataset_name: The name of the dataset to fetch.
     """
+    params = params_show()
+    dataset_config = params["datasets"][dataset_name]
+    open_ml_id = dataset_config["openml_id"]
+
     dataset_folder = Config.RAW_PATH / dataset_name
     if os.path.exists(dataset_folder):
         logger.info(f"Dataset {dataset_name} exists. Skipping.")
         return
-
-    params = params_show()
-    dataset_config = params["datasets"][dataset_name]
-    open_ml_id = dataset_config["openml_id"]
 
     logger.info(f"Download dataset {dataset_name} with openml_id {open_ml_id}.")
     dataset = fetch_single_dataset(open_ml_id)
@@ -37,9 +40,15 @@ def fetch_single_dataset(
     openml_id: int,
 ) -> RawDataset:
     """
-    Fetches a single dataset from openml and stores it on disk.
-    :param openml_id: The openml id of the dataset.
-    :returns: Tuple of x, y and additional info.
+    Fetches a single dataset from openml.
+
+    Args:
+        openml_id: Openml id of the dataset.
+    Returns:
+        Tuple of x, y and additional info. Additional information contains a mapping
+        from file_names to dictionaries (to be saved as `*.json`). It contains a file
+        name `info.json` with information `feature_names`, `target_names` and
+        `description`.
     """
     logger.info(f"Downloading dataset with id '{openml_id}'.")
     data = fetch_openml(data_id=openml_id)

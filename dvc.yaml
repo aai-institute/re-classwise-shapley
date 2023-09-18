@@ -1,57 +1,117 @@
 stages:
-  cs-shapley-fetch-data:
+  
+  # Data
+  # ====================================================================================
+  
+  fetch-data:
     matrix:
       dataset: ${active.datasets}
     cmd: python -m scripts.fetch_data --dataset-name ${item.dataset}
+    params:
+      - datasets.${item.dataset}.openml_id
     deps:
       - scripts/fetch_data.py
+      - src/re_classwise_shapley/io.py
     outs:
       - output/raw/${item.dataset}
 
-  cs-shapley-preprocess-data:
+  preprocess-data:
     matrix:
       dataset: ${active.datasets}
-    cmd: python -m scripts.preprocess_data --dataset-name ${item.dataset}
+    cmd: python -m scripts.preprocess_data
+      --dataset-name ${item.dataset}
+    params:
+      - datasets.${item.dataset}
     deps:
       - scripts/preprocess_data.py
+      - src/re_classwise_shapley/filter.py
+      - src/re_classwise_shapley/io.py
       - output/raw/${item.dataset}
     outs:
       - output/preprocessed/${item.dataset}
 
-  cs-shapley-wad-drop-experiment:
+  # Experiments
+  # ====================================================================================
+
+  sample-data:
     matrix:
+      experiment: ${active.experiments}
       dataset: ${active.datasets}
-      model: ${active.models}
-    cmd: python -m scripts.run_experiment_wad_drop --dataset-name ${item.dataset} --model-name ${item.model}
+      repetition: ${active.repetitions}
+    cmd: >
+      python -m scripts.sample_data
+      --experiment-name ${item.experiment}
+      --dataset-name ${item.dataset}
+      --repetition-id ${item.repetition}
+    params:
+      - experiments.${item.experiment}.sampler
     deps:
-      - scripts/run_experiment_wad_drop.py
+      - scripts/sample_data.py
       - output/preprocessed/${item.dataset}
     outs:
-      - output/results/wad_drop/${item.model}/${item.dataset}
-
-  cs-shapley-wad-drop-plots:
+      - output/sampled/${item.experiment}/${item.dataset}/${item.repetition}
+  
+  calculate-values:
     matrix:
-      model: ${active.models}
-    cmd: python -m scripts.render_plots --experiment-name wad_drop --model-name ${item.model}
-    deps:
-      - scripts/render_plots.py
-      - output/results/wad_drop/${item.model}
-
-  cs-shapley-noise-removal-experiment:
-    matrix:
+      experiment: ${active.experiments}
       dataset: ${active.datasets}
       model: ${active.models}
-    cmd: python -m scripts.run_experiment_noise_removal --dataset-name ${item.dataset} --model-name ${item.model}
+      repetition: ${active.repetitions}
+      method: ${active.valuation_methods}
+    cmd: >
+      python -m scripts.calculate_values
+      --experiment-name ${item.experiment} 
+      --dataset-name ${item.dataset}
+      --model-name ${item.model} 
+      --valuation-method ${item.method}
+      --repetition-id ${item.repetition}
+    params:
+      - models.${item.model}
+      - valuation_methods.${item.method}
     deps:
-      - scripts/run_experiment_noise_removal.py
-      - output/preprocessed/${item.dataset}
+      - scripts/calculate_values.py
+      - src/re_classwise_shapley/valuation_methods.py
+      - output/sampled/${item.experiment}/${item.dataset}/${item.repetition}
     outs:
-      - output/results/noise_removal/${item.model}/${item.dataset}
+      - output/values/${item.experiment}/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
 
-  cs-shapley-noise-removal-plots:
+  evaluate_metrics:
     matrix:
+      experiment: ${active.experiments}
+      dataset: ${active.datasets}
       model: ${active.models}
-    cmd: python -m scripts.render_plots --experiment-name noise_removal --model-name ${item.model}
+      repetition: ${active.repetitions}
+      method: ${active.valuation_methods}
+    cmd: python -m scripts.evaluate_metrics
+      --experiment-name ${item.experiment}
+      --dataset-name ${item.dataset}
+      --model-name ${item.model}
+      --valuation-method ${item.method}
+      --repetition-id ${item.repetition}
+    params:
+      - experiments.${item.experiment}.metrics
+      - experiments.${item.experiment}.curves
+    deps:
+      - scripts/evaluate_metrics.py
+      - src/re_classwise_shapley/metric.py
+      - output/values/${item.experiment}/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
+    outs:
+      - output/results/${item.experiment}/${item.model}/${item.dataset}/${item.repetition}/${item.method}
+  
+  render_plots:
+    matrix:
+      experiment: ${active.experiments}
+      model: ${active.models}
+    cmd: python -m scripts.render_plots
+      --experiment-name ${item.experiment}
+      --model-name ${item.model}
+    params:
+      - experiments.${item.experiment}.metrics
+      - experiments.${item.experiment}.curves
     deps:
       - scripts/render_plots.py
-      - output/results/noise_removal/${item.model}
+      - output/results/${item.experiment}/${item.model}
+    outs:
+      - output/plots/${item.experiment}/${item.model}
+  
+  

@@ -4,7 +4,7 @@ import shutil
 import tarfile
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 import click
 import dataframe_image as dfi
@@ -12,17 +12,17 @@ import matplotlib.pyplot as plt
 import mlflow
 import numpy as np
 import pandas as pd
-import plotly.graph_objs as go
 from dotenv import load_dotenv
 from dvc.api import params_show
-from matplotlib.colors import to_rgb
 from PIL import Image
 from plotly.subplots import make_subplots
 
 from re_classwise_shapley.config import Config
-from re_classwise_shapley.experiments import ExperimentResult
 from re_classwise_shapley.log import setup_logger
-from re_classwise_shapley.plotting import plot_curve, setup_plotting
+from re_classwise_shapley.plotting import (
+    setup_plotting,
+    shaded_mean_normal_confidence_interval,
+)
 
 logger = setup_logger()
 
@@ -35,6 +35,17 @@ COLOR_ENCODING = {
     "owen_sampling_shapley": "purple",
     "banzhaf_shapley": "turquoise",
     "least_core": "gray",
+}
+
+COLORS = {
+    "black": ("black", "silver"),
+    "blue": ("dodgerblue", "lightskyblue"),
+    "orange": ("darkorange", "gold"),
+    "green": ("limegreen", "seagreen"),
+    "red": ("indianred", "firebrick"),
+    "purple": ("darkorchid", "plum"),
+    "gray": ("gray", "lightgray"),
+    "turquoise": ("turquoise", "lightcyan"),
 }
 
 
@@ -68,55 +79,61 @@ def make_tarfile(output_filename, source_dir):
 @click.command()
 @click.option("--experiment-name", type=str, required=True)
 @click.option("--model-name", type=str, required=True)
-@click.option("--sub-folder", type=str, required=False)
-def render_plots(
-    experiment_name: str, model_name: str, sub_folder: Optional[str] = None
-):
+def render_plots(experiment_name: str, model_name: str):
     load_dotenv()
     logger.info("Starting plotting of data valuation experiment")
     setup_plotting()
     experiment_path = Config.RESULT_PATH / experiment_name / model_name
+    output_folder = Config.PLOT_PATH / experiment_name / model_name
     experiment_name = f"{experiment_name}.{model_name}"
     mlflow.set_tracking_uri("http://localhost:5000")
 
-    if sub_folder is not None:
-        experiment_path /= sub_folder
-        experiment_name += f".{sub_folder}"
-
-    tmp_dir = Path("tmp")
-    os.makedirs(tmp_dir, exist_ok=True)
     experiment_id = get_or_create_mlflow_experiment(experiment_name)
+    os.makedirs(output_folder, exist_ok=True)
 
     logger.info("Starting run.")
     with mlflow.start_run(
         experiment_id=experiment_id,
         run_name=datetime.now().isoformat(),
     ):
-        # TODO Uncomment
-        # logger.info("Log params.")
-        # params = params_show()
-        # params = flatten_dict(params)
-        # mlflow.log_params(params)<
-        #
-        # logger.info("Packing results.")
-        # filename = f"results"
-        # shutil.make_archive(filename, "tar", experiment_path)
-        # logger.info("Uploading results.")
-        # tar_filename = f"{filename}.tar"
-        # mlflow.log_artifact(tar_filename)
-        # os.remove(tar_filename)
+        logger.info("Log params.")
+        params = params_show()
+        params = flatten_dict(params)
+        mlflow.log_params(params)
+
+        logger.info("Packing results.")
+        filename = f"results"
+        shutil.make_archive(filename, "tar", experiment_path)
+        logger.info("Uploading results.")
+        tar_filename = f"{filename}.tar"
+        mlflow.log_artifact(tar_filename)
+        os.remove(tar_filename)
 
         results_per_dataset = load_results_per_dataset(experiment_path)
-        plot_metric_table(results_per_dataset)
+        metrics_per_dataset = {
+            dataset: {method: v["metrics"] for method, v in method_config.items()}
+            for dataset, method_config in results_per_dataset.items()
+        }
+        plot_metric_table(metrics_per_dataset, output_folder)
+        results_per_dataset = {
+            dataset: {
+                method: {
+                    metric: v
+                    for metric, v in metric_config.items()
+                    if metric != "metrics"
+                }
+                for method, metric_config in method_config.items()
+            }
+            for dataset, method_config in results_per_dataset.items()
+        }
         plot_metric_curves(
             results_per_dataset,
             f"Experiment '{experiment_name}' on model '{model_name}'",
+            output_folder,
         )
 
-    shutil.rmtree(tmp_dir)
 
-
-def plot_metric_curves(results_per_dataset: Dict, title: str):
+def plot_metric_curves(results_per_dataset: Dict, title: str, output_folder: Path):
     """
     Plot the metric curves for each dataset and valuation method.
     :param results_per_dataset:
@@ -124,12 +141,16 @@ def plot_metric_curves(results_per_dataset: Dict, title: str):
     :return:
     """
     params = params_show()
-    dataset_names = params["active"]["datasets"]
+    params_active = params["active"]
+    dataset_names = params_active["datasets"]
+    valuation_methods = params_active["valuation_methods"]
+    metric_names = sorted(
+        results_per_dataset[dataset_names[0]][valuation_methods[0]].keys()
+    )
+    output_folder = output_folder / "curves"
+    os.makedirs(output_folder, exist_ok=True)
+
     num_datasets = len(dataset_names)
-    valuation_method_names = results_per_dataset[dataset_names[0]][
-        0
-    ].valuation_method_names
-    metric_names = results_per_dataset[dataset_names[0]][0].metric_names
     h = 2
     w = int(num_datasets / 2) + 1
     for metric_name in metric_names:
@@ -137,123 +158,124 @@ def plot_metric_curves(results_per_dataset: Dict, title: str):
             continue
 
         logger.info(f"Plotting metric {metric_name}.")
-        fig = make_subplots(rows=h, cols=w, subplot_titles=dataset_names)
+        fig, ax = plt.subplots(h, w, figsize=(w * 20 / 4, h * 5 / 2))
+        ax = ax.T.flatten()
 
-        idx = 0
-        for row in range(1, h + 1):
-            for col in range(1, w + 1):
-                if idx >= num_datasets:
-                    break
+        for idx, dataset_name in enumerate(dataset_names):
+            logger.info(f"Plotting dataset {dataset_name}.")
 
-                dataset_name = dataset_names[idx]
-                logger.info(f"Plotting dataset {dataset_name}.")
+            for method_name in valuation_methods:
+                results = results_per_dataset[dataset_name][method_name][metric_name]
+                color_name = COLOR_ENCODING[method_name]
+                mean_color, shade_color = COLORS[color_name]
+                shaded_mean_normal_confidence_interval(
+                    results,
+                    abscissa=results.index,
+                    mean_color=mean_color,
+                    shade_color=shade_color,
+                    label=method_name,
+                    ax=ax[idx],
+                )
+                ax[idx].set_title(f"({chr(97 + idx)}) {dataset_name}")
 
-                dataset_results = results_per_dataset[dataset_name]
-                d = {}
-                for valuation_method_name in valuation_method_names:
-                    d[valuation_method_name] = (
-                        pd.concat(
-                            [
-                                result.curves[valuation_method_name][metric_name]
-                                for result in dataset_results
-                            ],
-                            axis=1,
-                        ).sort_index(),
-                        {
-                            "color": COLOR_ENCODING[valuation_method_name],
-                            "plot_single": metric_name == "density",
-                        },
-                    )
+        handles, labels = ax[num_datasets - 1].get_legend_handles_labels()
+        if len(ax) == num_datasets + 2:
+            ax[-2].grid(False)
+            ax[-2].axis("off")
 
-                plot_curve(d, fig, row, col)
-                idx += 1
+        ax[-1].grid(False)
+        ax[-1].axis("off")
+        ax[-1].legend(handles, labels, loc="center", fontsize=16)
+        fig.suptitle(title + f" with metric '{metric_name}'")
+        fig.subplots_adjust(hspace=0.3)
 
-        for idx, axis in enumerate(fig.layout):
-            if idx != 9 and "xaxis" in axis:
-                fig.layout[axis].update(matches="x")
-
-        # # Add common x-label
-        # fig.add_annotation(
-        #     dict(
-        #         x=0.5,
-        #         y=-0.15,
-        #         showarrow=False,
-        #         text="Common X-label",
-        #         xref="paper",
-        #         yref="paper",
-        #         font=dict(size=16)
-        #     )
-        # )
-        #
-        # # Add common y-label
-        # fig.add_annotation(
-        #     dict(
-        #         x=-0.15,
-        #         y=0.5,
-        #         showarrow=False,
-        #         text="Common Y-label",
-        #         textangle=-90,
-        #         xref="paper",
-        #         yref="paper",
-        #         font=dict(size=16)
-        #     )
-        # )
-
-        fig.update_layout(title_text=f"{title} with metric '{metric_name}'")
-        mlflow.log_figure(fig, f"curve_{metric_name}.html")
+        output_file = output_folder / f"{metric_name}.png"
+        mlflow.log_figure(fig, f"curves/{metric_name}.png")
+        fig.savefig(output_file)
 
 
-def plot_metric_table(results_per_dataset):
+def plot_metric_table(results_per_dataset, output_folder: Path):
     params = params_show()
-    dataset_names = params["active"]["datasets"]
-    valuation_method_names = results_per_dataset[dataset_names[0]][
-        0
-    ].valuation_method_names
-    metric_names = results_per_dataset[dataset_names[0]][0].metric_names
+    params_active = params["active"]
+    dataset_names = params_active["datasets"]
+    valuation_methods = params_active["valuation_methods"]
+    metric_names = sorted(
+        results_per_dataset[dataset_names[0]][valuation_methods[0]].index
+    )
+    output_folder = output_folder / "metrics"
+    os.makedirs(output_folder, exist_ok=True)
+
     for metric_name in metric_names:
-        mean_metric = pd.DataFrame(index=dataset_names, columns=valuation_method_names)
+        mean_metric = pd.DataFrame(index=dataset_names, columns=valuation_methods)
+        std_metric = pd.DataFrame(index=dataset_names, columns=valuation_methods)
 
         for dataset_name in dataset_names:
-            for valuation_method_name in valuation_method_names:
-                m = np.mean(
-                    [
-                        result.metric[valuation_method_name][metric_name]
-                        for result in results_per_dataset[dataset_name]
-                    ]
-                )
+            for valuation_method_name in valuation_methods:
+                val = results_per_dataset[dataset_name][valuation_method_name].loc[
+                    metric_name
+                ]
+                m = np.mean(val)
+                s = np.std(val)
                 mean_metric.loc[dataset_name, valuation_method_name] = m
+                std_metric.loc[dataset_name, valuation_method_name] = s
                 mlflow.log_metric(
-                    f"{metric_name}_{dataset_name}_{valuation_method_name}", m
+                    f"{metric_name}_{dataset_name}_{valuation_method_name}_mean", m
+                )
+                mlflow.log_metric(
+                    f"{metric_name}_{dataset_name}_{valuation_method_name}_std", s
                 )
 
         df_styled = mean_metric.style.highlight_max(color="lightgreen", axis=1)
-        output_file = str(f"metrics_{metric_name}.png")
-        dfi.export(df_styled, output_file)
-        with Image.open(output_file) as im:
-            mlflow.log_image(im, output_file)
 
-        os.remove(output_file)
+        output_file = output_folder / f"{metric_name}_mean.png"
+        dfi.export(df_styled, output_file, table_conversion="matplotlib")
+        with Image.open(output_file) as im:
+            mlflow.log_image(im, f"metrics/{metric_name}_mean.png")
+
+        df_styled = std_metric.style.highlight_max(color="lightgreen", axis=1)
+        output_file = output_folder / f"{metric_name}_std.png"
+        dfi.export(df_styled, output_file, table_conversion="matplotlib")
+        with Image.open(output_file) as im:
+            mlflow.log_image(im, f"metrics/{metric_name}_std.png")
 
 
 def load_results_per_dataset(experiment_path: Path):
     params = params_show()
-    dataset_names = params["active"]["datasets"]
-    results_per_dataset = {}
+    params_active = params["active"]
+    repetitions = params_active["repetitions"]
+    dataset_names = params_active["datasets"]
+    valuation_methods = params_active["valuation_methods"]
+    curves_per_dataset = {}
+
     for dataset_name in dataset_names:
         dataset_path = experiment_path / dataset_name
-        n_repetitions = len(
-            [f for f in os.listdir(dataset_path) if f.startswith("repetition")]
-        )
 
-        results = []
-        for repetition in range(n_repetitions):
-            experiment_result = ExperimentResult.load(
-                experiment_path / dataset_name / f"{repetition=}"
-            )
-            results.append(experiment_result)
+        curves_per_valuation_method = {}
 
-        results_per_dataset[dataset_name] = results
-    return results_per_dataset
+        for valuation_method in valuation_methods:
+            curves_per_metric = {}
+            for repetition in repetitions:
+                repetition_path = dataset_path / f"{repetition}" / valuation_method
+                repetition_files = os.listdir(repetition_path)
+                for repetition_file in repetition_files:
+                    key = ".".join(repetition_file.split(".")[:-1])
+                    if key not in curves_per_metric:
+                        curves_per_metric[key] = []
+
+                    new_element = pd.read_csv(repetition_path / repetition_file)
+                    first_col = new_element.columns[0]
+                    new_element.index = new_element[first_col]
+                    new_element = new_element.drop(columns=[first_col])
+                    curves_per_metric[key].append(new_element)
+
+            curves_per_metric = {
+                k: pd.concat(v, axis=1) for k, v in curves_per_metric.items()
+            }
+            curves_per_valuation_method[valuation_method] = curves_per_metric
+
+        curves_per_dataset[dataset_name] = curves_per_valuation_method
+
+    return curves_per_dataset
 
 
 if __name__ == "__main__":

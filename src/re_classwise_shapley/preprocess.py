@@ -1,10 +1,11 @@
 import math as m
+from copy import deepcopy
 from typing import Dict, Tuple
 
 import numpy as np
 import torch
 from numpy.typing import NDArray
-from pydvl.utils import maybe_progress
+from pydvl.utils import Dataset, ensure_seed_sequence, maybe_progress
 from sklearn.decomposition import PCA
 from torchvision.models import ResNet18_Weights, resnet18
 
@@ -19,6 +20,7 @@ def principal_resnet_components(
     y: NDArray[np.int_],
     n_components: int,
     grayscale: bool = False,
+    seed: Seed = None,
 ) -> Tuple[NDArray[np.float_], NDArray[np.int_]]:
     """
     This method calculates an internal feature representation by using a pre-trained
@@ -34,17 +36,18 @@ def principal_resnet_components(
     :param grayscale: True if the input data is grayscale. In this case, the single
         input channel is replicated to red, green and blue channels without scaling the
         grayscale values.
+    :param seed: The seed to use for the random number generator.
     :returns: A tuple containing the processed input and passed output features.
     """
     x = _calculate_resnet18_features(x, grayscale)
-    x = _extract_principal_components(x, n_components)
+    x = _extract_principal_components(x, n_components, seed)
     return x, y
 
 
 def _calculate_resnet18_features(
     x: NDArray[np.float_],
     grayscale: bool,
-    batch_size: int = 1000,
+    batch_size: int = 100,
     progress: bool = True,
 ) -> NDArray[np.float_]:
     """
@@ -89,7 +92,7 @@ def _calculate_resnet18_features(
 
 
 def _extract_principal_components(
-    x: NDArray[np.float_], n_components: int
+    x: NDArray[np.float_], n_components: int, seed: Seed = None
 ) -> NDArray[np.float_]:
     """
     This method extracts the main principal components from the given features. Before
@@ -97,17 +100,19 @@ def _extract_principal_components(
     :param x: Input features of the data. The data is expected to be in the shape of
         (n_samples, n_features).
     :param n_components: Number of principal components to be extracted.
+    :param seed: The seed to use for the random number generator.
     :returns: A tuple containing the passed input and processed output features.
     """
     logger.info(f"Fitting PCA with {n_components} components.")
-    pca = PCA(n_components=n_components)
+    random_state = ensure_seed_sequence(seed).generate_state(1)[0]
+    pca = PCA(n_components=n_components, random_state=random_state)
     x = (x - x.mean()) / x.std()
     x = pca.fit_transform(x)
     return (x - x.mean()) / x.std()
 
 
 def threshold_y(
-    x: NDArray[np.float_], y: NDArray[np.float_], threshold: int
+    x: NDArray[np.float_], y: NDArray[np.float_], threshold: int, seed: Seed = None
 ) -> Tuple[NDArray[np.float_], NDArray[np.int_]]:
     """
     Leave x as it is. All values of y which are smaller or equal to the threshold
@@ -118,6 +123,7 @@ def threshold_y(
     :param y: Output feature of the data. The output features are expected to be of
         shape (n_samples,) and type int.
     :param threshold: Threshold for defining binary classes for y.
+    :param seed: Unused.
     :returns: A tuple containing the processed input and passed output features.
     """
     y = (y <= threshold).astype(int)
@@ -131,10 +137,13 @@ PreprocessorRegistry = {
 
 
 def flip_labels(
-    labels: NDArray[int], perc_flip_labels: float = 0.2, seed: int = None
+    dataset: Dataset, perc: float = 0.2, seed: Seed = None
 ) -> Tuple[NDArray[int], Dict]:
+    labels = dataset.y_train
     rng = np.random.default_rng(seed)
-    num_data_indices = int(perc_flip_labels * len(labels))
+    num_data_indices = int(perc * len(labels))
     p = rng.permutation(len(labels))[:num_data_indices]
     labels[p] = 1 - labels[p]
-    return labels, {"idx": p, "num_flipped": num_data_indices}
+    dataset = deepcopy(dataset)
+    dataset.y_train = labels
+    return dataset, {"idx": [int(i) for i in p], "n_flipped": num_data_indices}

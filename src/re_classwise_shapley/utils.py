@@ -1,34 +1,21 @@
 import os
-import random
 import shutil
 from pathlib import Path
 
-import numpy as np
-import torch
-from numpy.random import SeedSequence
+from pydvl.utils import Seed, ensure_seed_sequence
 
 from re_classwise_shapley.log import setup_logger
 
 logger = setup_logger()
 
 __all__ = [
-    "init_random_seed",
+    "get_pipeline_seed",
     "clear_folder",
 ]
 
 
-def init_random_seed(seed: int) -> SeedSequence:
-    """Taken verbatim from:
-    https://koustuvsinha.com//practices_for_reproducibility/
-    """
-    seed_sequence = SeedSequence(seed)
-    rng = np.random.default_rng(seed_sequence)
-    seed = rng.integers(2**31 - 1, size=1)[0]
-
-    random.seed(seed)
-    os.environ["PYTHONHASHSEED"] = str(seed)
-
-    return seed_sequence.spawn(1)[0]
+def get_pipeline_seed(initial_seed: Seed, pipeline_step: int) -> int:
+    return int(ensure_seed_sequence(initial_seed).generate_state(pipeline_step)[-1])
 
 
 def clear_folder(path: Path):

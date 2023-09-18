@@ -1,40 +1,13 @@
-from abc import abstractmethod
 from typing import Any, Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 from matplotlib.axes import Axes
 
 __all__ = [
-    "setup_plotting",
     "plot_values_histogram",
 ]
-
-
-def setup_plotting():
-    sns.set_theme(style="whitegrid", palette="pastel")
-    sns.set_context("paper", font_scale=1.0)
-
-
-class PlottingBackend:
-    def __init__(self):
-        pass
-
-    @abstractmethod
-    def subplots(self, *args, **kwargs):
-        pass
-
-
-class MatplotlibBackend(PlottingBackend):
-    def subplots(self, *args, **kwargs):
-        raise NotImplementedError
-
-
-class PlotlyBackend(PlottingBackend):
-    def subplots(self, *args, **kwargs):
-        raise NotImplementedError
 
 
 def shaded_mean_normal_confidence_interval(
@@ -63,7 +36,6 @@ def shaded_mean_normal_confidence_interval(
 
     """
     assert len(data.shape) == 2
-    data = data.sort_index()
     mean = data.mean(axis=1)
     sampled_idx = np.random.choice(range(data.shape[1]), n_bootstrap_samples)
     sampled_data = data.iloc[:, sampled_idx]  # TODO
@@ -85,6 +57,9 @@ def shaded_mean_normal_confidence_interval(
         color=shade_color,
     )
     ax.plot(abscissa, mean, color=mean_color, **kwargs)
+
+
+import seaborn as sns
 
 
 def plot_values_histogram(

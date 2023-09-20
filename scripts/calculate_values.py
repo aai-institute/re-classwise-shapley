@@ -8,9 +8,9 @@ import numpy as np
 from dvc.api import params_show
 from pydvl.utils import Scorer, Utility
 
-from re_classwise_shapley.config import Config
+from re_classwise_shapley.accessor import Accessor
 from re_classwise_shapley.model import instantiate_model
-from re_classwise_shapley.utils import get_pipeline_seed
+from re_classwise_shapley.utils import pipeline_seed
 from re_classwise_shapley.valuation_methods import compute_values
 
 
@@ -28,24 +28,34 @@ def calculate_values(
     repetition_id: int,
 ):
     """
-    Calculate data values for a specified dataset.
-    :param dataset_name: Dataset to use.
+    Calculate data values for a specified dataset. The values are calculated using the
+    valuation method specified in the `params.valuation_methods` section. The values
+    are stored in the `Accessor.VALUES_PATH` directory.
+
+    Args:
+        experiment_name: Experiment name as specified in the `params.experiments`
+            section.
+        dataset_name: Dataset name as specified in the `params.datasets` section.
+        model_name: Model name as specified in the `params.models` section.
+        valuation_method: Valuation method name as specified in the
+            `params.valuation_methods` section.
+        repetition_id: Unique repetition id used for seeding the experiment
     """
 
     input_dir = (
-        Config.SAMPLED_PATH / experiment_name / dataset_name / str(repetition_id)
+        Accessor.SAMPLED_PATH / experiment_name / dataset_name / str(repetition_id)
     )
     with open(input_dir / "val_set.pkl", "rb") as file:
         val_set = pickle.load(file)
 
-    _n_pipeline_step = 2
+    n_pipeline_step = 2
+    seed = pipeline_seed(repetition_id, n_pipeline_step)
+    sub_seeds = np.random.SeedSequence(seed).generate_state(2)
+
     params = params_show()
     valuation_method_config = params["valuation_methods"][valuation_method]
     backend = params["settings"]["backend"]
     n_jobs = params["settings"]["n_jobs"]
-
-    seed = get_pipeline_seed(repetition_id, 2)
-    sub_seeds = np.random.SeedSequence(seed).generate_state(2)
 
     model_kwargs = params["models"][model_name]
     model = instantiate_model(model_name, model_kwargs, seed=int(sub_seeds[0]))
@@ -55,6 +65,7 @@ def calculate_values(
         scorer=Scorer("accuracy", default=0.0),
         catch_errors=False,
     )
+
     start_time = time.time()
     values = compute_values(
         u,
@@ -70,8 +81,9 @@ def calculate_values(
     )
     diff_time = time.time() - start_time
     runtime_stats = {"time_s": diff_time}
+
     output_dir = (
-        Config.VALUES_PATH
+        Accessor.VALUES_PATH
         / experiment_name
         / model_name
         / dataset_name

@@ -1,5 +1,5 @@
 settings:
-  n_jobs: 92
+  n_jobs: 4
   backend: joblib
 
 active:
@@ -9,28 +9,28 @@ active:
   ]
   models: [
     logistic_regression,
-    svm
+    #    svm
   ]
   datasets: [
     diabetes,
-    cpu,
-    click,
-    covertype,
-    cifar10,
-    fmnist_binary,
-    mnist_binary,
-    mnist_multi,
+    #    cpu,
+    #    click,
+    #    covertype,
+    #    cifar10,
+    #    fmnist_binary,
+    #    mnist_binary,
+    #    mnist_multi,
     phoneme
   ]
   valuation_methods: [
     random,
     loo,
-    classwise_shapley,
-    beta_shapley,
-    tmc_shapley,
-    banzhaf_shapley,
-    owen_sampling_shapley,
-    least_core
+    #    classwise_shapley,
+    #    beta_shapley,
+    #    tmc_shapley,
+    #    banzhaf_shapley,
+    #    owen_sampling_shapley,
+    #    least_core
   ]
   repetitions: [ 1, 2, 3, 4, 5 ]
 

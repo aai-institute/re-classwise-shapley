@@ -1,8 +1,9 @@
 import json
 import os
 import pickle
+from enum import Enum
 from functools import partial
-from typing import Callable, Dict
+from typing import Callable, Dict, Literal
 
 import click
 import pandas as pd
@@ -10,24 +11,36 @@ from dvc.api import params_show
 from pydvl.utils import Dataset
 from pydvl.value import ValuationResult
 
-from re_classwise_shapley.config import Config
+from re_classwise_shapley.accessor import Accessor
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.metric import (
-    metric_curve,
-    pr_recall,
-    roc_auc,
-    weighted_metric_drop,
+    curve_precision_recall_valuation_result,
+    curve_score_over_point_removal_or_addition,
+    metric_roc_auc,
+    metric_weighted_metric_drop,
 )
 from re_classwise_shapley.model import instantiate_model
 
 logger = setup_logger("evaluate_metrics")
 
 
-def instantiate_metrics(
+def instantiate_metric_functions(
     prefix: str,
-    idx: str,
+    idx: Literal["weighted_metric_drop", "roc_auc"],
     **kwargs,
 ) -> Dict[str, Callable[[Dataset, ValuationResult, Dict], float]]:
+    """
+    Dispatches the metrics to functions accepting a dataset, valuation result and
+    preprocess info.
+
+    Args:
+        prefix: Prefix for the keys to be used to identify the metrics.
+        idx: Identifier for the metric to be used.
+        **kwargs: Contains kw arguments for metrics.
+
+    Returns:
+        A dictionary of functions to calculate the metrics.
+    """
     params = params_show()
     metrics = {}
     if idx == "weighted_metric_drop":
@@ -36,14 +49,18 @@ def instantiate_metrics(
         for eval_model in eval_models:
             metric_key = f"{prefix}.{eval_model}"
             transfer_model_kwargs = params["models"][eval_model]
-            transfer_model = instantiate_model(eval_model, transfer_model_kwargs)
+            eval_model_instance = instantiate_model(eval_model, transfer_model_kwargs)
             metrics[metric_key] = partial(
-                weighted_metric_drop, eval_model=transfer_model, metric=metric
+                metric_weighted_metric_drop,
+                eval_model=eval_model_instance,
+                metric=metric,
             )
 
         return metrics  # type: ignore
     elif idx == "roc_auc":
-        metrics[prefix] = partial(roc_auc, flipped_labels=kwargs["flipped_labels"])
+        metrics[prefix] = partial(
+            metric_roc_auc, flipped_labels=kwargs["flipped_labels"]
+        )
         return metrics  # type: ignore
 
     else:
@@ -55,6 +72,18 @@ def instantiate_curves(
     idx: str,
     **kwargs,
 ) -> Dict[str, Callable[[Dataset, ValuationResult, Dict], pd.DataFrame]]:
+    """
+    Dispatches the metrics to functions accepting a dataset, valuation result and
+    preprocess info.
+
+    Args:
+        prefix: Prefix for the keys to be used to identify the metrics.
+        idx: Identifier for the metric to be used.
+        **kwargs: Contains kw arguments for metrics.
+
+    Returns:
+        A dictionary of functions to calculate the curves.
+    """
     params = params_show()
     curves = {}
     if idx == "highest_point_removal" or idx == "lowest_point_addition":
@@ -66,7 +95,7 @@ def instantiate_curves(
             transfer_model_kwargs = params["models"][eval_model]
             transfer_model = instantiate_model(eval_model, transfer_model_kwargs)
             curves[curve_key] = partial(
-                metric_curve,
+                curve_score_over_point_removal_or_addition,
                 eval_model=transfer_model,
                 metric=metric,
                 highest_point_removal=highest_point_removal,
@@ -75,7 +104,9 @@ def instantiate_curves(
         return curves  # type: ignore
     elif idx == "precision_recall":
         flipped_labels = kwargs["flipped_labels"]
-        curves[prefix] = partial(pr_recall, flipped_labels=flipped_labels)
+        curves[prefix] = partial(
+            curve_precision_recall_valuation_result, flipped_labels=flipped_labels
+        )
         return curves  # type: ignore
     else:
         raise NotImplementedError(f"Curve {idx} is not implemented.")
@@ -99,7 +130,7 @@ def evaluate_metrics(
     :param dataset_name: Dataset to use.
     """
     input_dir = (
-        Config.VALUES_PATH
+        Accessor.VALUES_PATH
         / experiment_name
         / model_name
         / dataset_name
@@ -112,7 +143,9 @@ def evaluate_metrics(
     ) as file:
         values = pickle.load(file)
 
-    data_dir = Config.SAMPLED_PATH / experiment_name / dataset_name / str(repetition_id)
+    data_dir = (
+        Accessor.SAMPLED_PATH / experiment_name / dataset_name / str(repetition_id)
+    )
     with open(data_dir / "test_set.pkl", "rb") as file:
         test_set = pickle.load(file)
 
@@ -123,21 +156,8 @@ def evaluate_metrics(
     else:
         preprocess_info = {}
 
-    params = params_show()
-    metrics = params["experiments"][experiment_name]["metrics"]
-
-    eval_metrics = {}
-    for metric_name, metric_kwargs in metrics.items():
-        eval_metrics.update(instantiate_metrics(metric_name, **metric_kwargs))
-
-    evaluated_metrics = {}
-    for eval_metric_key, eval_metric in eval_metrics.items():
-        logger.info("Evaluating metric %s", eval_metric_key)
-        eval_metric_value = eval_metric(test_set, values, preprocess_info)
-        evaluated_metrics[eval_metric_key] = eval_metric_value
-
     output_dir = (
-        Config.RESULT_PATH
+        Accessor.RESULT_PATH
         / experiment_name
         / model_name
         / dataset_name
@@ -145,6 +165,20 @@ def evaluate_metrics(
         / valuation_method
     )
     os.makedirs(output_dir, exist_ok=True)
+
+    params = params_show()
+    metrics = params["experiments"][experiment_name]["metrics"]
+
+    eval_metrics = {}
+    for metric_name, metric_kwargs in metrics.items():
+        eval_metrics.update(instantiate_metric_functions(metric_name, **metric_kwargs))
+
+    evaluated_metrics = {}
+    for eval_metric_key, eval_metric in eval_metrics.items():
+        logger.info("Evaluating metric %s", eval_metric_key)
+        eval_metric_value = eval_metric(test_set, values, preprocess_info)
+        evaluated_metrics[eval_metric_key] = eval_metric_value
+
     evaluated_metrics = pd.Series(evaluated_metrics)
     evaluated_metrics.name = "value"
     evaluated_metrics.index.name = "metric"

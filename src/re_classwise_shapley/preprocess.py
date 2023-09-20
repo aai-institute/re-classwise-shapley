@@ -1,11 +1,10 @@
 import math as m
-from copy import deepcopy
-from typing import Dict, Tuple
+from typing import Tuple
 
 import numpy as np
 import torch
 from numpy.typing import NDArray
-from pydvl.utils import Dataset, ensure_seed_sequence, maybe_progress
+from pydvl.utils import ensure_seed_sequence, maybe_progress
 from sklearn.decomposition import PCA
 from torchvision.models import ResNet18_Weights, resnet18
 
@@ -24,20 +23,23 @@ def principal_resnet_components(
 ) -> Tuple[NDArray[np.float_], NDArray[np.int_]]:
     """
     This method calculates an internal feature representation by using a pre-trained
-    resnet18. Subsequently, the internal representation is used by PCA to extract the
-    main principal components.
+    resnet18. All images are processed in batched to avoid memory issues. Afterward,
+    the main principal components are extracted from the features.
 
-    :param x: Input features of the data. The data is expected to be in the shape of
-        (n_samples, n_features) or (n_samples, n_channels, n_features). The former case
-        represents grayscale images and the latter full color images.
-    :param y: Output feature of the data. The output features are expected to be of
-        shape (n_samples,) and type int.
-    :param n_components: The number of principal components (See PCA).
-    :param grayscale: True if the input data is grayscale. In this case, the single
-        input channel is replicated to red, green and blue channels without scaling the
-        grayscale values.
-    :param seed: The seed to use for the random number generator.
-    :returns: A tuple containing the processed input and passed output features.
+    Args:
+        x: Input features of the data. The data is expected to be in the shape of
+            (n_samples, n_features) or (n_samples, n_channels, n_features). The former
+            case represents grayscale images and the latter full color images.
+        y: Output feature of the data. The output features are expected to be of
+            shape (n_samples,) and type int.
+        n_components: The number of principal components (See PCA).
+        grayscale: True if the input data is grayscale. In this case, the single
+            input channel is replicated to red, green and blue channels without scaling the
+            grayscale values.
+        seed: Either a seed or a seed sequence to use for the random number generator.
+
+    Returns:
+        A tuple containing the processed input and passed output features.
     """
     x = _calculate_resnet18_features(x, grayscale)
     x = _extract_principal_components(x, n_components, seed)
@@ -53,15 +55,19 @@ def _calculate_resnet18_features(
     """
     This method calculates an internal feature representation by using a pre-trained
     resnet18. All images are processed in batched to avoid memory issues.
-    :param x: Input features of the data. The data is expected to be in the shape of
-        (n_samples, n_features) or (n_samples, n_channels, n_features). The former case
-        represents grayscale images and the latter full color images.
-    :param grayscale: True if the input data is grayscale. In this case, the single
-        input channel is replicated to red, green and blue channels without scaling the
-        grayscale values.
-    :param batch_size: Number of images which are processed in a single batch.
-    :param progress: Whether to display a progress bar.
-    :returns: Processed features.
+
+    Args:
+        x: Input features of the data. The data is expected to be in the shape of
+            (n_samples, n_features) or (n_samples, n_channels, n_features). The former
+             case represents grayscale images and the latter full color images.
+        grayscale: True if the input data is grayscale. In this case, the single input
+            channel is replicated to red, green and blue channels without scaling the
+            grayscale values.
+        batch_size: Number of images which are processed in a single batch.
+        progress: Whether to display a progress bar.
+
+    Returns:
+        Processed features.
     """
     logger.info("Applying resnet18.")
     weights = ResNet18_Weights.DEFAULT
@@ -97,11 +103,15 @@ def _extract_principal_components(
     """
     This method extracts the main principal components from the given features. Before
     and after applying PCA the features are scaled to have zero mean and unit variance.
-    :param x: Input features of the data. The data is expected to be in the shape of
-        (n_samples, n_features).
-    :param n_components: Number of principal components to be extracted.
-    :param seed: The seed to use for the random number generator.
-    :returns: A tuple containing the passed input and processed output features.
+
+    Args:
+        x: Input features of the data. The data is expected to be in the shape of
+            (n_samples, n_features).
+        n_components: Number of principal components to be extracted.
+        seed: Either a seed or a seed sequence to use for the random number generator.
+
+    Returns:
+        A tuple containing the passed input and processed output features.
     """
     logger.info(f"Fitting PCA with {n_components} components.")
     random_state = ensure_seed_sequence(seed).generate_state(1)[0]
@@ -118,13 +128,15 @@ def threshold_y(
     Leave x as it is. All values of y which are smaller or equal to the threshold
     are set to 0 and all values which are larger are set to 1.
 
-    :param x: Input features of the data. The data is expected to be in the shape of
-        (n_samples, n_features).
-    :param y: Output feature of the data. The output features are expected to be of
-        shape (n_samples,) and type int.
-    :param threshold: Threshold for defining binary classes for y.
-    :param seed: Unused.
-    :returns: A tuple containing the processed input and passed output features.
+    Args:
+        x: Input features of the data. The data is expected to be in the shape of
+            (n_samples, n_features).
+        y: Output feature of the data. The output features are expected to be of
+            shape (n_samples,) and type int.
+        threshold: Threshold for defining binary classes for y.
+        seed: Unused.
+    Returns:
+         A tuple containing the processed input and passed output features.
     """
     y = (y <= threshold).astype(int)
     return x, y
@@ -134,16 +146,3 @@ PreprocessorRegistry = {
     "principal_resnet_components": principal_resnet_components,
     "threshold_y": threshold_y,
 }
-
-
-def flip_labels(
-    dataset: Dataset, perc: float = 0.2, seed: Seed = None
-) -> Tuple[NDArray[int], Dict]:
-    labels = dataset.y_train
-    rng = np.random.default_rng(seed)
-    num_data_indices = int(perc * len(labels))
-    p = rng.permutation(len(labels))[:num_data_indices]
-    labels[p] = 1 - labels[p]
-    dataset = deepcopy(dataset)
-    dataset.y_train = labels
-    return dataset, {"idx": [int(i) for i in p], "n_flipped": num_data_indices}

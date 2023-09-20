@@ -1,11 +1,10 @@
 import os
 import os.path
-import pickle
 import shutil
 import tarfile
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
 import click
 import dataframe_image as dfi
@@ -18,12 +17,10 @@ from dotenv import load_dotenv
 from dvc.api import params_show
 from numpy._typing import NDArray
 from PIL import Image
-from plotly.subplots import make_subplots
 from pydvl.value import ValuationResult
 from scipy.stats import gaussian_kde
 
 from re_classwise_shapley.accessor import Accessor
-from re_classwise_shapley.config import Config
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.plotting import shaded_mean_normal_confidence_interval
 
@@ -52,7 +49,7 @@ COLORS = {
 }
 
 
-def get_or_create_mlflow_experiment(experiment_name):
+def get_or_create_mlflow_experiment(experiment_name: str):
     experiment = mlflow.get_experiment_by_name(experiment_name)
     if not experiment:
         experiment_id = mlflow.create_experiment(

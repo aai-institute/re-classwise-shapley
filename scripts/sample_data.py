@@ -1,7 +1,6 @@
 import json
 import os
 import pickle
-from copy import deepcopy
 from typing import Dict, List, Tuple
 
 import click
@@ -160,7 +159,7 @@ def stratified_sampling(
     unique_labels, counts = np.unique(labels, return_counts=True)
     relative_set_sizes = counts / len(labels)
     windows = [np.where(labels == label)[0] for label in unique_labels]
-    windows_idx = np.zeros(len(windows))
+    windows_idx = np.zeros(len(windows), dtype=np.int_)
     sampled_data = []
 
     for size in n_samples:

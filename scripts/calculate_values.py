@@ -63,7 +63,7 @@ def calculate_values(
         data=val_set,
         model=model,
         scorer=Scorer("accuracy", default=0.0),
-        catch_errors=False,
+        catch_errors=True,
     )
 
     start_time = time.time()

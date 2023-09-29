@@ -15,8 +15,8 @@ def setup_logger(name: Optional[str] = None) -> logging.Logger:
     """
     logger = logging.getLogger(name or __name__)
     logging.basicConfig(
-        level=logging.ERROR,
+        level=logging.INFO,
         format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
     )
-    logger.level = logging.DEBUG
+    logger.level = logging.INFO
     return logger

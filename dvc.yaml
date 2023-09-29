@@ -98,6 +98,7 @@ stages:
       - output/values/point_removal/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
     outs:
       - output/results/point_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.csv
+      - output/results/point_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.curve.csv
   
   evaluate_metrics_noise_removal:
     matrix:
@@ -121,6 +122,7 @@ stages:
       - output/values/noise_removal/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
     outs:
       - output/results/noise_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.csv
+      - output/results/noise_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.curve.csv
   
   render_plots:
     matrix:

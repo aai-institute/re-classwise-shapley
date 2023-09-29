@@ -11,8 +11,11 @@ from pydvl.utils import Dataset
 
 from re_classwise_shapley.accessor import Accessor
 from re_classwise_shapley.io import load_dataset
+from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import Seed
-from re_classwise_shapley.utils import pipeline_seed
+from re_classwise_shapley.utils import load_params_fast, pipeline_seed
+
+logger = setup_logger("sample_data")
 
 
 @click.command()
@@ -40,6 +43,13 @@ def sample_data(
     """
     params = load_params_fast()
     input_folder = Accessor.PREPROCESSED_PATH / dataset_name
+    output_dir = (
+        Accessor.SAMPLED_PATH / experiment_name / dataset_name / str(repetition_id)
+    )
+    if os.path.exists(output_dir / "val_set.pkl") and os.path.exists(
+        output_dir / "test_set.pkl"
+    ):
+        return logger.info(f"Sampled data exists in '{output_dir}'. Skipping...")
 
     seed = pipeline_seed(repetition_id, 1)
     seed_sequence = SeedSequence(seed).spawn(2)
@@ -59,9 +69,6 @@ def sample_data(
             val_set, experiment_config["preprocessors"], seed_sequence
         )
 
-    output_dir = (
-        Accessor.SAMPLED_PATH / experiment_name / dataset_name / str(repetition_id)
-    )
     os.makedirs(output_dir, exist_ok=True)
 
     with open(output_dir / "val_set.pkl", "wb") as file:

@@ -9,7 +9,7 @@ from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import RawDataset
 from re_classwise_shapley.utils import load_params_fast
 
-logger = setup_logger()
+logger = setup_logger("fetch_data")
 
 
 @click.command()
@@ -29,9 +29,10 @@ def fetch_data(dataset_name: str):
     open_ml_id = dataset_config["openml_id"]
 
     dataset_folder = Accessor.RAW_PATH / dataset_name
-    if os.path.exists(dataset_folder):
-        logger.info(f"Dataset {dataset_name} exists. Skipping.")
-        return
+    if os.path.exists(dataset_folder / "x.npy") and os.path.exists(
+        dataset_folder / "y.npy"
+    ):
+        return logger.info(f"Dataset {dataset_name} exists. Skipping...")
 
     logger.info(f"Download dataset {dataset_name} with openml_id {open_ml_id}.")
     dataset = fetch_single_dataset(open_ml_id)

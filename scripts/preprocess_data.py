@@ -13,7 +13,7 @@ from re_classwise_shapley.preprocess import PreprocessorRegistry
 from re_classwise_shapley.types import RawDataset
 from re_classwise_shapley.utils import load_params_fast
 
-logger = setup_logger()
+logger = setup_logger("preprocess_data")
 
 
 @click.command()
@@ -31,11 +31,12 @@ def preprocess_data(
         dataset_name: The name of the dataset to preprocess.
     """
     preprocessed_folder = Accessor.PREPROCESSED_PATH / dataset_name
-    if os.path.exists(preprocessed_folder):
-        logger.info(
-            f"Preprocessed data '{dataset_name}' exists in '{preprocessed_folder}'."
+    if os.path.exists(preprocessed_folder / "x.npy") and os.path.exists(
+        preprocessed_folder / "y.npy"
+    ):
+        return logger.info(
+            f"Preprocessed data exists in '{preprocessed_folder}'. Skipping..."
         )
-        return
 
     params = load_params_fast()
     datasets_settings = params["datasets"]

@@ -5,7 +5,6 @@ from typing import Dict, List, Tuple
 
 import click
 import numpy as np
-from dvc.api import params_show
 from numpy.random import SeedSequence
 from numpy.typing import NDArray
 from pydvl.utils import Dataset
@@ -39,7 +38,7 @@ def sample_data(
         repetition_id: Repetition id of the experiment. It is used also as a seed for
             all randomness.
     """
-    params = params_show()
+    params = load_params_fast()
     input_folder = Accessor.PREPROCESSED_PATH / dataset_name
 
     seed = pipeline_seed(repetition_id, 1)

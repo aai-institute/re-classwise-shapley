@@ -3,7 +3,6 @@ from typing import Dict
 
 import click
 import pandas as pd
-from dvc.api import params_show
 from sklearn import preprocessing
 
 from re_classwise_shapley.accessor import Accessor
@@ -12,6 +11,7 @@ from re_classwise_shapley.io import load_dataset, store_dataset
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.preprocess import PreprocessorRegistry
 from re_classwise_shapley.types import RawDataset
+from re_classwise_shapley.utils import load_params_fast
 
 logger = setup_logger()
 
@@ -37,7 +37,7 @@ def preprocess_data(
         )
         return
 
-    params = params_show()
+    params = load_params_fast()
     datasets_settings = params["datasets"]
 
     dataset_folder = Accessor.RAW_PATH / dataset_name

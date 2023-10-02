@@ -74,7 +74,7 @@ def compute_values(
                 return compute_classwise_shapley_values(
                     utility,
                     done=MinUpdates(n_updates=n_updates),
-                    truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),
+                    truncation=RelativeTruncation(utility, rtol=float(kwargs["rtol"])),
                     normalize_values=kwargs["normalize_values"],
                     done_sample_complements=MaxChecks(
                         kwargs["n_resample_complement_sets"]
@@ -120,7 +120,7 @@ def compute_values(
                 return compute_shapley_values(
                     utility,
                     mode=ShapleyMode.PermutationMontecarlo,
-                    truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),
+                    truncation=RelativeTruncation(utility, rtol=float(kwargs["rtol"])),
                     done=MinUpdates(n_updates=n_updates),
                     n_jobs=n_jobs,
                     config=parallel_config,

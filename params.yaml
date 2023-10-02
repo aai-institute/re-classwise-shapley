@@ -43,22 +43,27 @@ experiments:
         idx: weighted_metric_drop
         metric: accuracy
         eval_model: logistic_regression
+        len_curve_perc: 0.5
       weighted_accuracy_drop_knn:
         idx: weighted_metric_drop
         metric: accuracy
         eval_model: knn
+        len_curve_perc: 0.5
       weighted_accuracy_drop_gradient_boosting_classifier:
         idx: weighted_metric_drop
         metric: accuracy
         eval_model: gradient_boosting_classifier
+        len_curve_perc: 0.5
       weighted_accuracy_drop_svm:
         idx: weighted_metric_drop
         metric: accuracy
         eval_model: svm
+        len_curve_perc: 0.5
       weighted_accuracy_drop_mlp:
         idx: weighted_metric_drop
         metric: accuracy
         eval_model: mlp
+        len_curve_perc: 0.5
   
   noise_removal:
     sampler: default

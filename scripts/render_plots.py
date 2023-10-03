@@ -212,7 +212,8 @@ def plot_histogram(
     )
 
     activate_mode(dark_mode)
-    h, w = 2, int((len(valuation_results) + 1) / 2)
+    h = 3
+    w = int((len(valuation_results) + h - 1) / h)
     fig_ax_d = {}
     idx = 0
 
@@ -224,7 +225,7 @@ def plot_histogram(
                 fig, ax = plt.subplots(
                     h, w, figsize=(w * patch_size[0], h * patch_size[1])
                 )
-                ax = ax.T.flatten()
+                ax = ax.flatten()
 
                 if dark_mode:
                     for i in range(len(ax)):
@@ -237,6 +238,9 @@ def plot_histogram(
             sns.histplot(
                 method_values.reshape(-1), kde=True, ax=ax[idx], bins="sturges"
             )
+            if int(idx / w) != 0:
+                ax[idx].set_ylabel("")
+
             ax[idx].set_title(f"({chr(97 + idx)}) {dataset_name}")
 
         idx += 1
@@ -248,7 +252,6 @@ def plot_histogram(
             ax[-1].axis("off")
 
         fig.subplots_adjust(hspace=0.4)
-        fig.suptitle(f"Density plot values by '{key}'")
         f_name = f"density.{key}.png"
         logger.info(f"Logging plot '{f_name}'")
         output_file = output_folder / f_name
@@ -286,11 +289,11 @@ def plot_curves(
     os.makedirs(output_folder, exist_ok=True)
     activate_mode(dark_mode)
     num_datasets = len(dataset_names)
-    h = 2
-    w = int(num_datasets / 2) + 1
+    h = 3
+    w = int((len(dataset_names) + h - 1) / h)
     for metric_name in metric_names:
         fig, ax = plt.subplots(h, w, figsize=(w * 20 / 4, h * 5 / 2))
-        ax = ax.T.flatten()
+        ax = ax.flatten()
         if dark_mode:
             for i in range(len(ax)):
                 ax[i].patch.set_facecolor("none")
@@ -316,14 +319,18 @@ def plot_curves(
                 ax[idx].set_title(f"({chr(97 + idx)}) {dataset_name}")
 
         handles, labels = ax[num_datasets - 1].get_legend_handles_labels()
-        if len(ax) == num_datasets + 2:
-            ax[-2].grid(False)
-            ax[-2].axis("off")
+        for i in range(num_datasets, len(ax)):
+            ax[i].grid(False)
+            ax[i].axis("off")
 
-        ax[-1].grid(False)
-        ax[-1].axis("off")
-        ax[-1].legend(handles, labels, loc="center", fontsize=10)
-        fig.suptitle(title + f" with metric '{metric_name}'")
+        fig.legend(
+            handles,
+            labels,
+            loc="outside lower center",
+            ncol=len(valuation_methods),
+            fancybox=True,
+            shadow=True,
+        )
         fig.subplots_adjust(hspace=0.4)
 
         output_file = output_folder / f"{metric_name}.png"
@@ -447,7 +454,7 @@ def load_results_per_dataset_and_method(
                     curve.index = curve[curve.columns[0]]
                     curve = curve.drop(columns=[curve.columns[0]])
 
-                    len_curve_perc = metric_config["len_curve_perc"]
+                    len_curve_perc = metric_config.get("len_curve_perc", 1)
                     curve = curve.iloc[: int(len_curve_perc * len(curve))]
                     curves_per_metric[key].append((metric, curve))
 

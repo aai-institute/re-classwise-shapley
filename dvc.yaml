@@ -76,7 +76,7 @@ stages:
       - output/values/${item.experiment}/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
 
   # TODO Make more concise once https://github.com/iterative/dvc/issues/9948 is closed.
-  evaluate_metrics_point_removal:
+  evaluate-metrics-point-removal:
     matrix:
       dataset: ${active.datasets}
       model: ${active.models}
@@ -100,7 +100,7 @@ stages:
       - output/results/point_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.csv
       - output/results/point_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.curve.csv
   
-  evaluate_metrics_noise_removal:
+  evaluate-metrics-noise-removal:
     matrix:
       dataset: ${active.datasets}
       model: ${active.models}
@@ -124,7 +124,7 @@ stages:
       - output/results/noise_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.csv
       - output/results/noise_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.curve.csv
   
-  render_plots:
+  render-plots:
     matrix:
       experiment: ${active.experiments}
       model: ${active.models}

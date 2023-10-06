@@ -1,5 +1,5 @@
 settings:
-  n_jobs: 92
+  n_jobs: 94
   backend: joblib
 
 active:
@@ -34,7 +34,7 @@ active:
     #owen_sampling_shapley,
     #least_core
   ]
-  repetitions: [ 1, 2, 3, 4, 5 ]
+  repetitions: [ 6, 7, 8, 9, 10 ]
 
 experiments:
   point_removal:

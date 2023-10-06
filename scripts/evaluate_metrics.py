@@ -6,8 +6,6 @@ from functools import partial
 
 import click
 import pandas as pd
-import yaml
-from dvc.api import params_show
 from pydvl.parallel import ParallelConfig
 
 from re_classwise_shapley.accessor import Accessor
@@ -17,7 +15,6 @@ from re_classwise_shapley.utils import load_params_fast, n_threaded
 
 logger = setup_logger(__name__)
 
-# Type -> Metric -> Function
 MetricRegistry = {
     "weighted_metric_drop": metric_weighted_metric_drop,
     "precision_recall_roc_auc": metric_roc_auc,
@@ -52,7 +49,19 @@ def evaluate_metrics(
         / dataset_name
         / str(repetition_id)
     )
-    os.makedirs(input_dir, exist_ok=True)
+    output_dir = (
+        Accessor.RESULT_PATH
+        / experiment_name
+        / model_name
+        / dataset_name
+        / str(repetition_id)
+        / valuation_method
+    )
+    if os.path.exists(output_dir / f"{metric_name}.csv") and os.path.exists(
+        output_dir / f"{metric_name}.curve.csv"
+    ):
+        return logger.info(f"Sampled data exists in '{output_dir}'. Skipping...")
+
     with open(
         input_dir / f"valuation.{valuation_method}.pkl",
         "rb",
@@ -72,14 +81,6 @@ def evaluate_metrics(
     else:
         preprocess_info = {}
 
-    output_dir = (
-        Accessor.RESULT_PATH
-        / experiment_name
-        / model_name
-        / dataset_name
-        / str(repetition_id)
-        / valuation_method
-    )
     os.makedirs(output_dir, exist_ok=True)
 
     logger.info("Creating metric...")

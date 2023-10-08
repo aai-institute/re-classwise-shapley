@@ -151,8 +151,8 @@ models:
     solver: liblinear
   
   gradient_boosting_classifier:
-    n_estimators: 1
-    min_samples_leaf: 6
+    n_estimators: 40
+    min_samples_split: 6
     max_depth: 2
   
   knn:

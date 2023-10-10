@@ -1,3 +1,18 @@
+"""
+Stage 2 for preprocessing datasets fetched in stage 1.
+
+1. Fetch data
+2. Preprocess data
+3. Sample data
+4. Calculate Shapley values
+5. Evaluate metrics
+6. Render plots
+
+Preprocesses the datasets as defined in the `datasets` section of `params.yaml` file.
+All files are stored in `Accessor.PREPROCESSED_PATH / dataset_name` as`x.npy` and
+`y.npy`. Additional information is stored in `*.json` files.
+"""
+
 import os
 from typing import Dict
 
@@ -28,7 +43,8 @@ def preprocess_data(
     folder `Access.PREPROCESSED_PATH / dataset_name`.
 
     Args:
-        dataset_name: The name of the dataset to preprocess.
+        dataset_name: The name of the dataset to preprocess. As specified in th
+            `params.datasets` section.
     """
     preprocessed_folder = Accessor.PREPROCESSED_PATH / dataset_name
     if os.path.exists(preprocessed_folder / "x.npy") and os.path.exists(

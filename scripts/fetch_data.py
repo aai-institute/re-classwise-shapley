@@ -1,3 +1,18 @@
+"""
+Stage 1 for fetching the data from openml.
+
+1. Fetch data
+2. Preprocess data
+3. Sample data
+4. Calculate Shapley values
+5. Evaluate metrics
+6. Render plots
+
+Downloads the datasets from openml as defined in the `params.yaml` file. All files are
+stored in `Accessor.RAW_PATH / dataset_name` as`x.npy` and `y.npy`. Additional
+information is stored in `*.json` files.
+"""
+
 import os
 
 import click
@@ -22,7 +37,8 @@ def fetch_data(dataset_name: str):
     stored in a folder `Access.RAW_PATH / dataset_name`.
 
     Args:
-        dataset_name: The name of the dataset to fetch.
+        dataset_name: The name of the dataset to preprocess. As specified in th
+            `params.datasets` section.
     """
     params = load_params_fast()
     dataset_config = params["datasets"][dataset_name]
@@ -47,6 +63,7 @@ def fetch_single_dataset(
 
     Args:
         openml_id: Openml id of the dataset.
+
     Returns:
         Tuple of x, y and additional info. Additional information contains a mapping
         from file_names to dictionaries (to be saved as `*.json`). It contains a file

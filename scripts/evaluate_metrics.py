@@ -1,3 +1,20 @@
+"""
+Stage five evaluates metrics using calculated Shapley values.
+
+1. Fetch data
+2. Preprocess data
+3. Sample data
+4. Calculate Shapley values
+5. Evaluate metrics
+6. Render plots
+
+Evaluate metrics using calculated Shapley values as specified in the
+`params.experiments` section. All files are stored in the `Accessor.RESULT_PATH`
+directory. The metrics are usually stored as `*.csv` files. Each metric consists of
+a single value and a curve. The curve is stored as `*.curve.csv` file.
+"""
+
+
 import json
 import logging
 import os
@@ -13,7 +30,7 @@ from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.metric import metric_roc_auc, metric_weighted_metric_drop
 from re_classwise_shapley.utils import load_params_fast, n_threaded
 
-logger = setup_logger(__name__)
+logger = setup_logger("evaluate_metrics")
 
 MetricRegistry = {
     "weighted_metric_drop": metric_weighted_metric_drop,
@@ -26,19 +43,32 @@ MetricRegistry = {
 @click.option("--dataset-name", type=str, required=True)
 @click.option("--model-name", type=str, required=True)
 @click.option("--repetition-id", type=int, required=True)
-@click.option("--valuation-method", type=str, required=True)
+@click.option("--valuation-method-name", type=str, required=True)
 @click.option("--metric-name", type=str, required=True)
 def evaluate_metrics(
     experiment_name: str,
     dataset_name: str,
     model_name: str,
-    valuation_method: str,
+    valuation_method_name: str,
     repetition_id: int,
     metric_name: str,
 ):
     """
-    Calculate data values for a specified dataset.
-    :param dataset_name: Dataset to use.
+    Evaluate one metric on the calculated values. The metric is specified in the
+    `params.experiments` section. The values are stored in the `Accessor.RESULT_PATH`.
+
+    Args:
+        experiment_name: Name of the executed experiment. As specified in the
+            `params.experiments` section.
+        dataset_name: The name of the dataset to preprocess. As specified in th
+            `params.datasets` section.
+        model_name: Model to use. As specified in the `params.models` section.
+        valuation_method_name: Name of the valuation method to use. As specified in the
+            `params.valuation_methods` section.
+        repetition_id: Repetition id of the experiment. It is used also as a seed for
+            all randomness.
+        metric_name: Name of the metric to use. As specified in the `metrics` section of
+            the current experiment in `params.experiment` section.
     """
 
     logger.info("Loading values, test set and preprocess info.")
@@ -55,7 +85,7 @@ def evaluate_metrics(
         / model_name
         / dataset_name
         / str(repetition_id)
-        / valuation_method
+        / valuation_method_name
     )
     if os.path.exists(output_dir / f"{metric_name}.csv") and os.path.exists(
         output_dir / f"{metric_name}.curve.csv"
@@ -63,7 +93,7 @@ def evaluate_metrics(
         return logger.info(f"Sampled data exists in '{output_dir}'. Skipping...")
 
     with open(
-        input_dir / f"valuation.{valuation_method}.pkl",
+        input_dir / f"valuation.{valuation_method_name}.pkl",
         "rb",
     ) as file:
         values = pickle.load(file)

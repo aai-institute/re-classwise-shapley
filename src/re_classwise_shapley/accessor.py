@@ -37,6 +37,7 @@ class Accessor:
     ) -> Dict[str, Dict[str, NDArray[np.float_]]]:
         """
         Fetches the valuation results for a given dataset, method and repetition.
+
         Args:
             dataset_names: List of dataset_names to load.
             method_names: List of method_names to load.

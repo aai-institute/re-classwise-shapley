@@ -2,39 +2,40 @@ settings:
   n_jobs: 94
   backend: joblib
   mlflow_tracking_uri: http://localhost:5000
-    
+
 active:
-  experiments: [
-    point_removal,
-    noise_removal
-  ]
-  models: [
-    logistic_regression,
-    svm,
-    knn,
-    gradient_boosting_classifier,
-  ]
-  datasets: [
-    cifar10,
-    click,
-    covertype,
-    cpu,
-    diabetes,
-    fmnist_binary,
-    mnist_binary,
-    mnist_multi,
-    phoneme
-  ]
-  valuation_methods: [
-    loo,
-    classwise_shapley,
-    beta_shapley,
-    tmc_shapley,
-    banzhaf_shapley,
-    owen_sampling_shapley,
-    least_core
-  ]
-  repetitions: [ 1, 2, 3, 4, 5 ]
+  experiments:
+  - point_removal
+  - noise_removal
+  models:
+  - logistic_regression
+  - knn
+  - svm
+  - gradient_boosting_classifier
+  datasets:
+  - cifar10
+  - click
+  - covertype
+  - cpu
+  - diabetes
+  - fmnist_binary
+  - mnist_binary
+  - mnist_multi
+  - phoneme
+  valuation_methods:
+  - loo
+  - classwise_shapley
+  - beta_shapley
+  - tmc_shapley
+  - banzhaf_shapley
+  - owen_sampling_shapley
+  - least_core
+  repetitions:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
 
 experiments:
   point_removal:
@@ -65,7 +66,7 @@ experiments:
         metric: accuracy
         eval_model: mlp
         len_curve_perc: 0.5
-  
+
   noise_removal:
     sampler: default
     preprocessors:
@@ -86,56 +87,56 @@ samplers:
 datasets:
   diabetes:
     openml_id: 37
-  
+
   cpu:
     openml_id: 197
     preprocessor:
       threshold_y:
         threshold: 89
-  
+
   click:
     openml_id: 1216
-  
+
   covertype:
     openml_id: 1596
-  
+
   phoneme:
     openml_id: 1489
-  
+
   fmnist_binary:
     openml_id: 40996
     filters:
       binarization:
-        label_zero: "0"
-        label_one: "1"
+        label_zero: '0'
+        label_one: '1'
     preprocessor:
       principal_resnet_components:
         n_components: 32
-        grayscale: True
+        grayscale: true
         seed: 101
-  
+
   cifar10:
     openml_id: 40927
     filters:
       binarization:
-        label_zero: "1"
-        label_one: "9"
+        label_zero: '1'
+        label_one: '9'
     preprocessor:
       principal_resnet_components:
         n_components: 32
-        grayscale: False
+        grayscale: false
         seed: 102
-  
+
   mnist_binary:
     openml_id: 554
     filters:
       binarization:
-        label_zero: "1"
-        label_one: "7"
+        label_zero: '1'
+        label_one: '7'
     preprocessor:
       principal_resnet_components:
         n_components: 32
-        grayscale: True
+        grayscale: true
         seed: 103
 
   mnist_multi:
@@ -143,83 +144,81 @@ datasets:
     preprocessor:
       principal_resnet_components:
         n_components: 32
-        grayscale: True
+        grayscale: true
         seed: 104
 
 models:
   logistic_regression:
     solver: liblinear
-  
+
   gradient_boosting_classifier:
     n_estimators: 40
     min_samples_split: 6
     max_depth: 2
-  
+
   knn:
     n_neighbors: 5
     weights: uniform
-  
+
   svm:
     kernel: rbf
-  
-  mlp: { }
+
+  mlp: {}
 
 valuation_methods:
   random:
-    algorithm: "random"
-  
+    algorithm: random
   loo:
-    algorithm: "loo"
+    algorithm: loo
     kwargs:
-      progress: True
-  
+      progress: true
+
   classwise_shapley:
-    algorithm: "classwise_shapley"
+    algorithm: classwise_shapley
     kwargs:
       n_updates: 500
-      normalize_values: True
+      normalize_values: true
       n_resample_complement_sets: 1
-      use_default_scorer_value: False
+      use_default_scorer_value: false
       rtol: 1e-4
-      progress: True
-  
-  
+      progress: true
+
+
   beta_shapley:
-    algorithm: "beta_shapley"
+    algorithm: beta_shapley
     kwargs:
       alpha: 16.0
       beta: 1.0
       n_updates: 500
-      progress: True
-  
-  
+      progress: true
+
+
   banzhaf_shapley:
-    algorithm: "banzhaf_shapley"
+    algorithm: banzhaf_shapley
     kwargs:
       n_updates: 500
-      progress: True
-  
-  
+      progress: true
+
+
   tmc_shapley:
-    algorithm: "tmc_shapley"
+    algorithm: tmc_shapley
     kwargs:
       rtol: 1e-4
       n_updates: 500
-      progress: True
-  
-  
+      progress: true
+
+
   owen_sampling_shapley:
-    algorithm: "owen_sampling_shapley"
+    algorithm: owen_sampling_shapley
     kwargs:
       n_updates: 10
       max_q: 50
-      progress: False
-  
-  
+      progress: false
+
+
   least_core:
-    algorithm: "least_core"
+    algorithm: least_core
     kwargs:
       n_updates: 5000
-      progress: False
-    
-  
+      progress: false
+

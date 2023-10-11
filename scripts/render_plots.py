@@ -39,30 +39,6 @@ from re_classwise_shapley.utils import flatten_dict, load_params_fast
 
 logger = setup_logger("render_plots")
 
-# Mapping from method names to single colors
-COLOR_ENCODING = {
-    "random": "black",
-    "beta_shapley": "blue",
-    "loo": "orange",
-    "tmc_shapley": "green",
-    "classwise_shapley": "red",
-    "owen_sampling_shapley": "purple",
-    "banzhaf_shapley": "turquoise",
-    "least_core": "gray",
-}
-
-# Mapping from colors to mean and shade color.
-COLORS = {
-    "black": ("black", "silver"),
-    "blue": ("dodgerblue", "lightskyblue"),
-    "orange": ("darkorange", "gold"),
-    "green": ("limegreen", "seagreen"),
-    "red": ("indianred", "firebrick"),
-    "purple": ("darkorchid", "plum"),
-    "gray": ("gray", "lightgray"),
-    "turquoise": ("turquoise", "lightcyan"),
-}
-
 
 def get_or_create_mlflow_experiment(experiment_name: str) -> str:
     """

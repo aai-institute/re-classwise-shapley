@@ -1,47 +1,34 @@
-# ML Reproducibility Challenge 2023
+# Reproduction "CS-Shapley: Class-wise Shapley Values for Data Valuation in Classification"
 
-Code for the submission to the ML Reproducibility Challenge 2023.
+Code for the submission to the ML Reproducibility Challenge 2023. The original paper can
+be found [here](https://arxiv.org/abs/2106.06860). 
 
 # Getting Started
 
-We use Python version 3.10 for this repository.
-
-We use [Poetry](https://python-poetry.org/) for dependency management. More specifically
-version `1.2.0`.
-
-After installing Poetry, run the following command to create a virtual environment and
-install
+We use Pytho 3.10 and to install the library install
 all dependencies:
 
 ```shell
-poetry install
+pip install
 ```
 
-You can then activate the virtual environment using:
+# Reproduction
 
-```shell
-poetry shell
+## Run all experiments
+
+```
+dvc repro
 ```
 
-# Experiments
-
-We use [DVC](https://dvc.org/) to run the experiments and track their results.
-
-To reproduce all results use:
+## Run selected experiments
 
 ```shell
-dvc exp run
-```
-
-The parameters and configuration values can be found inside the [conf](conf/)
-directory.
-
-`params.yaml` is derived from those files and should not be modified manually.
-
-## Data Valuation
-
-```shell
-dvc exp run data-valuation
+dvc exp run \
+  --set-param active.experiments=[point_removal,noise_removal] \
+  --set-param active.datasets=[cifar10,click,covertype,cpu,diabetes,fmnist_binary,mnist_binary,mnist_multi,phoneme] \
+  --set-param active.valuation_methods=[loo,classwise_shapley,beta_shapley,tmc_shapley,banzhaf_shapley,owen_sampling_shapley,least_core] \
+  --set-param active.models=[logistic_regression,knn,svm,gradient_boosting_classifier] \
+  --set-param active.repetitions=[1,2,3,4,5]
 ```
 
 # Contributing

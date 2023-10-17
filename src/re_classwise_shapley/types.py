@@ -10,7 +10,7 @@ Seed = Optional[Union[int, np.random.SeedSequence, np.random.Generator]]
 
 
 T = TypeVar("T")
-OneOrMany = Union[T, Sequence[T]]
+OneOrMany = Union[T, List[T]]
 
 
 def ensure_list(x: OneOrMany[T]) -> List[T]:
@@ -24,4 +24,4 @@ def ensure_list(x: OneOrMany[T]) -> List[T]:
     Returns:
         Either the input list or a list containing the input.
     """
-    return x if not isinstance(input, Sequence) else [x]
+    return x if isinstance(x, List) else [x]

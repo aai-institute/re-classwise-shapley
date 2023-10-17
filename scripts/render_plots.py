@@ -13,28 +13,18 @@ Render plots for the data valuation experiment. The plots are stored in the
 also stored in mlflow. The id of the mlflow experiment is given by the schema
 `experiment_name.model_name`.
 """
-
 import os
 import os.path
-import pickle
 from datetime import datetime
-from typing import Tuple, cast
 
 import click
 import mlflow
-import numpy as np
-import pandas as pd
 from dotenv import load_dotenv
-from mlflow.data.pandas_dataset import PandasDataset
-from numpy.typing import NDArray
-from pydvl.utils import Dataset
-from pydvl.value import ValuationResult
-from scipy.stats import gaussian_kde
 
 from re_classwise_shapley.accessor import Accessor
-from re_classwise_shapley.io import load_results_per_dataset_and_method
+from re_classwise_shapley.io import log_datasets, save_fig_and_log_artifact
 from re_classwise_shapley.log import setup_logger
-from re_classwise_shapley.plotting import plot_curves, plot_histogram, plot_metric_table
+from re_classwise_shapley.plotting import plot_curves, plot_histogram, plot_time
 from re_classwise_shapley.utils import flatten_dict, load_params_fast
 
 logger = setup_logger("render_plots")
@@ -74,11 +64,16 @@ def render_plots(experiment_name: str, model_name: str):
     """
     load_dotenv()
     logger.info("Starting plotting of data valuation experiment")
-    experiment_path = Accessor.RESULT_PATH / experiment_name / model_name
     output_folder = Accessor.PLOT_PATH / experiment_name / model_name
     mlflow_id = f"{experiment_name}.{model_name}"
 
     params = load_params_fast()
+    params_active = params["active"]
+    dataset_names = params_active["datasets"]
+    method_names = params_active["valuation_methods"]
+    repetitions = params_active["repetitions"]
+    metrics = list(params["experiments"][experiment_name]["metrics"].keys())
+
     mlflow.set_tracking_uri(params["settings"]["mlflow_tracking_uri"])
     experiment_id = get_or_create_mlflow_experiment(mlflow_id)
     os.makedirs(output_folder, exist_ok=True)
@@ -88,93 +83,52 @@ def render_plots(experiment_name: str, model_name: str):
         experiment_id=experiment_id,
         run_name=datetime.now().isoformat(),
     ):
-        logger.info("Log params.")
-        params = flatten_dict(params)
-        mlflow.log_params(params)
-        log_dataset(experiment_name)
-
-        logger.info("Plotting metric tables.")
-        params = load_params_fast()
-        metrics = params["experiments"][experiment_name]["metrics"]
-        results_per_dataset = load_results_per_dataset_and_method(
-            experiment_path, metrics
-        )
-        plot_metric_table(results_per_dataset, output_folder)
-
-        logger.info(f"Plotting histogram.")
-        plot_histogram(experiment_name, model_name, output_folder)
-
-        logger.info(f"Plotting curves.")
-        plot_curves(results_per_dataset, output_folder)
-
-
-def log_dataset(
-    experiment_name: str,
-):
-    """
-    Log the dataset as mlflow inputs.
-
-    Args:
-        experiment_name: Name of the executed experiment. As specified in the
-            `params.experiments` section. The data is loaded from the
-            `Accessor.SAMPLED_PATH` directory.
-    """
-
-    def _convert(x, y):
-        return pd.DataFrame(np.concatenate((x, y.reshape([-1, 1])), axis=1))
-
-    params = load_params_fast()
-    for dataset_name in params["active"]["datasets"]:
-        for repetition in params["active"]["repetitions"]:
-            data_dir = (
-                Accessor.SAMPLED_PATH / experiment_name / dataset_name / str(repetition)
+        logger.info("Log parameters.")
+        mlflow.log_params(flatten_dict(params))
+        logger.info("Log datasets.")
+        log_datasets(
+            Accessor.datasets(
+                experiment_name,
+                dataset_names,
+                repetitions,
             )
+        )
 
-            for set_name in ["test_set", "val_set"]:
-                with open(data_dir / f"{set_name}.pkl", "rb") as file:
-                    test_set = cast(Dataset, pickle.load(file))
+        valuation_results = Accessor.valuation_results(
+            experiment_name,
+            model_name,
+            dataset_names,
+            method_names,
+            repetitions,
+        )
+        for method_name in method_names:
+            logger.info(f"Plot histogram for method {method_name} values.")
+            with plot_histogram(valuation_results, [method_name, "tmc_shapley"]) as fig:
+                save_fig_and_log_artifact(
+                    fig, output_folder, f"density.{method_name}.svg", "densities"
+                )
 
-                    x = np.concatenate((test_set.x_train, test_set.x_test), axis=0)
-                    y = np.concatenate((test_set.y_train, test_set.y_test), axis=0)
-                    train_df = _convert(x, y)
-                    train_df.columns = test_set.feature_names + test_set.target_names
-                    train_dataset: PandasDataset = (
-                        mlflow.data.pandas_dataset.from_pandas(
-                            train_df,
-                            targets=test_set.target_names[0],
-                            name=f"{dataset_name}_{repetition}_{set_name}",
-                        )
-                    )
-                    mlflow.log_input(
-                        train_dataset,
-                        tags={
-                            "set": set_name,
-                            "dataset": dataset_name,
-                            "repetition": str(repetition),
-                        },
-                    )
+        logger.info(f"Plot boxplot for execution time.")
+        with plot_time(valuation_results) as fig:
+            save_fig_and_log_artifact(fig, output_folder, "time.svg")
 
-
-def mean_density(
-    values: NDArray[ValuationResult],
-    hist_range: Tuple[float, float],
-    bins: int = 50,
-) -> NDArray[np.float_]:
-    """
-    Compute the mean and confidence interval of a set of `ValuationResult` objects.
-
-    Args:
-        values: List of `ValuationResult` objects.
-        hist_range: Tuple of minimum hist rand and maximum hist range.
-        bins: Number of bins to be used for histogram.
-
-    Returns:
-        A tuple with the mean and 95% confidence interval.
-    """
-    x = np.linspace(*hist_range, bins)
-    kde = gaussian_kde(values.reshape(-1))
-    density = kde(x)
-    return density
+        metrics_and_curves = Accessor.metrics_and_curves(
+            experiment_name,
+            model_name,
+            dataset_names,
+            method_names,
+            repetitions,
+            metrics,
+        )
+        for metric_name in metrics:
+            logger.info(f"Plotting curve for metric {metric_name}.")
+            single_curve = metrics_and_curves.loc[
+                metrics_and_curves["metric_name"] == metric_name
+            ]
+            with plot_curves(single_curve) as fig:
+                save_fig_and_log_artifact(
+                    fig, output_folder, f"{metric_name}.svg", "curves"
+                )
 
 
 if __name__ == "__main__":

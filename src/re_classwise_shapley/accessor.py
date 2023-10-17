@@ -1,9 +1,11 @@
+import json
 import pickle
+from itertools import product
 from pathlib import Path
-from typing import Dict
+from typing import cast
 
-import numpy as np
-from numpy.typing import NDArray
+import pandas as pd
+from tqdm import tqdm
 
 from re_classwise_shapley.types import OneOrMany, ensure_list
 
@@ -25,53 +27,178 @@ class Accessor:
     RESULT_PATH = OUTPUT_PATH / "results"
     PLOT_PATH = OUTPUT_PATH / "plots"
 
-    def __init__(self, experiment_name: str, model_name: str):
-        self._experiment_name = experiment_name
-        self.__model_name = model_name
-
+    @staticmethod
     def valuation_results(
-        self,
+        experiment_names: OneOrMany[str],
+        model_names: OneOrMany[str],
         dataset_names: OneOrMany[str],
         method_names: OneOrMany[str],
         repetition_ids: OneOrMany[int],
-    ) -> Dict[str, Dict[str, NDArray[np.float_]]]:
-        """
-        Fetches the valuation results for a given dataset, method and repetition.
-
-        Args:
-            dataset_names: List of dataset_names to load.
-            method_names: List of method_names to load.
-            repetition_ids: List of repetition_ids to load.
-
-        Returns:
-            A three-dimensional array of valuation results. The first dimension is the
-            dataset, the second dimension is the method and the third dimension is the
-            repetition (in numerical order).
-        """
+    ) -> pd.DataFrame:
+        experiment_names = ensure_list(experiment_names)
+        model_names = ensure_list(model_names)
         dataset_names = ensure_list(dataset_names)
         method_names = ensure_list(method_names)
         repetition_ids = ensure_list(repetition_ids)
 
-        valuation_results = {}
-        for dataset_name in dataset_names:
-            valuation_results[dataset_name] = {}
-            for method_name in method_names:
-                valuation_result_components = []
-                for repetition_id in repetition_ids:
-                    valuation_results_path = (
-                        Accessor.VALUES_PATH
-                        / self._experiment_name
-                        / self.__model_name
-                        / dataset_name
-                        / str(repetition_id)
-                    )
-                    with open(
-                        valuation_results_path / f"valuation.{method_name}.pkl", "rb"
-                    ) as file:
-                        valuation_result_components.append(pickle.load(file).values)
+        rows = []
+        for (
+            experiment_name,
+            model_name,
+            dataset_name,
+            method_name,
+            repetition_id,
+        ) in tqdm(
+            list(
+                product(
+                    experiment_names,
+                    model_names,
+                    dataset_names,
+                    method_names,
+                    repetition_ids,
+                )
+            ),
+            desc="Loading valuation results...",
+            ncols=120,
+        ):
+            base_path = (
+                Accessor.VALUES_PATH
+                / experiment_name
+                / model_name
+                / dataset_name
+                / str(repetition_id)
+            )
+            with open(base_path / f"valuation.{method_name}.pkl", "rb") as f:
+                valuation = pickle.load(f)
+            with open(base_path / f"valuation.{method_name}.stats.json", "r") as f:
+                stats = json.load(f)
 
-                valuation_results[dataset_name][method_name] = np.stack(
-                    valuation_result_components
+            rows.append(
+                {
+                    "experiment_name": experiment_name,
+                    "model_name": model_name,
+                    "dataset_name": dataset_name,
+                    "method_name": method_name,
+                    "repetition_id": repetition_id,
+                    "valuation": valuation,
+                }
+                | stats
+            )
+
+        return pd.DataFrame(rows)
+
+    @staticmethod
+    def metrics_and_curves(
+        experiment_names: OneOrMany[str],
+        model_names: OneOrMany[str],
+        dataset_names: OneOrMany[str],
+        method_names: OneOrMany[str],
+        repetition_ids: OneOrMany[int],
+        metric_names: OneOrMany[str],
+    ) -> pd.DataFrame:
+        experiment_names = ensure_list(experiment_names)
+        model_names = ensure_list(model_names)
+        dataset_names = ensure_list(dataset_names)
+        method_names = ensure_list(method_names)
+        repetition_ids = ensure_list(repetition_ids)
+
+        rows = []
+        for (
+            experiment_name,
+            model_name,
+            dataset_name,
+            method_name,
+            repetition_id,
+        ) in tqdm(
+            list(
+                product(
+                    experiment_names,
+                    model_names,
+                    dataset_names,
+                    method_names,
+                    repetition_ids,
+                )
+            ),
+            desc="Loading metrics and curves...",
+            ncols=120,
+        ):
+            base_path = (
+                Accessor.RESULT_PATH
+                / experiment_name
+                / model_name
+                / dataset_name
+                / str(repetition_id)
+                / method_name
+            )
+            for metric_name in metric_names:
+                metric = pd.read_csv(base_path / f"{metric_name}.csv")
+                metric = metric.iloc[-1, -1]
+
+                curve = pd.read_csv(base_path / f"{metric_name}.curve.csv")
+                curve.index = curve[curve.columns[0]]
+                curve = curve.drop(columns=[curve.columns[0]]).iloc[:, -1]
+
+                rows.append(
+                    {
+                        "experiment_name": experiment_name,
+                        "model_name": model_name,
+                        "dataset_name": dataset_name,
+                        "method_name": method_name,
+                        "repetition_id": repetition_id,
+                        "metric_name": metric_name,
+                        "metric": metric,
+                        "curve": curve,
+                    }
                 )
 
-        return valuation_results
+        return pd.DataFrame(rows)
+
+    @staticmethod
+    def datasets(
+        experiment_names: OneOrMany[str],
+        dataset_names: OneOrMany[str],
+        repetition_ids: OneOrMany[int],
+    ) -> pd.DataFrame:
+        experiment_names = ensure_list(experiment_names)
+        dataset_names = ensure_list(dataset_names)
+        repetition_ids = ensure_list(repetition_ids)
+
+        rows = []
+        for (
+            experiment_name,
+            dataset_name,
+            repetition_id,
+        ) in tqdm(
+            list(
+                product(
+                    experiment_names,
+                    dataset_names,
+                    repetition_ids,
+                )
+            ),
+            desc="Loading datasets...",
+            ncols=120,
+        ):
+            base_path = (
+                Accessor.SAMPLED_PATH
+                / experiment_name
+                / dataset_name
+                / str(repetition_id)
+            )
+            with open(base_path / f"val_set.pkl", "rb") as file:
+                val_set = pickle.load(file)
+
+            with open(base_path / f"test_set.pkl", "rb") as file:
+                test_set = pickle.load(file)
+
+            rows.append(
+                {
+                    "experiment_name": experiment_name,
+                    "dataset_name": dataset_name,
+                    "repetition_id": repetition_id,
+                    "val_set": val_set,
+                    "test_set": test_set,
+                }
+            )
+
+        return pd.DataFrame(rows)

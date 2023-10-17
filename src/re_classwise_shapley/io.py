@@ -3,13 +3,15 @@ import json
 import os
 import shutil
 from pathlib import Path
-from typing import Any, Dict, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 import matplotlib
+import mlflow
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
+from pydvl.utils import Dataset
 
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import RawDataset
@@ -70,70 +72,6 @@ def load_dataset(input_folder: Path) -> RawDataset:
     return x, y, additional_info
 
 
-def load_results_per_dataset_and_method(
-    experiment_path: Path, metrics: Dict[str, Any]
-) -> Dict[str, Dict[str, Dict[str, Tuple[pd.Series, pd.DataFrame]]]]:
-    """
-    Load the results per dataset and method. The results are loaded from the
-    `experiment_path` directory. The results are loaded from the `metric_names` files.
-
-    Args:
-        experiment_path: Path to the experiment directory.
-        metrics: List of metric names to load.
-
-    Returns:
-        A dictionary of dictionaries containing realizations of the distribution over
-        curves and metrics.
-    """
-    params = load_params_fast()
-    params_active = params["active"]
-    repetitions = params_active["repetitions"]
-    dataset_names = params_active["datasets"]
-    valuation_methods = params_active["valuation_methods"]
-    curves_per_dataset = {}
-
-    for dataset_name in dataset_names:
-        dataset_path = experiment_path / dataset_name
-
-        curves_per_valuation_method = {}
-
-        for valuation_method in valuation_methods:
-            curves_per_metric = {}
-            for repetition in repetitions:
-                repetition_path = dataset_path / f"{repetition}" / valuation_method
-                for key, metric_config in metrics.items():
-                    if key not in curves_per_metric:
-                        curves_per_metric[key] = []
-
-                    logger.info(f"Loading metric {key} from path '{repetition_path}'.")
-                    metric = pd.read_csv(repetition_path / f"{key}.csv")
-                    metric = metric.drop(columns=[metric.columns[0]])
-                    metric.index = [key]
-                    metric.index.name = key
-                    metric.columns = [repetition]
-
-                    curve = pd.read_csv(repetition_path / f"{key}.curve.csv")
-                    curve.index = curve[curve.columns[0]]
-                    curve = curve.drop(columns=[curve.columns[0]])
-
-                    len_curve_perc = metric_config.get("len_curve_perc", 1)
-                    curve = curve.iloc[: int(len_curve_perc * len(curve))]
-                    curves_per_metric[key].append((metric, curve))
-
-            curves_per_metric = {
-                k: (
-                    pd.concat([t[0] for t in v], axis=1),
-                    pd.concat([t[1] for t in v], axis=1),
-                )
-                for k, v in curves_per_metric.items()
-            }
-            curves_per_valuation_method[valuation_method] = curves_per_metric
-
-        curves_per_dataset[dataset_name] = curves_per_valuation_method
-
-    return curves_per_dataset
-
-
 def save_df_as_table(df: pd.DataFrame, path: Union[str, Path]):
     """
     Store a dataframe as an image. It generates a heatmap of the dataframe. This heatmap
@@ -149,3 +87,45 @@ def save_df_as_table(df: pd.DataFrame, path: Union[str, Path]):
     plt.ylabel(df.index.name)
     plt.tight_layout()
     fig.savefig(path, transparent=True)
+
+
+def save_fig_and_log_artifact(
+    fig: plt.Figure,
+    output_folder: Path,
+    file_name: str,
+    folder_name: Optional[str] = None,
+):
+    if folder_name is not None:
+        output_folder = output_folder / folder_name
+    os.makedirs(output_folder, exist_ok=True)
+    output_file = output_folder / file_name
+    fig.savefig(output_file, transparent=True)
+    mlflow.log_artifact(str(output_file), folder_name)
+
+
+def dataset_to_dataframe(dataset: Dataset) -> pd.DataFrame:
+    x = np.concatenate((dataset.x_train, dataset.x_test), axis=0)
+    y = np.concatenate((dataset.y_train, dataset.y_test), axis=0)
+    df = pd.DataFrame(np.concatenate((x, y.reshape([-1, 1])), axis=1))
+    df.columns = dataset.feature_names + dataset.target_names
+    return df
+
+
+def log_datasets(datasets):
+    for _, row in datasets.iterrows():
+        for dataset_type in ["val_set", "test_set"]:
+            dataset = row[dataset_type]
+            dataset_name = row["dataset_name"]
+            repetition_id = str(row["repetition_id"])
+            mlflow.log_input(
+                mlflow.data.pandas_dataset.from_pandas(
+                    dataset_to_dataframe(dataset),
+                    targets=dataset.target_names[0],
+                    name=f"{dataset_name}_{repetition_id}_{dataset_type}",
+                ),
+                tags={
+                    "set": dataset_type,
+                    "dataset": dataset_name,
+                    "repetition": repetition_id,
+                },
+            )

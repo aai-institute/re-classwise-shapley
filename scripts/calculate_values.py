@@ -96,7 +96,7 @@ def _calculate_values(
         0, "val_set"
     ]
 
-    n_pipeline_step = 2
+    n_pipeline_step = 4
     seed = pipeline_seed(repetition_id, n_pipeline_step)
     sub_seeds = np.random.SeedSequence(seed).generate_state(2)
 

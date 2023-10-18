@@ -39,6 +39,10 @@ def fetch_data(dataset_name: str):
         dataset_name: The name of the dataset to preprocess. As specified in th
             `params.datasets` section.
     """
+    _fetch_data(dataset_name)
+
+
+def _fetch_data(dataset_name: str):
     params = load_params_fast()
     dataset_config = params["datasets"][dataset_name]
     open_ml_id = dataset_config["openml_id"]

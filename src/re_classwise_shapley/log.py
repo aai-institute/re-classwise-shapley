@@ -9,6 +9,8 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from pydvl.utils import Dataset
 
+__all__ = ["setup_logger", "log_datasets", "log_figure"]
+
 
 def setup_logger(name: Optional[str] = None) -> logging.Logger:
     """

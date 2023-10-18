@@ -40,6 +40,12 @@ def preprocess_data(
         dataset_name: The name of the dataset to preprocess. As specified in th
             `params.datasets` section.
     """
+    _preprocess_data(dataset_name)
+
+
+def _preprocess_data(
+    dataset_name: str,
+):
     preprocessed_folder = Accessor.PREPROCESSED_PATH / dataset_name
     if os.path.exists(preprocessed_folder / "x.npy") and os.path.exists(
         preprocessed_folder / "y.npy"

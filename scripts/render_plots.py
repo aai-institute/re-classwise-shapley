@@ -61,6 +61,10 @@ def render_plots(experiment_name: str, model_name: str):
             `params.experiments` section.
         model_name: Model to use. As specified in the `params.models` section.
     """
+    _render_plots(experiment_name, model_name)
+
+
+def _render_plots(experiment_name: str, model_name: str):
     load_dotenv()
     logger.info("Starting plotting of data valuation experiment")
     output_folder = Accessor.PLOT_PATH / experiment_name / model_name

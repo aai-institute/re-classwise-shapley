@@ -12,7 +12,6 @@ from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import OneOrMany, ensure_list
 
 __all__ = [
-    "shaded_mean_normal_confidence_interval",
     "plot_histogram",
     "plot_curves",
     "plot_time",

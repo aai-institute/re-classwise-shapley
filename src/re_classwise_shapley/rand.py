@@ -6,6 +6,8 @@ from pydvl.utils import Dataset
 
 from re_classwise_shapley.types import Seed
 
+__all__ = ["sample_val_test_set", "stratified_sampling"]
+
 
 def sample_val_test_set(
     features: NDArray[np.float_],

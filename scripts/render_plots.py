@@ -21,9 +21,8 @@ import click
 import mlflow
 from dotenv import load_dotenv
 
-from re_classwise_shapley.accessor import Accessor
-from re_classwise_shapley.io import log_datasets, save_fig_and_log_artifact
-from re_classwise_shapley.log import setup_logger
+from re_classwise_shapley.io import Accessor
+from re_classwise_shapley.log import log_datasets, log_figure, setup_logger
 from re_classwise_shapley.plotting import plot_curves, plot_histogram, plot_time
 from re_classwise_shapley.utils import flatten_dict, load_params_fast
 
@@ -98,19 +97,19 @@ def render_plots(experiment_name: str, model_name: str):
             experiment_name,
             model_name,
             dataset_names,
-            method_names,
             repetitions,
+            method_names,
         )
         for method_name in method_names:
             logger.info(f"Plot histogram for method {method_name} values.")
             with plot_histogram(valuation_results, [method_name, "tmc_shapley"]) as fig:
-                save_fig_and_log_artifact(
+                log_figure(
                     fig, output_folder, f"density.{method_name}.svg", "densities"
                 )
 
         logger.info(f"Plot boxplot for execution time.")
         with plot_time(valuation_results) as fig:
-            save_fig_and_log_artifact(fig, output_folder, "time.svg")
+            log_figure(fig, output_folder, "time.svg")
 
         metrics_and_curves = Accessor.metrics_and_curves(
             experiment_name,
@@ -126,9 +125,7 @@ def render_plots(experiment_name: str, model_name: str):
                 metrics_and_curves["metric_name"] == metric_name
             ]
             with plot_curves(single_curve) as fig:
-                save_fig_and_log_artifact(
-                    fig, output_folder, f"{metric_name}.svg", "curves"
-                )
+                log_figure(fig, output_folder, f"{metric_name}.svg", "curves")
 
 
 if __name__ == "__main__":

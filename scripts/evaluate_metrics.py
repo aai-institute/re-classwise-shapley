@@ -14,18 +14,17 @@ directory. The metrics are usually stored as `*.csv` files. Each metric consists
 a single value and a curve. The curve is stored as `*.curve.csv` file.
 """
 
-
-import json
 import logging
+import math as m
 import os
-import pickle
-from functools import partial
+from functools import partial, reduce
 
 import click
 import pandas as pd
 from pydvl.parallel import ParallelConfig
+from pydvl.utils.functional import maybe_add_argument
 
-from re_classwise_shapley.accessor import Accessor
+from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.metric import metric_roc_auc, metric_weighted_metric_drop
 from re_classwise_shapley.utils import load_params_fast, n_threaded
@@ -72,13 +71,6 @@ def evaluate_metrics(
     """
 
     logger.info("Loading values, test set and preprocess info.")
-    input_dir = (
-        Accessor.VALUES_PATH
-        / experiment_name
-        / model_name
-        / dataset_name
-        / str(repetition_id)
-    )
     output_dir = (
         Accessor.RESULT_PATH
         / experiment_name
@@ -92,28 +84,13 @@ def evaluate_metrics(
     ):
         return logger.info(f"Sampled data exists in '{output_dir}'. Skipping...")
 
-    with open(
-        input_dir / f"valuation.{valuation_method_name}.pkl",
-        "rb",
-    ) as file:
-        values = pickle.load(file)
-
-    data_dir = (
-        Accessor.SAMPLED_PATH / experiment_name / dataset_name / str(repetition_id)
-    )
-    with open(data_dir / "test_set.pkl", "rb") as file:
-        test_set = pickle.load(file)
-
-    preprocess_info_filename = data_dir / "preprocess_info.json"
-    if os.path.exists(preprocess_info_filename):
-        with open(data_dir / "preprocess_info.json", "r") as file:
-            preprocess_info = json.load(file)
-    else:
-        preprocess_info = {}
+    values = Accessor.valuation_results(
+        experiment_name, model_name, dataset_name, repetition_id, valuation_method_name
+    ).loc[0, "valuation"]
+    dataset = Accessor.datasets(experiment_name, dataset_name, repetition_id).loc[0]
+    preprocess_info = dataset["preprocess_info"]
 
     os.makedirs(output_dir, exist_ok=True)
-
-    logger.info("Creating metric...")
 
     params = load_params_fast()
     backend = params["settings"]["backend"]
@@ -126,19 +103,29 @@ def evaluate_metrics(
     metrics = params["experiments"][experiment_name]["metrics"]
     metric_kwargs = metrics[metric_name]
     metric_idx = metric_kwargs.pop("idx")
-    metric_kwargs.pop("len_curve_perc", None)
+    len_curve_perc = metric_kwargs.pop("len_curve_perc", None)
     metric_fn = partial(MetricRegistry[metric_idx], **metric_kwargs)
+    metric_fn = reduce(
+        maybe_add_argument,
+        ["data", "values", "info", "n_jobs", "config", "progress"],
+        metric_fn,
+    )
 
     logger.info("Evaluating metric...")
     with n_threaded(n_threads=1):
         metric_values, metric_curve = metric_fn(
-            test_set,
-            values,
-            preprocess_info,
+            data=dataset["test_set"],
+            values=values,
+            info=preprocess_info,
             n_jobs=n_jobs,
             config=parallel_config,
             progress=True,
         )
+
+    if len_curve_perc is not None:
+        metric_curve = metric_curve.iloc[
+            : int(m.ceil(len_curve_perc * len(metric_curve)))
+        ]
 
     evaluated_metrics = pd.Series([metric_values])
     evaluated_metrics.name = "value"

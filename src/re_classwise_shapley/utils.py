@@ -74,7 +74,11 @@ def flatten_dict(d: Dict, parent_key: str = "", separator: str = ".") -> Dict:
 
 def load_params_fast() -> Dict:
     """
-    Load the parameters from the `params.yaml` file without verification.
+    Load the parameters from the `params.yaml` file without verification. Remove this
+    call if you want to use the hydra configuration system
+
+    Returns:
+        Loaded parameters as decribed in `params.yaml`.
     """
     with open("params.yaml", "r") as file:
         return yaml.safe_load(file)

@@ -3,12 +3,10 @@ from typing import Tuple, Union
 import numpy as np
 from numpy.typing import NDArray
 
-from re_classwise_shapley.types import FloatIntStringArray
-
 
 def binarize_classes(
     features: NDArray[np.float_],
-    labels: FloatIntStringArray,
+    labels: Union[NDArray[np.float_], NDArray[np.int_]],
     label_zero: Union[str, int],
     label_one: Union[str, int],
     shuffle: bool = True,

@@ -1,26 +1,24 @@
 import glob
 import json
 import os
+import pickle
 import shutil
+from functools import wraps
+from itertools import product
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Tuple
 
-import matplotlib
-import mlflow
 import numpy as np
 import pandas as pd
-import seaborn as sns
-from matplotlib import pyplot as plt
-from pydvl.utils import Dataset
+from tqdm import tqdm
 
 from re_classwise_shapley.log import setup_logger
-from re_classwise_shapley.types import RawDataset
-from re_classwise_shapley.utils import load_params_fast
+from re_classwise_shapley.types import OneOrMany, RawDataset, ensure_list
 
 logger = setup_logger(__name__)
 
 
-def store_dataset(dataset: RawDataset, output_folder: Path):
+def store_raw_dataset(dataset: RawDataset, output_folder: Path):
     """
     Stores a dataset on disk. The dataset is stored as `x.npy` and `y.npy`. Additional
     information is stored as `*.json` files.
@@ -52,7 +50,7 @@ def store_dataset(dataset: RawDataset, output_folder: Path):
         raise e
 
 
-def load_dataset(input_folder: Path) -> RawDataset:
+def load_raw_dataset(input_folder: Path) -> RawDataset:
     """
     Loads a dataset from disk.
 
@@ -72,60 +70,195 @@ def load_dataset(input_folder: Path) -> RawDataset:
     return x, y, additional_info
 
 
-def save_df_as_table(df: pd.DataFrame, path: Union[str, Path]):
+def walker_product_space(
+    fn: Callable[[Any, ...], Dict]
+) -> Callable[[OneOrMany[Any], ...], pd.DataFrame]:
     """
-    Store a dataframe as an image. It generates a heatmap of the dataframe. This heatmap
-    is a table representation of the dataframe.
+    A decorator that applies a given function to each combination of input instances.
 
     Args:
-        df: A pd.DataFrame to visualize as a table.
-        path: A path to store the file in.
+        fn: The function to be applied.
+
+    Returns:
+        A wrapped function that applies to each combination of input instances `fn`.
     """
-    fig, ax = plt.subplots()
-    sns.heatmap(df, annot=True, cmap=matplotlib.cm.get_cmap("viridis_r"), ax=ax)
-    plt.xlabel(df.columns.name)
-    plt.ylabel(df.index.name)
-    plt.tight_layout()
-    fig.savefig(path, transparent=True)
+
+    def wrapped_walk_product_space(
+        *product_space: OneOrMany[Any],
+    ) -> pd.DataFrame:
+        """
+        Wrapped function that walks through a product space and applies the given
+        function.
+
+        Args:
+            product_space: The product space to iterate over.
+
+        Returns:
+            A DataFrame containing the results of applying the function to
+                each combination of input instances.
+        """
+        product_space = list(map(ensure_list, product_space))
+        rows = []
+        pbar = tqdm(
+            list(product(*product_space)),
+            ncols=120,
+        )
+        for folder_instance in pbar:
+            pbar.desc = f"Processing: {folder_instance}"
+            row = fn(*folder_instance)
+            rows.append(row)
+
+        return pd.DataFrame(rows)
+
+    return wrapped_walk_product_space
 
 
-def save_fig_and_log_artifact(
-    fig: plt.Figure,
-    output_folder: Path,
-    file_name: str,
-    folder_name: Optional[str] = None,
-):
-    if folder_name is not None:
-        output_folder = output_folder / folder_name
-    os.makedirs(output_folder, exist_ok=True)
-    output_file = output_folder / file_name
-    fig.savefig(output_file, transparent=True)
-    mlflow.log_artifact(str(output_file), folder_name)
+class Accessor:
+    """
+    Accessor class to load data from the results directory.
+    """
 
+    OUTPUT_PATH = Path("./output")
+    RAW_PATH = OUTPUT_PATH / "raw"
+    PREPROCESSED_PATH = OUTPUT_PATH / "preprocessed"
+    SAMPLED_PATH = OUTPUT_PATH / "sampled"
+    VALUES_PATH = OUTPUT_PATH / "values"
+    RESULT_PATH = OUTPUT_PATH / "results"
+    PLOT_PATH = OUTPUT_PATH / "plots"
 
-def dataset_to_dataframe(dataset: Dataset) -> pd.DataFrame:
-    x = np.concatenate((dataset.x_train, dataset.x_test), axis=0)
-    y = np.concatenate((dataset.y_train, dataset.y_test), axis=0)
-    df = pd.DataFrame(np.concatenate((x, y.reshape([-1, 1])), axis=1))
-    df.columns = dataset.feature_names + dataset.target_names
-    return df
+    @staticmethod
+    @walker_product_space
+    def valuation_results(
+        experiment_name: str,
+        model_name: str,
+        dataset_name: str,
+        repetition_id: int,
+        method_name: str,
+    ) -> Dict:
+        """
+        Load valuation results from the results directory.
 
+        Args:
+            experiment_name: The name of the experiment.
+            model_name: The name of the model.
+            dataset_name: The name of the dataset.
+            repetition_id: The repetition ID.
+            method_name: The name of the method.
 
-def log_datasets(datasets):
-    for _, row in datasets.iterrows():
-        for dataset_type in ["val_set", "test_set"]:
-            dataset = row[dataset_type]
-            dataset_name = row["dataset_name"]
-            repetition_id = str(row["repetition_id"])
-            mlflow.log_input(
-                mlflow.data.pandas_dataset.from_pandas(
-                    dataset_to_dataframe(dataset),
-                    targets=dataset.target_names[0],
-                    name=f"{dataset_name}_{repetition_id}_{dataset_type}",
-                ),
-                tags={
-                    "set": dataset_type,
-                    "dataset": dataset_name,
-                    "repetition": repetition_id,
-                },
-            )
+        Returns:
+            A dictionary containing the valuation results and statistics.
+        """
+
+        base_path = (
+            Accessor.VALUES_PATH
+            / experiment_name
+            / model_name
+            / dataset_name
+            / str(repetition_id)
+        )
+        with open(base_path / f"valuation.{method_name}.pkl", "rb") as f:
+            valuation = pickle.load(f)
+        with open(base_path / f"valuation.{method_name}.stats.json", "r") as f:
+            stats = json.load(f)
+        return {
+            "experiment_name": experiment_name,
+            "model_name": model_name,
+            "dataset_name": dataset_name,
+            "method_name": method_name,
+            "repetition_id": repetition_id,
+            "valuation": valuation,
+        } | stats
+
+    @staticmethod
+    @walker_product_space
+    def metrics_and_curves(
+        experiment_name: str,
+        model_name: str,
+        dataset_name: str,
+        method_name: str,
+        repetition_id: int,
+        metric_name: str,
+    ) -> Dict:
+        """
+        Load metrics and curves from the results directory.
+
+        Args:
+            experiment_name: The name of the experiment.
+            model_name: The name of the model.
+            dataset_name: The name of the dataset.
+            method_name: The name of the method.
+            repetition_id: The repetition ID.
+            metric_name: The name of the metric.
+
+        Returns:
+            A dictionary containing the metrics and curves.
+        """
+        base_path = (
+            Accessor.RESULT_PATH
+            / experiment_name
+            / model_name
+            / dataset_name
+            / str(repetition_id)
+            / method_name
+        )
+        metric = pd.read_csv(base_path / f"{metric_name}.csv")
+        metric = metric.iloc[-1, -1]
+
+        curve = pd.read_csv(base_path / f"{metric_name}.curve.csv")
+        curve.index = curve[curve.columns[0]]
+        curve = curve.drop(columns=[curve.columns[0]]).iloc[:, -1]
+
+        return {
+            "experiment_name": experiment_name,
+            "model_name": model_name,
+            "dataset_name": dataset_name,
+            "method_name": method_name,
+            "repetition_id": repetition_id,
+            "metric_name": metric_name,
+            "metric": metric,
+            "curve": curve,
+        }
+
+    @staticmethod
+    @walker_product_space
+    def datasets(
+        experiment_name: str,
+        dataset_name: str,
+        repetition_id: int,
+    ) -> Dict:
+        """
+        Load datasets from the specified directory.
+
+        Args:
+            experiment_name: The name of the experiment.
+            dataset_name: The name of the dataset.
+            repetition_id: The repetition ID.
+
+        Returns:
+            A dictionary containing the loaded datasets and relevant information.
+        """
+        base_path = (
+            Accessor.SAMPLED_PATH / experiment_name / dataset_name / str(repetition_id)
+        )
+        with open(base_path / f"val_set.pkl", "rb") as file:
+            val_set = pickle.load(file)
+
+        with open(base_path / f"test_set.pkl", "rb") as file:
+            test_set = pickle.load(file)
+
+        row = {
+            "experiment_name": experiment_name,
+            "dataset_name": dataset_name,
+            "repetition_id": repetition_id,
+            "val_set": val_set,
+            "test_set": test_set,
+        }
+        path_preprocess_info = base_path / "preprocess_info.json"
+        if os.path.exists(path_preprocess_info):
+            with open(path_preprocess_info, "r") as file:
+                preprocess_info = json.load(file)
+        else:
+            preprocess_info = {}
+
+        row["preprocess_info"] = preprocess_info
+        return row

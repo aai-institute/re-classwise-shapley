@@ -1,15 +1,19 @@
 import math as m
-from typing import Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
+import pandas as pd
 import torch
 from numpy.typing import NDArray
-from pydvl.utils import ensure_seed_sequence, maybe_progress
+from preprocess_data import logger
+from pydvl.utils import Dataset, ensure_seed_sequence, maybe_progress
+from sklearn import preprocessing
 from sklearn.decomposition import PCA
 from torchvision.models import ResNet18_Weights, resnet18
 
+from re_classwise_shapley.filter import FilterRegistry
 from re_classwise_shapley.log import setup_logger
-from re_classwise_shapley.types import Seed
+from re_classwise_shapley.types import RawDataset, Seed
 
 logger = setup_logger()
 
@@ -146,3 +150,116 @@ PreprocessorRegistry = {
     "principal_resnet_components": principal_resnet_components,
     "threshold_y": threshold_y,
 }
+
+
+def preprocess_dataset(raw_dataset: RawDataset, dataset_kwargs: Dict) -> RawDataset:
+    """
+    Preprocesses a dataset and returns preprocessed data.
+
+    Args:
+        raw_dataset: The raw dataset to preprocess.
+        dataset_kwargs: The dataset kwargs for processing. Contains the keys `filters`
+            and `preprocessor`. The `filters` key contains a dictionary of filters to
+            apply. The `preprocessor` key contains a dictionary of preprocessors to
+            apply.
+
+    Returns:
+        The preprocessed dataset as a tuple of x, y and additional info. Additional
+        information contains a mapping from file_names to dictionaries (to be saved as
+        `*.json`). It contains a file name `info.json` with information `feature_names`,
+        `target_names` and `description`. It also contains a file name `filters.json`
+        with the applied filters and a file name `preprocess.json` with the applied
+        preprocessors.
+    """
+    x, y, additional_info = raw_dataset
+
+    filters = dataset_kwargs.get("filters", None)
+    if filters is not None:
+        for filter_name, filter_kwargs in filters.items():
+            logger.info(f"Applying filter '{filter_name}'.")
+            data_filter = FilterRegistry[filter_name]
+            x, y = data_filter(x, y, **filter_kwargs)
+
+    logger.info(f"Applying preprocessors.")
+    preprocessor_definitions = dataset_kwargs.pop("preprocessor", None)
+    if preprocessor_definitions is not None:
+        for (
+            preprocessor_name,
+            preprocessor_kwargs,
+        ) in preprocessor_definitions.items():
+            logger.info(f"Applying preprocessor '{preprocessor_name}'.")
+            preprocessor = PreprocessorRegistry[preprocessor_name]
+            x, y = preprocessor(x, y, **preprocessor_kwargs)
+
+    logger.info(f"Encoding labels to integers.")
+    le = preprocessing.LabelEncoder()
+    le.fit(y)
+    y = le.transform(y)
+
+    additional_info["info.json"]["label_distribution"] = (
+        pd.value_counts(y) / len(y)
+    ).to_dict()
+    additional_info["filters.json"] = filters
+    additional_info["preprocess.json"] = preprocessor_definitions
+    return x, y, additional_info
+
+
+def apply_sample_preprocessors(
+    dataset: Dataset, preprocessor_configs: Dict, seed: List[Seed]
+) -> Tuple[Dataset, Dict]:
+    """
+    Applies a list of preprocessors (specified by `preprocessor_configs`) to a dataset.
+    `preprocessor_configs` is a dictionary containing the name of the preprocessor as
+    key and the configuration as value. The configuration is passed to the preprocessor
+    generator function obtained from the `PreprocessorRegistry`.
+
+    Args:
+        dataset: Dataset to preprocess.
+        preprocessor_configs: A dictionary containing the configurations of the
+            preprocessors.
+        seed: Either an instance of a numpy random number generator or a seed for it.
+
+    Returns:
+        A tuple containing the preprocessed dataset and a dictionary containing
+    """
+
+    preprocess_info = {}
+    for idx, (preprocessor_name, preprocessor_config) in enumerate(
+        preprocessor_configs.items()
+    ):
+        preprocessor_fn = SamplePreprocessorRegistry[preprocessor_name]
+        dataset, info = preprocessor_fn(dataset, **preprocessor_config, seed=seed[idx])
+        preprocess_info.update(
+            {f"preprocessor.{preprocessor_name}.{k}": v for k, v in info.items()}
+        )
+
+    return dataset, preprocess_info
+
+
+def flip_labels(
+    dataset: Dataset, perc: float = 0.2, seed: Seed = None
+) -> Tuple[Dataset, Dict]:
+    """
+    Flips a percentage of labels in a dataset. The labels are flipped randomly. The
+    number of flipped labels is returned in the `preprocess_info` dictionary.
+
+    Args:
+        dataset: Dataset to flip labels.
+        perc: Number of labels to flip in percent. Must be in the range [0, 1].
+        seed: Either an instance of a numpy random number generator or a seed for it.
+
+    Returns:
+        A tuple containing the dataset with flipped labels and a dictionary containing
+        the number and indices of the flipped labels.
+
+    """
+    labels = dataset.y_train
+    rng = np.random.default_rng(seed)
+    num_data_indices = int(perc * len(labels))
+    p = rng.permutation(len(labels))[:num_data_indices]
+    labels[p] = 1 - labels[p]
+    dataset.y_train = labels
+    return dataset, {"idx": [int(i) for i in p], "n_flipped": num_data_indices}
+
+
+SamplePreprocessorRegistry = {"flip_labels": flip_labels}

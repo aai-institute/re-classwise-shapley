@@ -1,26 +1,19 @@
-import os
 from contextlib import contextmanager
-from pathlib import Path
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Sequence, Tuple
 
 import matplotlib.pyplot as plt
-import mlflow
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.ticker import FormatStrFormatter
 
-from re_classwise_shapley.accessor import Accessor
-from re_classwise_shapley.io import save_df_as_table
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import OneOrMany, ensure_list
-from re_classwise_shapley.utils import load_params_fast
 
 __all__ = [
     "shaded_mean_normal_confidence_interval",
     "plot_histogram",
-    "plot_metric_table",
     "plot_curves",
     "plot_time",
 ]
@@ -107,7 +100,7 @@ def plot_grid_over_datasets(
     patch_size: Tuple[float, float] = (4, 4),
     n_cols: int = 3,
     legend: bool = False,
-    format_ticks: str = None,
+    format_x_ticks: str = None,
     **kwargs,
 ) -> plt.Figure:
     """
@@ -119,6 +112,9 @@ def plot_grid_over_datasets(
         plot_func: A callable function for plotting data.
         patch_size: Size of one image patch of the multi plot.
         n_cols: Number of columns for subplot layout.
+        legend: True, if a legend should be plotted below and outside the grid of
+            subplots.
+        format_x_ticks: If not None, it defines the format of the x ticks.
         **kwargs: Additional keyword arguments to pass to the plot_func.
     """
     dataset_names = valuation_results["dataset_name"].unique().tolist()
@@ -155,9 +151,11 @@ def plot_grid_over_datasets(
         else:
             ax[dataset_idx].set_xlabel(kwargs.get("xlabel", ""))
 
-        if format_ticks is not None:
+        if format_x_ticks is not None:
             ax[dataset_idx].xaxis.set_ticks(np.linspace(*ax[dataset_idx].get_xlim(), 5))
-            ax[dataset_idx].xaxis.set_major_formatter(FormatStrFormatter(format_ticks))
+            ax[dataset_idx].xaxis.set_major_formatter(
+                FormatStrFormatter(format_x_ticks)
+            )
         ax[dataset_idx].set_title(f"({chr(97 + dataset_idx)}) {dataset_name}")
 
     if legend:
@@ -223,7 +221,7 @@ def plot_histogram(
         method_names=ensure_list(method_names),
         xlabel="Value",
         ylabel="counts",
-        format_ticks="%.3f",
+        format_x_ticks="%.3f",
     ) as fig:
         yield fig
 

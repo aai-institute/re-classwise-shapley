@@ -102,7 +102,7 @@ def _evaluate_metrics(
         and os.path.exists(output_dir / f"{metric_name}.csv")
         and os.path.exists(output_dir / f"{metric_name}.curve.csv")
     ):
-        return logger.info(f"Sampled data exists in '{output_dir}'. Skipping...")
+        return logger.info(f"Metric data exists in '{output_dir}'. Skipping...")
 
     values = Accessor.valuation_results(
         experiment_name, model_name, dataset_name, repetition_id, valuation_method_name
@@ -123,6 +123,7 @@ def _evaluate_metrics(
     metrics = params["experiments"][experiment_name]["metrics"]
     metric_kwargs = metrics[metric_name]
     metric_idx = metric_kwargs.pop("idx")
+    metric_kwargs.pop("len_curve_perc")
     metric_fn = partial(MetricRegistry[metric_idx], **metric_kwargs)
     metric_fn = reduce(
         maybe_add_argument,

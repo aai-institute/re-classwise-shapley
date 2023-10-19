@@ -75,7 +75,6 @@ def metric_weighted_metric_drop(
     Args:
         data: Dataset to compute the weighted reciprocal difference average on.
         values: Valuation result to compute the weighted reciprocal difference average
-        info: Additional information about the dataset.
         eval_model: Evaluation model to use for evaluation.
         metric: Scorer metric to use for evaluation.
         n_jobs: Number of parallel jobs to run.

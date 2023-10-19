@@ -335,7 +335,7 @@ def plot_curves(
             results = pd.concat(method_data["curve"].tolist(), axis=1)
             if len_curve_perc is not None:
                 results = results.iloc[
-                    :, : int(m.ceil(len_curve_perc * results.shape[1]))
+                    : int(m.ceil(len_curve_perc * results.shape[0])), :
                 ]
 
             shaded_mean_normal_confidence_interval(

@@ -97,8 +97,10 @@ def _evaluate_metrics(
         / str(repetition_id)
         / valuation_method_name
     )
-    if os.path.exists(output_dir / f"{metric_name}.csv") and os.path.exists(
-        output_dir / f"{metric_name}.curve.csv"
+    if (
+        False
+        and os.path.exists(output_dir / f"{metric_name}.csv")
+        and os.path.exists(output_dir / f"{metric_name}.curve.csv")
     ):
         return logger.info(f"Sampled data exists in '{output_dir}'. Skipping...")
 
@@ -121,7 +123,6 @@ def _evaluate_metrics(
     metrics = params["experiments"][experiment_name]["metrics"]
     metric_kwargs = metrics[metric_name]
     metric_idx = metric_kwargs.pop("idx")
-    len_curve_perc = metric_kwargs.pop("len_curve_perc", None)
     metric_fn = partial(MetricRegistry[metric_idx], **metric_kwargs)
     metric_fn = reduce(
         maybe_add_argument,
@@ -143,11 +144,6 @@ def _evaluate_metrics(
             progress=True,
             seed=seed,
         )
-
-    if len_curve_perc is not None:
-        metric_curve = metric_curve.iloc[
-            : int(m.ceil(len_curve_perc * len(metric_curve)))
-        ]
 
     evaluated_metrics = pd.Series([metric_values])
     evaluated_metrics.name = "value"

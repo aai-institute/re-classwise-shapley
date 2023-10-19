@@ -1,5 +1,6 @@
+import math as m
 from contextlib import contextmanager
-from typing import Any, Sequence, Tuple
+from typing import Any, Callable, List, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,6 +8,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.ticker import FormatStrFormatter
+from numpy._typing import NDArray
 
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import OneOrMany, ensure_list
@@ -22,14 +24,14 @@ logger = setup_logger(__name__)
 
 # Mapping from method names to single colors
 COLOR_ENCODING = {
-    "random": "black",
-    "beta_shapley": "blue",
-    "loo": "orange",
-    "tmc_shapley": "green",
-    "classwise_shapley": "red",
-    "owen_sampling_shapley": "purple",
-    "banzhaf_shapley": "turquoise",
-    "least_core": "gray",
+    "RND": "black",
+    "BETS": "blue",
+    "LOO": "orange",
+    "TMCS": "green",
+    "CWS": "red",
+    "OWS": "purple",
+    "BZHS": "turquoise",
+    "LC": "gray",
 }
 
 # Mapping from colors to mean and shade color.
@@ -42,6 +44,18 @@ COLORS = {
     "purple": ("darkorchid", "plum"),
     "gray": ("gray", "lightgray"),
     "turquoise": ("turquoise", "lightcyan"),
+}
+
+
+LABELS = {
+    "random": "RND",
+    "beta_shapley": "BETS",
+    "loo": "LOO",
+    "tmc_shapley": "TMCS",
+    "classwise_shapley": "CWS",
+    "owen_sampling_shapley": "OWS",
+    "banzhaf_shapley": "BZHS",
+    "least_core": "LC",
 }
 
 
@@ -94,19 +108,24 @@ def shaded_mean_normal_confidence_interval(
 
 @contextmanager
 def plot_grid_over_datasets(
-    valuation_results: pd.DataFrame,
-    plot_func: callable,
+    data: pd.DataFrame,
+    plot_func: Callable,
     patch_size: Tuple[float, float] = (4, 4),
     n_cols: int = 3,
     legend: bool = False,
     format_x_ticks: str = None,
+    tick_params_left_only: bool = False,
+    tick_params_below_only: bool = False,
+    grid: bool = False,
+    xlabel: str = "",
+    ylabel: str = "",
     **kwargs,
 ) -> plt.Figure:
     """
     Generalized function for plotting data using a specified plot function.
 
     Args:
-        valuation_results: A pd.DataFrame containing columns `time_s`, `dataset_name`
+        data: A pd.DataFrame containing columns `time_s`, `dataset_name`
             and `method_name`.
         plot_func: A callable function for plotting data.
         patch_size: Size of one image patch of the multi plot.
@@ -114,9 +133,15 @@ def plot_grid_over_datasets(
         legend: True, if a legend should be plotted below and outside the grid of
             subplots.
         format_x_ticks: If not None, it defines the format of the x ticks.
+        tick_params_below_only: If True, only the x ticks below the plot are shown.
+        tick_params_left_only: If True, only the y ticks left of the plot are shown.
+        grid: True, iff a grid should be displayed for guidance.
         **kwargs: Additional keyword arguments to pass to the plot_func.
+
+    Returns:
+        A figure containing the plot.
     """
-    dataset_names = valuation_results["dataset_name"].unique().tolist()
+    dataset_names = data["dataset_name"].unique().tolist()
     n_rows = int((len(dataset_names) + n_cols - 1) / n_cols)
     fig, ax = plt.subplots(
         n_rows, n_cols, figsize=(n_rows * patch_size[0], n_cols * patch_size[1])
@@ -124,9 +149,7 @@ def plot_grid_over_datasets(
     ax = ax.flatten()
 
     for dataset_idx, dataset_name in enumerate(dataset_names):
-        dataset_data = valuation_results.loc[
-            valuation_results["dataset_name"] == dataset_name
-        ]
+        dataset_data = data.loc[data["dataset_name"] == dataset_name].copy()
         plot_func(data=dataset_data, ax=ax[dataset_idx], **kwargs)
 
         ax[dataset_idx].patch.set_facecolor("none")
@@ -134,21 +157,17 @@ def plot_grid_over_datasets(
 
         if dataset_idx % n_cols != 0:
             ax[dataset_idx].set_ylabel("")
-            ax[dataset_idx].tick_params(
-                left=False,
-                labelleft=False,
-            )
+            if tick_params_left_only:
+                ax[dataset_idx].tick_params(labelleft=False, left=False)
         else:
-            ax[dataset_idx].set_xlabel(kwargs.get("ylabel", ""))
+            ax[dataset_idx].set_ylabel(ylabel)
 
         if int(dataset_idx / n_cols) < n_rows - 1:
             ax[dataset_idx].set_xlabel("")
-            ax[dataset_idx].tick_params(
-                bottom=False,
-                labelbottom=False,
-            )
+            if tick_params_below_only:
+                ax[dataset_idx].tick_params(labelbottom=False, bottom=False)
         else:
-            ax[dataset_idx].set_xlabel(kwargs.get("xlabel", ""))
+            ax[dataset_idx].set_xlabel(xlabel)
 
         if format_x_ticks is not None:
             ax[dataset_idx].xaxis.set_ticks(np.linspace(*ax[dataset_idx].get_xlim(), 5))
@@ -156,10 +175,13 @@ def plot_grid_over_datasets(
                 FormatStrFormatter(format_x_ticks)
             )
         ax[dataset_idx].set_title(f"({chr(97 + dataset_idx)}) {dataset_name}")
+        if grid:
+            ax[dataset_idx].grid(True)
 
+    plt.tight_layout()
     if legend:
         legend_kwargs = {"framealpha": 0}
-        handles, labels = ax[-1].get_legend_handles_labels()
+        handles, labels = ax[0].get_legend_handles_labels()
         fig.legend(
             handles,
             labels,
@@ -170,6 +192,7 @@ def plot_grid_over_datasets(
             shadow=False,
             **legend_kwargs,
         )
+        fig.subplots_adjust(bottom=0.1)
 
     yield fig
     plt.close(fig)
@@ -177,7 +200,7 @@ def plot_grid_over_datasets(
 
 @contextmanager
 def plot_histogram(
-    valuation_results: pd.DataFrame,
+    data: pd.DataFrame,
     method_names: OneOrMany[str],
     patch_size: Tuple[float, float] = (4, 4),
     n_cols: int = 3,
@@ -186,17 +209,33 @@ def plot_histogram(
     Plot the histogram of the data values for each dataset and valuation method.
 
     Args:
-        valuation_results: A pd.DataFrame containing columns `time_s`, `dataset_name`
-            and `method_name`.
+        data: A pd.DataFrame containing columns `dataset_name` and `method_name`.
         method_names: A list of method names to plot.
         patch_size: Size of one image patch of the multi plot.
         n_cols: Number of columns for subplot layout.
+
+    Returns:
+        A figure containing the plot.
     """
 
-    def plot_histogram_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
-        for method_name in kwargs["method_names"]:
+    def plot_histogram_func(
+        data: pd.DataFrame, ax: plt.Axes, method_names: List[str], **kwargs
+    ):
+        """
+        Plot a histogram for each valuation_method.
+        Args:
+            data: A pd.DataFrame containing columns `dataset_name` and `method_name`.
+            ax: Axes to plot the subplot on.
+            method_names: A list of method names to plot.
+            **kwargs:
+
+        Returns:
+
+        """
+        data.loc[:, "method_name"] = data["method_name"].apply(lambda m: LABELS[m])
+        for method_name in method_names:
             method_dataset_valuation_results = data.loc[
-                valuation_results["method_name"] == method_name
+                data["method_name"] == LABELS[method_name]
             ]
             method_values = np.stack(
                 method_dataset_valuation_results["valuation"].apply(lambda v: v.values)
@@ -207,12 +246,12 @@ def plot_histogram(
                 ax=ax,
                 bins="sturges",
                 alpha=0.4,
-                color=COLORS[COLOR_ENCODING[method_name]][0],
-                label=method_name,
+                color=COLORS[COLOR_ENCODING[LABELS[method_name]]][0],
+                label=LABELS[method_name],
             )
 
     with plot_grid_over_datasets(
-        valuation_results,
+        data,
         plot_histogram_func,
         patch_size=patch_size,
         n_cols=n_cols,
@@ -221,13 +260,14 @@ def plot_histogram(
         xlabel="Value",
         ylabel="counts",
         format_x_ticks="%.3f",
+        grid=True,
     ) as fig:
         yield fig
 
 
 @contextmanager
 def plot_time(
-    valuation_results: pd.DataFrame,
+    data: pd.DataFrame,
     patch_size: Tuple[float, float] = (4, 4),
     n_cols: int = 3,
 ) -> plt.Figure:
@@ -235,28 +275,36 @@ def plot_time(
     Plot execution times as boxplot.
 
     Args:
-        valuation_results: A pd.DataFrame containing columns `time_s`, `dataset_name`
+        data: A pd.DataFrame containing columns `time_s`, `dataset_name`
             and `method_name`.
         patch_size: Size of one image patch of the multi plot.
         n_cols: Number of columns for subplot layout.
+
+    Returns:
+        A figure containing the plot.
     """
 
     def plot_time_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
+        data.loc[:, "method_name"] = data["method_name"].apply(lambda m: LABELS[m])
         sns.boxplot(
             data=data,
             x="time_s",
             y="method_name",
+            palette=COLOR_ENCODING,
             width=0.5,
             ax=ax,
         )
 
     with plot_grid_over_datasets(
-        valuation_results,
+        data,
         plot_time_func,
         patch_size=patch_size,
         n_cols=n_cols,
         legend=False,
         xlabel="s",
+        ylabel="",
+        tick_params_left_only=True,
+        grid=True,
     ) as fig:
         yield fig
 
@@ -266,17 +314,30 @@ def plot_curves(
     data: pd.DataFrame,
     patch_size: Tuple[float, float] = (4, 3),
     n_cols: int = 3,
-):
+    len_curve_perc: float = None,
+) -> plt.Figure:
     """
     Plot the curves of the data values for each dataset and valuation method.
+
+    Args:
+        data: A pd.DataFrame with the curve data.
+        patch_size: Size of one image patch of the multi plot.
+        n_cols: Number of columns for subplot layout.
+        len_curve_perc: Percentage of the curve length to plot.
     """
 
     def plot_curves_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
+        data.loc[:, "method_name"] = data["method_name"].apply(lambda m: LABELS[m])
         for method_name, method_data in data.groupby("method_name"):
             color_name = COLOR_ENCODING[method_name]
             mean_color, shade_color = COLORS[color_name]
 
             results = pd.concat(method_data["curve"].tolist(), axis=1)
+            if len_curve_perc is not None:
+                results = results.iloc[
+                    :, : int(m.ceil(len_curve_perc * results.shape[1]))
+                ]
+
             shaded_mean_normal_confidence_interval(
                 results,
                 abscissa=results.index,
@@ -293,5 +354,101 @@ def plot_curves(
         n_cols=n_cols,
         legend=True,
         xlabel="s",
+        grid=True,
     ) as fig:
         yield fig
+
+
+@contextmanager
+def plot_metric_table(
+    data: pd.DataFrame,
+) -> plt.Figure:
+    """
+    Takes a pd.DataFrame and plots it as a table.
+    """
+    data.columns = [LABELS[c] for c in data.columns]
+    fig, ax = plt.subplots()
+    sns.heatmap(data, annot=True, cmap=plt.cm.get_cmap("viridis"), ax=ax)
+    plt.ylabel("")
+    plt.xlabel("")
+    plt.tight_layout()
+    yield fig
+    plt.close(fig)
+
+
+@contextmanager
+def plot_metric_boxplot(
+    data: pd.DataFrame,
+    patch_size: Tuple[float, float] = (4, 4),
+    n_cols: int = 3,
+) -> plt.Figure:
+    """
+    Takes a linear pd.DataFrame and creates a table for it, while red
+
+    Args:
+        data: Expects a pd.DataFrame with columns specified by col_index, col_columns
+            and col_cell.
+        patch_size: Size of one image patch of the multi plot.
+        n_cols: Number of columns for subplot layout.
+    """
+
+    def plot_metric_boxplot_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
+        data.loc[:, "method_name"] = data["method_name"].apply(lambda m: LABELS[m])
+        sns.boxplot(
+            data=data,
+            x="metric",
+            y="method_name",
+            palette=COLOR_ENCODING,
+            width=0.5,
+            ax=ax,
+        )
+
+    with plot_grid_over_datasets(
+        data,
+        plot_metric_boxplot_func,
+        patch_size=patch_size,
+        n_cols=n_cols,
+        legend=False,
+        xlabel="s",
+        ylabel="",
+        tick_params_left_only=True,
+        grid=True,
+    ) as fig:
+        yield fig
+
+
+def linear_dataframe_to_table(
+    data: pd.DataFrame,
+    col_index: str,
+    col_columns: str,
+    col_cell: str,
+    reduce_fn: Callable[[NDArray[np.float_]], float],
+) -> pd.DataFrame:
+    """
+    Takes a linear pd.DataFrame and creates a table for it, while red
+
+    Args:
+        data: Expects a pd.DataFrame with columns specified by col_index, col_columns
+            and col_cell.
+        col_index: Name of the column to use as index for pd.DataFrame.
+        col_columns: Name of the column to use as columns for pd.DataFrame.
+        col_cell: Name of the column which holds the values.
+        reduce_fn: Function to reduce the array of to a single value.
+
+    Returns:
+        A pd.DataFrame with elements from col_index as index, elements from col_columns
+            as columns and elements from col_cell as content.
+    """
+    dataset_names = data[col_index].unique().tolist()
+    valuation_method_names = data[col_columns].unique().tolist()
+    df = pd.DataFrame(index=dataset_names, columns=valuation_method_names, dtype=float)
+    for dataset_name in dataset_names:
+        for method_name in valuation_method_names:
+            df.loc[dataset_name, method_name] = reduce_fn(
+                data.loc[
+                    (data[col_index] == dataset_name)
+                    & (data[col_columns] == method_name),
+                    col_cell,
+                ].values
+            )
+    return df

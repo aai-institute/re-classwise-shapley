@@ -3,15 +3,12 @@ import json
 import os
 import pickle
 import shutil
-from functools import wraps
 from itertools import product
 from pathlib import Path
-from typing import Any, Callable, Dict, Tuple
+from typing import Any, Callable, Dict
 
 import numpy as np
 import pandas as pd
-from pydvl.utils import maybe_progress
-from tqdm import tqdm
 
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import OneOrMany, RawDataset, ensure_list
@@ -158,6 +155,7 @@ class Accessor:
             valuation = pickle.load(f)
         with open(base_path / f"valuation.{method_name}.stats.json", "r") as f:
             stats = json.load(f)
+
         return {
             "experiment_name": experiment_name,
             "model_name": model_name,

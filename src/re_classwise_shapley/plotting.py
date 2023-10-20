@@ -8,7 +8,6 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.ticker import FormatStrFormatter
-from numpy._typing import NDArray
 
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import OneOrMany, ensure_list
@@ -17,6 +16,8 @@ __all__ = [
     "plot_histogram",
     "plot_curves",
     "plot_time",
+    "plot_metric_boxplot",
+    "plot_metric_table",
 ]
 
 logger = setup_logger(__name__)
@@ -415,40 +416,3 @@ def plot_metric_boxplot(
         grid=True,
     ) as fig:
         yield fig
-
-
-def linear_dataframe_to_table(
-    data: pd.DataFrame,
-    col_index: str,
-    col_columns: str,
-    col_cell: str,
-    reduce_fn: Callable[[NDArray[np.float_]], float],
-) -> pd.DataFrame:
-    """
-    Takes a linear pd.DataFrame and creates a table for it, while red
-
-    Args:
-        data: Expects a pd.DataFrame with columns specified by col_index, col_columns
-            and col_cell.
-        col_index: Name of the column to use as index for pd.DataFrame.
-        col_columns: Name of the column to use as columns for pd.DataFrame.
-        col_cell: Name of the column which holds the values.
-        reduce_fn: Function to reduce the array of to a single value.
-
-    Returns:
-        A pd.DataFrame with elements from col_index as index, elements from col_columns
-            as columns and elements from col_cell as content.
-    """
-    dataset_names = data[col_index].unique().tolist()
-    valuation_method_names = data[col_columns].unique().tolist()
-    df = pd.DataFrame(index=dataset_names, columns=valuation_method_names, dtype=float)
-    for dataset_name in dataset_names:
-        for method_name in valuation_method_names:
-            df.loc[dataset_name, method_name] = reduce_fn(
-                data.loc[
-                    (data[col_index] == dataset_name)
-                    & (data[col_columns] == method_name),
-                    col_cell,
-                ].values
-            )
-    return df

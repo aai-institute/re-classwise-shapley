@@ -19,10 +19,7 @@ from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.model import instantiate_model
 from re_classwise_shapley.utils import load_params_fast
 
-__all__ = [
-    "metric_weighted_metric_drop",
-    "metric_roc_auc",
-]
+__all__ = ["MetricRegistry"]
 
 logger = setup_logger(__name__)
 
@@ -258,3 +255,9 @@ def _curve_score_over_point_removal_or_addition(
 
     scores.index.name = "n_points_" + ("removed" if highest_point_removal else "added")
     return scores
+
+
+MetricRegistry = {
+    "weighted_metric_drop": metric_weighted_metric_drop,
+    "precision_recall_roc_auc": metric_roc_auc,
+}

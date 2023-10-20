@@ -15,27 +15,20 @@ a single value and a curve. The curve is stored as `*.curve.csv` file.
 """
 
 import logging
-import math as m
 import os
 from functools import partial, reduce
 
 import click
-import numpy as np
 import pandas as pd
 from pydvl.parallel import ParallelConfig
 from pydvl.utils.functional import maybe_add_argument
 
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
-from re_classwise_shapley.metric import metric_roc_auc, metric_weighted_metric_drop
+from re_classwise_shapley.metric import MetricRegistry
 from re_classwise_shapley.utils import load_params_fast, n_threaded, pipeline_seed
 
 logger = setup_logger("evaluate_metrics")
-
-MetricRegistry = {
-    "weighted_metric_drop": metric_weighted_metric_drop,
-    "precision_recall_roc_auc": metric_roc_auc,
-}
 
 
 @click.command()

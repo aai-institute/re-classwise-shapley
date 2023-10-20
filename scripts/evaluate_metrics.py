@@ -97,10 +97,8 @@ def _evaluate_metrics(
         / str(repetition_id)
         / valuation_method_name
     )
-    if (
-        False
-        and os.path.exists(output_dir / f"{metric_name}.csv")
-        and os.path.exists(output_dir / f"{metric_name}.curve.csv")
+    if os.path.exists(output_dir / f"{metric_name}.csv") and os.path.exists(
+        output_dir / f"{metric_name}.curve.csv"
     ):
         return logger.info(f"Metric data exists in '{output_dir}'. Skipping...")
 

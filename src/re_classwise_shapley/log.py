@@ -105,3 +105,22 @@ def dataset_to_dataframe(dataset: Dataset) -> pd.DataFrame:
         columns=dataset.feature_names + dataset.target_names,
     )
     return df
+
+
+def get_or_create_mlflow_experiment(experiment_name: str) -> str:
+    """
+    Get or create a mlflow experiment. If the experiment does not exist, it will be
+    created.
+
+    Args:
+        experiment_name: Name of the experiment.
+
+    Returns:
+        Identifier of the experiment.
+    """
+    experiment = mlflow.get_experiment_by_name(experiment_name)
+    if not experiment:
+        experiment_id = mlflow.create_experiment(experiment_name)
+    else:
+        experiment_id = experiment.experiment_id
+    return experiment_id

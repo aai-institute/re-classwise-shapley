@@ -50,7 +50,23 @@ stages:
     outs:
       - output/sampled/${item.experiment}/${item.dataset}:
           persist: true
-  
+
+  determine-in-out-of-cls-marginal-accuracies:
+    matrix:
+      experiment: ${active.experiments}
+      dataset: ${active.datasets}
+    cmd: >
+      python -m scripts.determine_in_out_of_cls_marginal_accuracies
+      --experiment-name ${item.experiment}
+      --dataset-name ${item.dataset}
+      --model-name logistic_regression
+    deps:
+      - scripts/determine_in_out_of_cls_marginal_accuracies.py
+      - output/sampled/${item.experiment}/${item.dataset}
+    outs:
+      - output/info/${item.experiment}/${item.dataset}/in_out_of_cls_marginals.json:
+          persist: true
+
   calculate-values:
     matrix:
       experiment: ${active.experiments}

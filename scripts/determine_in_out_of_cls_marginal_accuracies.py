@@ -78,7 +78,6 @@ def _determine_in_cls_out_of_cls_marginal_accuracies(
     sub_seeds = np.random.SeedSequence(seed).generate_state(2)
 
     params = load_params_fast()
-    n_jobs = params["settings"]["n_jobs"]
 
     marginal_accuracies = []
     for c in [0, 1]:
@@ -91,7 +90,7 @@ def _determine_in_cls_out_of_cls_marginal_accuracies(
             scorer=InOutOfClassScorer("accuracy", c_class=c, default=np.nan),
             catch_errors=False,
         )
-        marginal_accuracies.append(compute_loo(u, n_jobs=n_jobs, progress=True).values)
+        marginal_accuracies.append(compute_loo(u, n_jobs=4, progress=True).values)
 
     (
         in_class_marginal_accuracies,

@@ -12,6 +12,9 @@ from itertools import product
 
 import click
 from calculate_values import _calculate_values
+from determine_in_out_of_cls_marginal_accuracies import (
+    _determine_in_cls_out_of_cls_marginal_accuracies,
+)
 from evaluate_metrics import _evaluate_metrics
 from fetch_data import _fetch_data
 from preprocess_data import _preprocess_data
@@ -41,22 +44,18 @@ def run_pipeline():
     for (
         experiment_name,
         dataset_name,
-        repetition_id,
     ) in product(
         *[
             active_params[k]
             for k in [
                 "experiments",
                 "datasets",
-                "repetitions",
             ]
         ]
     ):
-        logger.info(
-            f"Sample dataset {dataset_name} for experiment {experiment_name} and "
-            f"seed {repetition_id}."
-        )
-        _sample_data(experiment_name, dataset_name, repetition_id)
+        logger.info(f"Sample dataset {dataset_name} for experiment {experiment_name}.")
+        _sample_data(experiment_name, dataset_name)
+        _determine_in_cls_out_of_cls_marginal_accuracies(experiment_name, dataset_name)
 
     for experiment_name, model_name in product(
         *[

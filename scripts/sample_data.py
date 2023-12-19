@@ -33,11 +33,9 @@ logger = setup_logger("sample_data")
 @click.command()
 @click.option("--experiment-name", type=str, required=True)
 @click.option("--dataset-name", type=str, required=True)
-@click.option("--repetition-id", type=int, required=True)
 def sample_data(
     experiment_name: str,
     dataset_name: str,
-    repetition_id: int,
 ):
     """
     Samples a dataset from a preprocessed dataset. It accepts `experiment_name` and
@@ -51,29 +49,24 @@ def sample_data(
             `params.experiments` section.
         dataset_name: The name of the dataset to preprocess. As specified in th
             `params.datasets` section.
-        repetition_id: Repetition id of the experiment. It is used also as a seed for
-            all randomness.
     """
-    _sample_data(experiment_name, dataset_name, repetition_id)
+    _sample_data(experiment_name, dataset_name)
 
 
 def _sample_data(
     experiment_name: str,
     dataset_name: str,
-    repetition_id: int,
 ):
     params = load_params_fast()
     input_folder = Accessor.PREPROCESSED_PATH / dataset_name
-    output_dir = (
-        Accessor.SAMPLED_PATH / experiment_name / dataset_name / str(repetition_id)
-    )
+    output_dir = Accessor.SAMPLED_PATH / experiment_name / dataset_name
     if os.path.exists(output_dir / "val_set.pkl") and os.path.exists(
         output_dir / "test_set.pkl"
     ):
         return logger.info(f"Sampled data exists in '{output_dir}'. Skipping...")
 
     n_pipeline_step = 3
-    seed = pipeline_seed(repetition_id, n_pipeline_step)
+    seed = pipeline_seed(42, n_pipeline_step)
     seed_sequence = SeedSequence(seed).spawn(2)
 
     experiment_config = params["experiments"][experiment_name]

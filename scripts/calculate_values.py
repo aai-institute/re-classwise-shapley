@@ -18,10 +18,12 @@ import json
 import os
 import pickle
 import time
+from dataclasses import asdict
 
 import click
 import numpy as np
-from pydvl.utils import Scorer, Utility
+from pydvl.utils import MemcachedConfig, Scorer, Utility
+from pymemcache.client import Client
 
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
@@ -92,9 +94,13 @@ def _calculate_values(
             f"Values for {valuation_method_name} exist in '{output_dir}'. Skipping..."
         )
 
-    val_set = Accessor.datasets(experiment_name, dataset_name, repetition_id).loc[
-        0, "val_set"
-    ]
+    mc_config = MemcachedConfig()
+    mc = Client(**asdict(mc_config)["client_config"])
+    if dataset_name != mc.get("last_dataset", None):
+        mc.flush_all()
+        mc.set("last_dataset", dataset_name)
+
+    val_set = Accessor.datasets(experiment_name, dataset_name).loc[0, "val_set"]
 
     n_pipeline_step = 4
     seed = pipeline_seed(repetition_id, n_pipeline_step)
@@ -107,11 +113,14 @@ def _calculate_values(
 
     model_kwargs = params["models"][model_name]
     model = instantiate_model(model_name, model_kwargs, seed=int(sub_seeds[0]))
+
     u = Utility(
         data=val_set,
         model=model,
         scorer=Scorer("accuracy", default=0.0),
         catch_errors=True,
+        enable_cache=True,
+        cache_options=mc_config,
     )
 
     start_time = time.time()

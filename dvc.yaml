@@ -72,8 +72,8 @@ stages:
       experiment: ${active.experiments}
       dataset: ${active.datasets}
       model: ${active.models}
-      repetition: ${active.repetitions}
       method: ${active.valuation_methods}
+      repetition: ${active.repetitions}
     cmd: >
       python -m scripts.calculate_values
       --experiment-name ${item.experiment} 

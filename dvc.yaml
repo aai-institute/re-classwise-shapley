@@ -87,7 +87,7 @@ stages:
     deps:
       - scripts/calculate_values.py
       - src/re_classwise_shapley/valuation_methods.py
-      - output/sampled/${item.experiment}/${item.dataset}/${item.repetition}
+      - output/sampled/${item.experiment}/${item.dataset}
     outs:
       - output/values/${item.experiment}/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl:
           persist: true

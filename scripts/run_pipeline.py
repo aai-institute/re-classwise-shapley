@@ -93,21 +93,31 @@ def run_pipeline():
                 repetition_id,
             )
 
-            for metric_name in params["experiments"][experiment_name]["metrics"].keys():
-                logger.info(
-                    f"Calculate metric {metric_name} for dataset {dataset_name}, "
-                    f"valuation method {valuation_method_name} and seed "
-                    f"{repetition_id}."
-                )
-                logger.info(f"Evaluate metric {metric_name}.")
-                _evaluate_metrics(
-                    experiment_name,
-                    dataset_name,
-                    model_name,
-                    valuation_method_name,
-                    repetition_id,
-                    metric_name,
-                )
+        for (
+            dataset_name,
+            metric_name,
+            valuation_method_name,
+            repetition_id,
+        ) in product(
+            active_params["datasets"],
+            params["experiments"][experiment_name]["metrics"].keys(),
+            active_params["valuation_methods"],
+            active_params["repetitions"],
+        ):
+            logger.info(
+                f"Calculate metric {metric_name} for dataset {dataset_name}, "
+                f"valuation method {valuation_method_name} and seed "
+                f"{repetition_id}."
+            )
+            logger.info(f"Evaluate metric {metric_name}.")
+            _evaluate_metrics(
+                experiment_name,
+                dataset_name,
+                model_name,
+                valuation_method_name,
+                repetition_id,
+                metric_name,
+            )
 
         logger.info(f"Render plots for {experiment_name} and {model_name}.")
         _render_plots(experiment_name, model_name)

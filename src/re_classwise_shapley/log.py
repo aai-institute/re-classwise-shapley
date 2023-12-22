@@ -48,17 +48,15 @@ def log_datasets(datasets: pd.DataFrame):
         for dataset_type in ["val_set", "test_set"]:
             dataset = row[dataset_type]
             dataset_name = row["dataset_name"]
-            repetition_id = str(row["repetition_id"])
             mlflow.log_input(
                 mlflow.data.pandas_dataset.from_pandas(
                     dataset_to_dataframe(dataset),
                     targets=dataset.target_names[0],
-                    name=f"{dataset_name}_{repetition_id}_{dataset_type}",
+                    name=f"{dataset_name}_{dataset_type}",
                 ),
                 tags={
                     "set": dataset_type,
                     "dataset": dataset_name,
-                    "repetition": repetition_id,
                 },
             )
 

@@ -56,7 +56,7 @@ def run_pipeline():
         logger.info(f"Sample dataset {dataset_name} for experiment {experiment_name}.")
         _sample_data(experiment_name, dataset_name)
 
-    for experiment_name in active_params["datasets"]:
+    for experiment_name in active_params["experiments"]:
         _determine_in_cls_out_of_cls_marginal_accuracies(experiment_name)
 
     for experiment_name, model_name in product(

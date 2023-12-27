@@ -145,6 +145,7 @@ def _evaluate_metrics(
             )
         )
     ):
+        logger.info("Flushing cache")
         mc.flush_all()
         mc.set(
             "last_run",

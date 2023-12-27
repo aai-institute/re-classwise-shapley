@@ -110,6 +110,7 @@ def _calculate_values(
             )
         )
     ):
+        logger.info("Flushing cache")
         mc.flush_all()
         mc.set(
             "last_run",

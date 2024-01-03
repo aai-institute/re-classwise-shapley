@@ -1,9 +1,12 @@
 import logging
 import math as m
-from typing import Literal
+from typing import Callable, Literal
 
+import numpy as np
+from determine_in_out_of_cls_marginal_accuracies import SubsetScorer
+from numpy._typing import NDArray
 from pydvl.parallel.config import ParallelConfig
-from pydvl.utils import Utility
+from pydvl.utils import Dataset, Utility
 from pydvl.value import (
     ClasswiseScorer,
     MaxChecks,
@@ -19,7 +22,9 @@ from pydvl.value import (
 from pydvl.value.semivalues import SemiValueMode, compute_semivalues
 
 from re_classwise_shapley.log import setup_logger
-from re_classwise_shapley.utils import n_threaded
+from re_classwise_shapley.model import instantiate_model
+from re_classwise_shapley.types import Seed
+from re_classwise_shapley.utils import load_params_fast, n_threaded
 
 __all__ = ["compute_values"]
 
@@ -154,3 +159,67 @@ def compute_values(
                 raise NotImplementedError(
                     f"The method {valuation_method} is not registered within."
                 )
+
+
+def calculate_subset_score(
+    data_set: Dataset,
+    subset_idx_fn: Callable[[int], NDArray[np.int_]],
+    model_name: str,
+    model_seed: Seed,
+    sampler_seed: Seed,
+    valuation_method_name: str,
+    n_jobs: int,
+    backend,
+):
+    """Calculates the subset score for a given dataset and model.
+
+    This function evaluates the performance of a specified machine learning model on subsets of a given dataset. It uses
+    a unique subset indexing function to select different subsets and computes their scores using a specified valuation
+    method.
+
+    Args:
+        data_set: The dataset on which the model is evaluated.
+        subset_idx_fn: A function that takes an integer and returns a subset of indices from the dataset.
+        model_name: The name of the machine learning model to be used.
+        model_seed: A seed for initializing the model to ensure reproducibility.
+        sampler_seed: A seed for the sampling process.
+        valuation_method_name: The name of the valuation method to be used for scoring.
+        n_jobs: The number of jobs to run in parallel during computation.
+        backend: The backend to be used for computation.
+
+    Returns:
+        A tuple containing the marginal accuracy scores for each subset (`subset_mar_acc`) and a dictionary with
+            statistical data (`subset_stats`) like mean and standard deviation of these scores.
+    """
+    params = load_params_fast()
+    valuation_method_config = params["valuation_methods"][valuation_method_name]
+    all_classes = np.unique(data_set.y_train)
+    subset_mar_acc = []
+    for c in all_classes:
+        params = load_params_fast()
+        model_kwargs = params["models"][model_name]
+        u = Utility(
+            data=data_set,
+            model=instantiate_model(model_name, model_kwargs, seed=int(model_seed)),
+            scorer=SubsetScorer("accuracy", subset=subset_idx_fn(c), default=np.nan),
+            catch_errors=False,
+        )
+        values = compute_values(
+            u,
+            valuation_method_name,
+            **valuation_method_config,
+            backend=backend,
+            n_jobs=n_jobs,
+            seed=sampler_seed,
+        )
+        subset_mar_acc.append(values.values)
+
+    subset_mar_acc = np.stack(subset_mar_acc, axis=1)
+    subset_mar_acc = np.take_along_axis(
+        subset_mar_acc, data_set.y_train.reshape([-1, 1]), axis=1
+    ).reshape(-1)
+    subset_stats = {
+        "mean": np.mean(subset_mar_acc),
+        "std": np.std(subset_mar_acc),
+    }
+    return subset_mar_acc, subset_stats

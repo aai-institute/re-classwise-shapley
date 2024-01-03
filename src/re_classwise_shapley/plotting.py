@@ -1,11 +1,12 @@
 import math as m
 from contextlib import contextmanager
-from typing import Any, Callable, List, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.ticker import FormatStrFormatter
 
@@ -416,3 +417,35 @@ def plot_metric_boxplot(
         grid=True,
     ) as fig:
         yield fig
+
+
+def plot_threshold_characteristics(
+    results: Dict[str, Dict[str, pd.DataFrame]],
+    max_plotting_percentage: float = 1e-4,
+    n_columns: int = 3,
+) -> plt.Figure:
+    """
+    Plots threshold characteristics for various datasets. This function takes results from multiple datasets and plots
+    the threshold characteristics for each. It arranges the plots in a grid layout and saves the resulting figure to a
+    specified directory.
+
+    Args:
+        results: A dictionary where each key is a dataset name and the value is another dictionary containing a DataFrame
+            of threshold characteristics.
+        max_plotting_percentage: The maximum percentage for plotting, used to determine the range of data to be plotted.
+            Defaults to 1e-4.
+        n_columns: The number of columns in the subplot grid. Defaults to 3.
+    """
+    dataset_names = list(results.keys())
+    n_rows = int((len(dataset_names) + n_columns - 1) / n_columns)
+    fig, ax = plt.subplots(n_rows, n_columns, figsize=(n_rows * 4, n_columns * 4))
+    ax = ax.flatten()
+    for dataset_idx, dataset_name in enumerate(dataset_names):
+        dataset_df = results[dataset_name]["threshold_characteristics"]
+        idx = np.argwhere(np.max(dataset_df, axis=1) >= max_plotting_percentage)[-1, 0]
+        dataset_df.iloc[:idx].plot_threshold_characteristics(ax=ax[dataset_idx])
+        ax[dataset_idx].set_xlim(0, dataset_df.index[idx])
+        ax[dataset_idx].set_title(f"({chr(97 + dataset_idx)}) {dataset_name}")
+
+    fig.suptitle("In class and out of class characteristic curves.")
+    return fig

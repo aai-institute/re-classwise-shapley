@@ -1,28 +1,28 @@
 """
-Stage 2 for preprocessing datasets fetched in stage 1.
+Calculate in-class and out-of-class marginal accuracies. Consider an arbitrary dataset D. Each point in the dataset has
+a positive or negative effect onto the prediction quality of a model M. This influence can be further subdivided into
+two independent utilities. The first one measures the influence on other samples of the same class label. While the
+second one measures the influence onto the complement of all samples of the same class. Both of them are then used to
+group all data points into four different categories. All categories depend on a threshold lambda. This parameter is
+varying and the relative percentage of data points is plotted, having
 
-1. Fetch data
-2. Preprocess data
-3. Sample data
-4. Calculate Shapley values
-5. Evaluate metrics
-6. Render plots
+1. Improves in-class accuracy and decreases out-of-class accuracy.
+2. Improves in-of-class accuracy and increases out-of-class accuracy.
+3. Decreases in-of-class accuracy and decreases out-of-class accuracy.
+4. Decreases in-of-class accuracy and increases out-of-class accuracy.
 
-Preprocesses the datasets as defined in the `datasets` section of `params.yaml` file.
-All files are stored in `Accessor.PREPROCESSED_PATH / dataset_name` as`x.npy` and
-`y.npy`. Additional information is stored in `*.json` files.
+Furthermore, the x-axis is cut such that mostly all values displayer are bigger than 0.
 """
 import json
 import os
-from typing import List, Tuple, Union
+from typing import List, Union
 
 import click
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from numpy._typing import NDArray
-from numpy.random import SeedSequence
-from pydvl.utils import Scorer, SupervisedModel, Utility, ensure_seed_sequence
+from numpy.typing import NDArray
+from pydvl.utils import Scorer, SupervisedModel, Utility
 
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
@@ -69,7 +69,8 @@ def determine_in_cls_out_of_cls_marginal_accuracies(
 def _determine_in_cls_out_of_cls_marginal_accuracies(
     experiment_name: str,
     model_name: str = "logistic_regression",
-    valuation_method_name: str = "tmc_shapley",
+    valuation_method_name: str = "loo",
+    max_plotting_percentage: float = 1e-5,
 ):
     output_dir = Accessor.INFO_PATH / experiment_name
     if os.path.exists(output_dir / "threshold_characteristics.svg") and os.path.exists(
@@ -211,7 +212,12 @@ def _determine_in_cls_out_of_cls_marginal_accuracies(
     fig, ax = plt.subplots(n_rows, n_cols, figsize=(n_rows * 4, n_cols * 4))
     ax = ax.flatten()
     for dataset_idx, dataset_name in enumerate(dataset_names):
-        results[dataset_name]["detr"].plot(ax=ax[dataset_idx])
+        dataset_df = results[dataset_name]["detr"]
+        idx = np.argwhere(
+            np.max(dataset_df, axis=1) >= max_plotting_percentage, axis=1
+        )[-1, 0]
+        dataset_df.iloc[:idx].plot(ax=ax[dataset_idx])
+        ax[dataset_idx].set_xlim(0, dataset_df.index[idx])
         ax[dataset_idx].set_title(f"({chr(97 + dataset_idx)}) {dataset_name}")
 
     fig.suptitle("In class and out of class characteristic curves.")
@@ -225,36 +231,6 @@ def _determine_in_cls_out_of_cls_marginal_accuracies(
             sort_keys=True,
             indent=4,
         )
-
-
-def mix_first_and_second_class_marginals(
-    labels: NDArray[np.int_],
-    first_class_marginals: NDArray[np.float_],
-    second_class_marginals: NDArray[np.float_],
-) -> Tuple[NDArray[np.float_], NDArray[np.float_]]:
-    """
-    Computes the in-class and out-of-class accuracies for first and second classes.
-
-    Args:
-        labels: An array representing class labels, where 0 indicates first class and 1 indicates second class.
-        first_class_marginals: An array representing marginal probabilities for the first class.
-        second_class_marginals: An array representing marginal probabilities for the second class.
-
-    Returns:
-        A tuple containing two NDArrays:
-            in_class_accuracies: In-class accuracies for first and second classes.
-            out_of_class_accuracies: Out-of-class accuracies for first and second classes.
-
-    """
-    in_class_accuracies = np.zeros_like(first_class_marginals)
-    out_of_class_accuracies = np.zeros_like(first_class_marginals)
-    first_class_idx = np.argwhere(labels == 0)[:, 0]
-    second_class_idx = np.argwhere(labels == 1)[:, 0]
-    in_class_accuracies[first_class_idx] = first_class_marginals[first_class_idx]
-    out_of_class_accuracies[first_class_idx] = second_class_marginals[first_class_idx]
-    in_class_accuracies[second_class_idx] = second_class_marginals[second_class_idx]
-    out_of_class_accuracies[second_class_idx] = first_class_marginals[second_class_idx]
-    return in_class_accuracies, out_of_class_accuracies
 
 
 if __name__ == "__main__":

@@ -3,10 +3,9 @@ import math as m
 from typing import Callable, Literal
 
 import numpy as np
-from determine_in_out_of_cls_marginal_accuracies import SubsetScorer
-from numpy._typing import NDArray
+from numpy.typing import NDArray
 from pydvl.parallel.config import ParallelConfig
-from pydvl.utils import Dataset, Utility
+from pydvl.utils import Dataset, Scorer, SupervisedModel, Utility
 from pydvl.value import (
     ClasswiseScorer,
     MaxChecks,
@@ -26,7 +25,7 @@ from re_classwise_shapley.model import instantiate_model
 from re_classwise_shapley.types import Seed
 from re_classwise_shapley.utils import load_params_fast, n_threaded
 
-__all__ = ["compute_values"]
+__all__ = ["compute_values", "calculate_subset_score"]
 
 logger = setup_logger(__name__)
 
@@ -159,6 +158,29 @@ def compute_values(
                 raise NotImplementedError(
                     f"The method {valuation_method} is not registered within."
                 )
+
+
+class SubsetScorer(Scorer):
+    """
+    A scorer which operates on a subset and additionally normalizes the output score.
+
+    Args:
+        subset: An array of indices mapping to the subset of training indices to include in the score calculation.
+        normalize: True, iff the score shall be multiplied by `len(subset) / len(train_indices)`.
+    """
+
+    def __init__(
+        self, *args, subset: NDArray[np.int_], normalize: bool = True, **kwargs
+    ):
+        Scorer.__init__(self, *args, **kwargs)
+        self._idx = subset
+        self._normalize = normalize
+
+    def __call__(self, model: SupervisedModel, X: NDArray, y: NDArray) -> float:
+        n = len(y)
+        idx = self._idx
+        score = Scorer.__call__(self, model=model, X=X[idx], y=y[idx])
+        return score * len(idx) / n
 
 
 def calculate_subset_score(

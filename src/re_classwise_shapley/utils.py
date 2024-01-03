@@ -18,6 +18,7 @@ __all__ = [
     "load_params_fast",
     "n_threaded",
     "linear_dataframe_to_table",
+    "calculate_threshold_characteristic_curves",
 ]
 
 

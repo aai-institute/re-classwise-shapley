@@ -15,7 +15,6 @@ the relative percentage of data points is plotted, having
 
 Furthermore, the x-axis is cut such that mostly all values displayer are bigger than 0.
 """
-import json
 import os
 import pickle
 

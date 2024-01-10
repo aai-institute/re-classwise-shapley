@@ -9,11 +9,20 @@ from typing import Any, Callable, Dict
 
 import numpy as np
 import pandas as pd
+from pydvl.utils import Dataset
+from sklearn.datasets import fetch_openml
 
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import OneOrMany, RawDataset, ensure_list
 
-__all__ = ["store_raw_dataset", "load_raw_dataset", "Accessor"]
+__all__ = [
+    "store_raw_dataset",
+    "load_raw_dataset",
+    "has_val_test_dataset",
+    "has_raw_dataset",
+    "fetch_openml_raw_dataset",
+    "Accessor",
+]
 
 logger = setup_logger(__name__)
 
@@ -58,6 +67,7 @@ def load_raw_dataset(input_folder: Path) -> RawDataset:
         input_folder: Path to the folder containing the dataset.
         Tuple of x, y and additional info.
     """
+    logger.info(f"Loading raw dataset from {input_folder}.")
     x = np.load(str(input_folder / "x.npy"))
     y = np.load(str(input_folder / "y.npy"), allow_pickle=True)
 
@@ -68,6 +78,103 @@ def load_raw_dataset(input_folder: Path) -> RawDataset:
             additional_info[file_name] = json.load(file)
 
     return x, y, additional_info
+
+
+def has_raw_dataset(dataset_folder: Path) -> bool:
+    """
+    Checks if the dataset files are present in the given dataset folder.
+
+    The function verifies the existence of 'x.npy' and 'y.npy' files in the
+    provided folder path. Both files are required for dataset.
+
+    Args:
+        dataset_folder: The path of the folder where dataset files are supposed to exist.
+
+    Returns:
+        True if both 'x.npy' and 'y.npy' files exist, False otherwise.
+    """
+    return os.path.exists(dataset_folder / "x.npy") and os.path.exists(
+        dataset_folder / "y.npy"
+    )
+
+
+def fetch_openml_raw_dataset(
+    openml_id: int,
+) -> RawDataset:
+    """
+    Fetches a single dataset from openml.
+
+    Args:
+        openml_id: Openml id of the dataset.
+
+    Returns:
+        Tuple of x, y and additional info. Additional information contains a mapping
+        from file_names to dictionaries (to be saved as `*.json`). It contains a file
+        name `info.json` with information `feature_names`, `target_names` and
+        `description`.
+    """
+    logger.info(f"Downloading dataset with id '{openml_id}'.")
+    data = fetch_openml(data_id=openml_id)
+    x = data.data.to_numpy().astype(float)
+    y = data.target.to_numpy()
+    info = {
+        "feature_names": data.get("feature_names"),
+        "target_names": data.get("target_names"),
+        "description": data.get("DESCR"),
+    }
+    return x, y, {"info.json": info}
+
+
+def has_val_test_dataset(dataset_folder: Path) -> bool:
+    """
+    Checks if the validation and test dataset files are present in the given dataset
+    folder.
+
+    This function verifies the existence of 'val_set.pkl' and 'test_set.pkl' files in
+    the provided folder path. Both files are expected for validation and testing
+    datasets respectively.
+
+    Args:
+        dataset_folder: The path of the folder where validation and test dataset files
+            are supposed to exist.
+
+    Returns:
+        True if both 'val_set.pkl' and 'test_set.pkl' files exist, False otherwise.
+    """
+    return os.path.exists(dataset_folder / "val_set.pkl") and os.path.exists(
+        dataset_folder / "test_set.pkl"
+    )
+
+
+def store_val_test_data(
+    val_set: Dataset,
+    test_set: Dataset,
+    preprocess_info: Dict[str, Any],
+    dataset_folder: Path,
+):
+    """
+    Stores validation and test datasets along with preprocessing information in the
+    specified dataset folder.
+
+    The function saves the validation and test datasets as pickle files named
+    'val_set.pkl' and 'test_set.pkl' respectively in the given folder path. If the
+    preprocessing information is provided and is not empty, it is stored in a JSON file
+    named 'preprocess_info.json'.
+
+    Args:
+        val_set: The validation dataset to be stored.
+        test_set: The test dataset to be stored.
+        preprocess_info: A dictionary containing preprocessing information.
+        dataset_folder: The path of the folder where the datasets and preprocessing information are to be stored.
+    """
+    os.makedirs(dataset_folder, exist_ok=True)
+    with open(dataset_folder / "val_set.pkl", "wb") as file:
+        pickle.dump(val_set, file)
+    with open(dataset_folder / "test_set.pkl", "wb") as file:
+        pickle.dump(test_set, file)
+    if preprocess_info and len(preprocess_info) > 0:
+        with open(dataset_folder / "preprocess_info.json", "w") as file:
+            json.dump(preprocess_info, file, indent=4, sort_keys=True)
 
 
 def walker_product_space(

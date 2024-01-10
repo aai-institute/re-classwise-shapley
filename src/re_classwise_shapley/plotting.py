@@ -420,6 +420,7 @@ def plot_metric_boxplot(
         yield fig
 
 
+@contextmanager
 def plot_threshold_characteristics(
     results: Dict[str, Dict[str, pd.DataFrame]],
     max_plotting_percentage: float = 1e-4,
@@ -451,4 +452,4 @@ def plot_threshold_characteristics(
         ax[dataset_idx].set_title(f"({chr(97 + dataset_idx)}) {dataset_name}")
 
     fig.suptitle("In class and out of class characteristic curves.")
-    return fig
+    yield fig

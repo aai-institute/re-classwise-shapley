@@ -1,10 +1,12 @@
 """
-Calculate in-class and out-of-class marginal accuracies. Consider an arbitrary dataset D. Each point in the dataset has
-a positive or negative effect onto the prediction quality of a model M. This influence can be further subdivided into
-two independent utilities. The first one measures the influence on other samples of the same class label. While the
-second one measures the influence onto the complement of all samples of the same class. Both of them are then used to
-group all data points into four different categories. All categories depend on a threshold lambda. This parameter is
-varying and the relative percentage of data points is plotted, having
+Calculate in-class and out-of-class marginal accuracies. Consider an arbitrary dataset
+D. Each point in the dataset has a positive or negative effect onto the prediction
+quality of a model M. This influence can be further subdivided into two independent
+utilities. The first one measures the influence on other samples of the same class
+label. While the second one measures the influence onto the complement of all samples of
+the same class. Both of them are then used to group all data points into four different
+categories. All categories depend on a threshold lambda. This parameter is varying and
+the relative percentage of data points is plotted, having
 
 1. Improves in-class accuracy and decreases out-of-class accuracy.
 2. Improves in-of-class accuracy and increases out-of-class accuracy.
@@ -15,6 +17,7 @@ Furthermore, the x-axis is cut such that mostly all values displayer are bigger 
 """
 import json
 import os
+import pickle
 
 import click
 import numpy as np
@@ -35,23 +38,32 @@ logger = setup_logger("determine_in_out_of_clas_accuracy")
 @click.command()
 @click.option("--experiment-name", type=str, required=True)
 @click.option("--model-name", type=str, required=True)
+@click.option("--valuation-method-name", type=str, default="loo")
+@click.option("--max-plotting-percentage", type=float, default=1e-4)
 def determine_in_cls_out_of_cls_marginal_accuracies(
     experiment_name: str,
     model_name: str,
+    valuation_method_name: str,
+    max_plotting_percentage: float,
 ):
     """
     Args:
         experiment_name: Name of the executed experiment. As specified in the
             `params.experiments` section.
         model_name: Model to use. As specified in the `params.models` section.
+        valuation_method_name: Name of the valuation method to use.
+        max_plotting_percentage: Threshold when to cut off the plotting on the x-axis in
+        direction of +inf.
     """
-    _determine_in_cls_out_of_cls_marginal_accuracies(experiment_name, model_name)
+    _determine_in_cls_out_of_cls_marginal_accuracies(
+        experiment_name, model_name, valuation_method_name, max_plotting_percentage
+    )
 
 
 def _determine_in_cls_out_of_cls_marginal_accuracies(
     experiment_name: str,
     model_name: str = "logistic_regression",
-    valuation_method_name: str = "tmc_shapley",
+    valuation_method_name: str = "loo",
     max_plotting_percentage: float = 1e-4,
 ):
     output_dir = Accessor.INFO_PATH / experiment_name
@@ -63,7 +75,7 @@ def _determine_in_cls_out_of_cls_marginal_accuracies(
     params = load_params_fast()
     results = {}
 
-    dataset_names = params["datasets"].keys()
+    dataset_names = params["active"]["datasets"]
     seed = pipeline_seed(42, 8)
     seed_seqs = np.random.SeedSequence(seed).spawn(len(dataset_names))
 
@@ -107,18 +119,13 @@ def _determine_in_cls_out_of_cls_marginal_accuracies(
         }
 
     os.makedirs(output_dir, exist_ok=True)
-    fig = plot_threshold_characteristics(
+    with plot_threshold_characteristics(
         results, max_plotting_percentage=max_plotting_percentage
-    )
-    fig.savefig(output_dir / "threshold_characteristics.svg")
+    ) as fig:
+        fig.savefig(output_dir / "threshold_characteristics.svg")
 
-    with open(output_dir / "characteristics.json", "w") as f:
-        json.dump(
-            results,
-            f,
-            sort_keys=True,
-            indent=4,
-        )
+    with open(output_dir / "characteristics.json", "wb") as f:
+        pickle.dump(results, f)
 
 
 if __name__ == "__main__":

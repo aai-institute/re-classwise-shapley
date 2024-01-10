@@ -64,8 +64,8 @@ jobs:
     - name: Copy test config
       run: cp params.test.yaml params.yaml
 
-    - name: Run pipeline using dvc
-      run: poetry run dvc exp run
-
     - name: Run pipeline without dvc
       run: poetry run python scripts/run_pipeline.py
+
+    - name: Run pipeline using dvc
+      run: poetry run dvc exp run

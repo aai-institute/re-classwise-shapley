@@ -104,7 +104,7 @@ def _render_plots(experiment_name: str, model_name: str):
         )
         for method_name in method_names:
             logger.info(f"Plot histogram for method {method_name} values.")
-            with plot_histogram(valuation_results, [method_name, "tmc_shapley"]) as fig:
+            with plot_histogram(valuation_results, [method_name]) as fig:
                 log_figure(
                     fig, output_folder, f"density.{method_name}.svg", "densities"
                 )

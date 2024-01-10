@@ -9,15 +9,46 @@ active:
   - noise_removal
   models:
   - logistic_regression
+  - knn
+  - svm
+  - gradient_boosting_classifier
   datasets:
-  - diabetes
+  - cifar10
+  - click
+  - covertype
   - cpu
+  - diabetes
+  - fmnist_binary
+  - mnist_binary
+  - mnist_multi
+  - phoneme
   valuation_methods:
   - random
   - loo
+  - beta_shapley
+  - tmc_shapley
+  - classwise_shapley
   repetitions:
   - 1
   - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  - 15
+  - 16
+  - 17
+  - 18
+  - 19
+  - 20
 experiments:
   point_removal:
     sampler: default
@@ -27,10 +58,35 @@ experiments:
         metric: accuracy
         eval_model: logistic_regression
         len_curve_perc: 0.5
+      weighted_accuracy_drop_logistic_regression_balanced:
+        idx: weighted_metric_drop
+        metric: accuracy
+        eval_model: logistic_regression_balanced
+        len_curve_perc: 0.5
       weighted_accuracy_drop_knn:
         idx: weighted_metric_drop
         metric: accuracy
         eval_model: knn
+        len_curve_perc: 0.5
+      weighted_accuracy_drop_gradient_boosting_classifier:
+        idx: weighted_metric_drop
+        metric: accuracy
+        eval_model: gradient_boosting_classifier
+        len_curve_perc: 0.5
+      weighted_accuracy_drop_svm:
+        idx: weighted_metric_drop
+        metric: accuracy
+        eval_model: svm
+        len_curve_perc: 0.5
+      weighted_accuracy_drop_svm_balanced:
+        idx: weighted_metric_drop
+        metric: accuracy
+        eval_model: svm_balanced
+        len_curve_perc: 0.5
+      weighted_accuracy_drop_mlp:
+        idx: weighted_metric_drop
+        metric: accuracy
+        eval_model: mlp
         len_curve_perc: 0.5
 
   noise_removal:
@@ -60,6 +116,51 @@ datasets:
       threshold_y:
         threshold: 89
 
+  click:
+    openml_id: 1216
+
+  covertype:
+    openml_id: 1596
+
+  phoneme:
+    openml_id: 1489
+
+  fmnist_binary:
+    openml_id: 40996
+    filters:
+      binarization:
+        label_zero: '0'
+        label_one: '1'
+    preprocessor:
+      principal_resnet_components:
+        n_components: 32
+        grayscale: true
+        seed: 101
+
+  cifar10:
+    openml_id: 40927
+    filters:
+      binarization:
+        label_zero: '1'
+        label_one: '9'
+    preprocessor:
+      principal_resnet_components:
+        n_components: 32
+        grayscale: false
+        seed: 102
+
+  mnist_binary:
+    openml_id: 554
+    filters:
+      binarization:
+        label_zero: '1'
+        label_one: '7'
+    preprocessor:
+      principal_resnet_components:
+        n_components: 32
+        grayscale: true
+        seed: 103
+
   mnist_multi:
     openml_id: 554
     preprocessor:
@@ -73,10 +174,33 @@ models:
     model: logistic_regression
     solver: liblinear
 
+  logistic_regression_balanced:
+    model: logistic_regression
+    solver: liblinear
+    class_weight: balanced
+
+  gradient_boosting_classifier:
+    model: gradient_boosting_classifier
+    n_estimators: 40
+    min_samples_split: 6
+    max_depth: 2
+
   knn:
     model: knn
     n_neighbors: 5
     weights: uniform
+
+  svm:
+    model: svm
+    kernel: rbf
+
+  svm_balanced:
+    model: svm
+    kernel: rbf
+    class_weight: balanced
+
+  mlp:
+    model: mlp
 
 valuation_methods:
   random:
@@ -86,3 +210,53 @@ valuation_methods:
     algorithm: loo
     progress: true
     cache_group: acc
+
+  classwise_shapley:
+    algorithm: classwise_shapley
+    cache_group: disc_acc
+    normalize_values: true
+    n_resample_complement_sets: 1
+    n_updates: 500
+    rtol: 1e-4
+    progress: true
+    use_default_scorer_value: false
+
+
+  beta_shapley:
+    algorithm: beta_shapley
+    alpha: 16.0
+    beta: 1.0
+    n_updates: 500
+    progress: true
+    cache_group: acc
+
+
+  banzhaf_shapley:
+    algorithm: banzhaf_shapley
+    n_updates: 500
+    progress: true
+    cache_group: acc
+
+
+  tmc_shapley:
+    algorithm: tmc_shapley
+    rtol: 1e-4
+    n_updates: 500
+    progress: true
+    cache_group: acc
+
+
+  owen_sampling_shapley:
+    algorithm: owen_sampling_shapley
+    n_updates: 10
+    max_q: 50
+    progress: false
+    cache_group: acc
+
+
+  least_core:
+    algorithm: least_core
+    n_updates: 5000
+    progress: false
+    cache_group: acc
+

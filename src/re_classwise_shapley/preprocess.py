@@ -40,8 +40,8 @@ def principal_resnet_components(
             shape (n_samples,) and type int.
         n_components: The number of principal components (See PCA).
         grayscale: True if the input data is grayscale. In this case, the single
-            input channel is replicated to red, green and blue channels without scaling the
-            grayscale values.
+            input channel is replicated to red, green and blue channels without scaling
+            the grayscale values.
         seed: Either a seed or a seed sequence to use for the random number generator.
 
     Returns:

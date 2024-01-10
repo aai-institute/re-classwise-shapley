@@ -128,7 +128,10 @@ def _evaluate_metrics(
     seed = pipeline_seed(repetition_id, n_pipeline_step)
 
     cache = None
-    if "eval_model" in metric_kwargs:
+    if (
+        "eval_model" in metric_kwargs
+        and "cache_group" in params["valuation_methods"][valuation_method_name]
+    ):
         cache_group = params["valuation_methods"][valuation_method_name]["cache_group"]
         cache = DiskCacheBackend(
             Path(".cache")

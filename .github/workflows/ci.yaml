@@ -24,21 +24,13 @@ jobs:
       with:
         python-version: "3.10"
 
-    - name: Cache Poetry
-      uses: actions/cache@v3
+    - name: Install and configure Poetry
+      uses: snok/install-poetry@v1
       with:
-        path: $POETRY_HOME
-        key: poetry-1.7.1
-
-    - name: Install Poetry
-      run: |
-        python3 -m venv $POETRY_HOME
-        $POETRY_HOME/bin/pip install poetry==1.7.1
-        $POETRY_HOME/bin/poetry --version
-        echo "$POETRY_HOME/bin" >> $GITHUB_PATH
+        version: 1.7.1
 
     - name: Install Dependencies
-      run: poetry install --no-interaction --no-root
+      run: poetry install
 
     - uses: actions/cache@v3
       with:
@@ -61,28 +53,19 @@ jobs:
       with:
         python-version: "3.10"
 
-    - name: Cache Poetry
-      uses: actions/cache@v3
+    - name: Install and configure Poetry
+      uses: snok/install-poetry@v1
       with:
-        path: $POETRY_HOME
-        key: poetry-1.7.1
-
-    - name: Install Poetry
-      run: |
-        python3 -m venv $POETRY_HOME
-        $POETRY_HOME/bin/pip install poetry==1.7.1
-        $POETRY_HOME/bin/poetry --version
-        echo "$POETRY_HOME/bin" >> $GITHUB_PATH
+        version: 1.7.1
 
     - name: Install Dependencies
-      run: poetry install --no-interaction --no-root
+      run: poetry install
 
     - name: Copy test config
       run: cp params.test.yaml params.yaml
 
     - name: Run pipeline using dvc
-      run: python3 -m dvc exp run
+      run: poetry run dvc exp run
 
     - name: Run pipeline without dvc
-      run: python3 scripts/run_pipeline.py
-
+      run: poetry run python scripts/run_pipeline.py

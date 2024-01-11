@@ -40,7 +40,7 @@ def instantiate_model(
         "logistic_regression": LogisticRegression,
         "knn": KNeighborsClassifier,
         "svm": SVC,
-        "mlp_classifier": MLPClassifier,
+        "mlp": MLPClassifier,
     }
     model_class = model_dict[model_idx]
     model = maybe_add_argument(model_class, "random_state")(

@@ -71,7 +71,7 @@ def log_figure(
     output_folder: Path,
     file_name: str,
     namespace: Optional[str] = None,
-    store_in_mlflow: bool = True,
+    store_in_mlflow: bool = False,
 ):
     """
     Takes a matplotlib Figure and stores it inside an output folder.

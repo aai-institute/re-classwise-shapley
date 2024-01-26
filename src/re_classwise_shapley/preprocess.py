@@ -82,9 +82,7 @@ def _calculate_resnet18_features(
 
     collected_features = []
     num_batches = int(m.ceil(len(x) / batch_size))
-    for batch_num in tqdm(
-        range(num_batches), display=progress, desc="Processing batches"
-    ):
+    for batch_num in tqdm(range(num_batches), desc="Processing batches"):
         win_x = x[batch_num * batch_size : (batch_num + 1) * batch_size]
         win_x = torch.tensor(win_x).type(torch.float)
         if grayscale:

@@ -21,9 +21,9 @@ import time
 
 import click
 import numpy as np
-from pydvl.utils import MemcachedClientConfig, Scorer, Utility
+from pydvl.utils import Scorer, Utility
 
-from re_classwise_shapley.cache import PrefixedMemcachedCacheBackend
+from re_classwise_shapley.cache import PrefixMemcachedCacheBackend
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.model import instantiate_model
@@ -91,7 +91,7 @@ def _calculate_values(
     if "cache_group" in params["valuation_methods"][valuation_method_name]:
         cache_group = params["valuation_methods"][valuation_method_name]["cache_group"]
         prefix = f"{experiment_name}/{dataset_name}/{cache_group}"
-        cache = PrefixedMemcachedCacheBackend(prefix=prefix)
+        cache = PrefixMemcachedCacheBackend(prefix=prefix)
 
     val_set = Accessor.datasets(experiment_name, dataset_name).loc[0, "val_set"]
 

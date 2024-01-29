@@ -1,10 +1,9 @@
-from dataclasses import asdict, dataclass
-from typing import Any, Dict, Optional, cast
+from typing import Any, Dict, Optional
 
 from pydvl.utils import MemcachedCacheBackend, MemcachedClientConfig
 
 
-class PrefixedMemcachedCacheBackend(MemcachedCacheBackend):
+class PrefixMemcachedCacheBackend(MemcachedCacheBackend):
     def __init__(
         self, config: MemcachedClientConfig = MemcachedClientConfig(), *, prefix: str
     ):

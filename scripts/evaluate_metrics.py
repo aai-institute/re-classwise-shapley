@@ -22,9 +22,10 @@ from pathlib import Path
 import click
 import pandas as pd
 from pydvl.parallel import ParallelConfig
-from pydvl.utils import DiskCacheBackend
+from pydvl.utils import DiskCacheBackend, MemcachedClientConfig
 from pydvl.utils.functional import maybe_add_argument
 
+from re_classwise_shapley.cache import PrefixedMemcachedCacheBackend
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.metric import MetricRegistry
@@ -126,20 +127,9 @@ def _evaluate_metrics(
 
     n_pipeline_step = 5
     seed = pipeline_seed(repetition_id, n_pipeline_step)
-
-    cache = None
-    if (
-        "eval_model" in metric_kwargs
-        and "cache_group" in params["valuation_methods"][valuation_method_name]
-    ):
-        cache_group = params["valuation_methods"][valuation_method_name]["cache_group"]
-        cache = DiskCacheBackend(
-            Path(".cache")
-            / experiment_name
-            / dataset_name
-            / metric_kwargs["eval_model"]
-            / cache_group
-        )
+    cache = PrefixedMemcachedCacheBackend(
+        config=MemcachedClientConfig(), prefix=f"{experiment_name}/{dataset_name}"
+    )
 
     logger.info("Evaluating metric...")
     with n_threaded(n_threads=1):

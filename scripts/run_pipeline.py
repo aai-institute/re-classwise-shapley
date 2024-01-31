@@ -8,13 +8,12 @@ Runs the whole pipeline without dvc.
 5. Evaluate metrics
 6. Render plots
 """
+import os
 from itertools import product
 
 import click
+from calculate_threshold_characteristics import _calculate_threshold_characteristics
 from calculate_values import _calculate_values
-from determine_in_out_of_cls_marginal_accuracies import (
-    _determine_in_cls_out_of_cls_marginal_accuracies,
-)
 from evaluate_metrics import _evaluate_metrics
 from fetch_data import _fetch_data
 from preprocess_data import _preprocess_data
@@ -32,97 +31,107 @@ def run_pipeline():
     """
     Runs the whole pipeline without dvc.
     """
-    params = load_params_fast()
-    active_params = params["active"]
+    try:
+        params = load_params_fast()
+        active_params = params["active"]
 
-    for dataset_name in active_params["datasets"]:
-        logger.info(f"Fetching dataset {dataset_name}.")
-        _fetch_data(dataset_name)
-        logger.info(f"Preprocessing dataset {dataset_name}.")
-        _preprocess_data(dataset_name)
+        for dataset_name in active_params["datasets"]:
+            logger.info(f"Fetching dataset {dataset_name}.")
+            _fetch_data(dataset_name)
+            logger.info(f"Preprocessing dataset {dataset_name}.")
+            _preprocess_data(dataset_name)
 
-    for (
-        experiment_name,
-        dataset_name,
-    ) in product(
-        *[
-            active_params[k]
-            for k in [
-                "experiments",
-                "datasets",
-            ]
-        ]
-    ):
-        logger.info(f"Sample dataset {dataset_name} for experiment {experiment_name}.")
-        _sample_data(experiment_name, dataset_name)
-
-    for experiment_name in active_params["experiments"]:
-        _determine_in_cls_out_of_cls_marginal_accuracies(experiment_name)
-
-    for experiment_name, model_name in product(
-        *[
-            active_params[k]
-            for k in [
-                "experiments",
-                "models",
-            ]
-        ]
-    ):
-        logger.info(f"Running experiment {experiment_name} with model {model_name}.")
         for (
+            experiment_name,
             dataset_name,
-            valuation_method_name,
-            repetition_id,
         ) in product(
             *[
                 active_params[k]
                 for k in [
+                    "experiments",
                     "datasets",
-                    "valuation_methods",
-                    "repetitions",
                 ]
             ]
         ):
             logger.info(
-                f"Calculate values for dataset {dataset_name}, valuation method "
-                f"{valuation_method_name} and seed {repetition_id}."
+                f"Sample dataset {dataset_name} for experiment {experiment_name}."
             )
-            _calculate_values(
-                experiment_name,
-                dataset_name,
-                model_name,
-                valuation_method_name,
-                repetition_id,
-            )
+            _sample_data(experiment_name, dataset_name)
 
-        for (
-            dataset_name,
-            metric_name,
-            valuation_method_name,
-            repetition_id,
-        ) in product(
-            active_params["datasets"],
-            params["experiments"][experiment_name]["metrics"].keys(),
-            active_params["valuation_methods"],
-            active_params["repetitions"],
+            for repetition_id in active_params["repetitions"]:
+                _calculate_threshold_characteristics(
+                    experiment_name, dataset_name, repetition_id
+                )
+
+        for experiment_name, model_name in product(
+            *[
+                active_params[k]
+                for k in [
+                    "experiments",
+                    "models",
+                ]
+            ]
         ):
             logger.info(
-                f"Calculate metric {metric_name} for dataset {dataset_name}, "
-                f"valuation method {valuation_method_name} and seed "
-                f"{repetition_id}."
+                f"Running experiment {experiment_name} with model {model_name}."
             )
-            logger.info(f"Evaluate metric {metric_name}.")
-            _evaluate_metrics(
-                experiment_name,
+            for (
                 dataset_name,
-                model_name,
                 valuation_method_name,
                 repetition_id,
-                metric_name,
-            )
+            ) in product(
+                *[
+                    active_params[k]
+                    for k in [
+                        "datasets",
+                        "valuation_methods",
+                        "repetitions",
+                    ]
+                ]
+            ):
+                logger.info(
+                    f"Calculate values for dataset {dataset_name}, valuation method "
+                    f"{valuation_method_name} and seed {repetition_id}."
+                )
+                _calculate_values(
+                    experiment_name,
+                    dataset_name,
+                    model_name,
+                    valuation_method_name,
+                    repetition_id,
+                )
 
-        logger.info(f"Render plots for {experiment_name} and {model_name}.")
-        _render_plots(experiment_name, model_name)
+            for (
+                dataset_name,
+                metric_name,
+                valuation_method_name,
+                repetition_id,
+            ) in product(
+                active_params["datasets"],
+                params["experiments"][experiment_name]["metrics"].keys(),
+                active_params["valuation_methods"],
+                active_params["repetitions"],
+            ):
+                logger.info(
+                    f"Calculate metric {metric_name} for dataset {dataset_name}, "
+                    f"valuation method {valuation_method_name} and seed "
+                    f"{repetition_id}."
+                )
+                logger.info(f"Evaluate metric {metric_name}.")
+                _evaluate_metrics(
+                    experiment_name,
+                    dataset_name,
+                    model_name,
+                    valuation_method_name,
+                    repetition_id,
+                    metric_name,
+                )
+
+            logger.info(f"Render plots for {experiment_name} and {model_name}.")
+            _render_plots(experiment_name, model_name)
+
+    finally:
+        os.system("sudo shutdown now")
 
 
 if __name__ == "__main__":

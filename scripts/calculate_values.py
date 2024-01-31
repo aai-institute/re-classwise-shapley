@@ -101,6 +101,7 @@ def _calculate_values(
         try:
             cache = PrefixMemcachedCacheBackend(prefix=prefix)
         except ConnectionRefusedError:
+            logger.info("Couldn't connect to cache backend.")
             cache = None
 
     val_set = Accessor.datasets(experiment_name, dataset_name).loc[0, "val_set"]

@@ -134,6 +134,7 @@ def _evaluate_metrics(
         try:
             cache = PrefixMemcachedCacheBackend(prefix=prefix)
         except ConnectionRefusedError:
+            logger.info("Couldn't connect to cache backend.")
             cache = None
 
     logger.info("Evaluating metric...")

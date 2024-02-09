@@ -1,5 +1,6 @@
+import math as m
 from concurrent.futures import FIRST_COMPLETED, Future, wait
-from typing import Dict, Optional, Set, Tuple
+from typing import Callable, Dict, Optional, Set, Tuple
 
 import numpy as np
 import pandas as pd
@@ -19,16 +20,16 @@ from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.model import instantiate_model
 from re_classwise_shapley.utils import load_params_fast
 
-__all__ = ["MetricRegistry"]
+__all__ = ["CurvesRegistry", "MetricsRegistry"]
 
 logger = setup_logger(__name__)
 
 
-def metric_roc_auc(
+def curve_roc(
     values: ValuationResult,
     info: Dict,
     flipped_labels: str,
-) -> Tuple[float, pd.Series]:
+) -> pd.Series:
     """
     Computes the area under the ROC curve for a given valuation result on a dataset.
 
@@ -43,13 +44,10 @@ def metric_roc_auc(
     """
     ranked_list = list(np.argsort(values.values))
     ranked_list = values.indices[ranked_list]
-    precision_recall = _curve_precision_recall_ranking(
-        info[flipped_labels], ranked_list
-    )
-    return auc(precision_recall.index, precision_recall.values), precision_recall
+    return _curve_precision_recall_ranking(info[flipped_labels], ranked_list)
 
 
-def metric_weighted_metric_drop(
+def curve_metric(
     data: Dataset,
     values: ValuationResult,
     eval_model: str,
@@ -59,7 +57,7 @@ def metric_weighted_metric_drop(
     progress: bool = False,
     seed: Seed | None = None,
     cache: CacheBackend | None = None,
-) -> Tuple[float, pd.Series]:
+) -> pd.Series:
     r"""
     Calculates the weighted reciprocal difference average of a valuation function. The
     formula
@@ -101,10 +99,24 @@ def metric_weighted_metric_drop(
         config=config,
     )
     curve.name = metric
+    return curve
+
+
+def metric_roc_auc(
+    precision_recall: pd.Series,
+) -> float:
+    return auc(precision_recall.index, precision_recall.values)
+
+
+def metric_geometric_weighted_metric_drop(curve: pd.Series, input_perc: float) -> float:
+    if input_perc < 1:
+        n = m.ceil(len(curve) / 2)
+        curve = curve.iloc[:n]
+
     diff_curve = curve.diff(-1).values[:-1]
     diff_curve = np.nancumsum(diff_curve)
     weighted_diff = diff_curve / (np.arange(1, len(diff_curve) + 1))
-    return float(np.sum(weighted_diff)), curve
+    return float(np.sum(weighted_diff))
 
 
 def _curve_precision_recall_ranking(
@@ -259,7 +271,12 @@ def _curve_score_over_point_removal_or_addition(
     return scores
 
 
-MetricRegistry = {
-    "weighted_metric_drop": metric_weighted_metric_drop,
-    "precision_recall_roc_auc": metric_roc_auc,
+CurvesRegistry: Dict[str, Callable[..., pd.Series]] = {
+    "metric": curve_metric,
+    "precision_recall": curve_roc,
+}
+
+MetricsRegistry: Dict[str, Callable[..., float]] = {
+    "geometric_weighted_drop": metric_geometric_weighted_metric_drop,
+    "roc_auc": metric_roc_auc,
 }

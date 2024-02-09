@@ -25,7 +25,7 @@ from pydvl.utils.functional import maybe_add_argument
 from re_classwise_shapley.cache import PrefixMemcachedCacheBackend
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
-from re_classwise_shapley.metric import CurvesRegistry, MetricsRegistry
+from re_classwise_shapley.metric import CurvesRegistry
 from re_classwise_shapley.utils import load_params_fast, n_threaded, pipeline_seed
 
 logger = setup_logger("evaluate_metrics")
@@ -37,14 +37,14 @@ logger = setup_logger("evaluate_metrics")
 @click.option("--model-name", type=str, required=True)
 @click.option("--repetition-id", type=int, required=True)
 @click.option("--valuation-method-name", type=str, required=True)
-@click.option("--metric-name", type=str, required=True)
-def evaluate_metrics(
+@click.option("--curve-name", type=str, required=True)
+def evaluate_curves(
     experiment_name: str,
     dataset_name: str,
     model_name: str,
     valuation_method_name: str,
     repetition_id: int,
-    metric_name: str,
+    curve_name: str,
 ):
     """
     Evaluate a curve on the calculated values. The curve is specified in the
@@ -60,65 +60,96 @@ def evaluate_metrics(
             `params.valuation_methods` section.
         repetition_id: Repetition id of the experiment. It is used also as a seed for
             all randomness.
-        metric_name: Name of the metric to use. As specified in the `metrics` section of
+        curve_name: Name of the metric to use. As specified in the `metrics` section of
             the current experiment in `params.experiment` section.
     """
-    _evaluate_metrics(
+    _evaluate_curves(
         experiment_name,
         dataset_name,
         model_name,
         valuation_method_name,
         repetition_id,
-        metric_name,
+        curve_name,
     )
 
 
-def _evaluate_metrics(
+def _evaluate_curves(
     experiment_name: str,
     dataset_name: str,
     model_name: str,
     valuation_method_name: str,
     repetition_id: int,
-    metric_name: str,
+    curve_name: str,
 ):
     logger.info("Loading values, test set and preprocess info.")
     output_dir = (
-        Accessor.METRICS_PATH
+        Accessor.CURVES_PATH
         / experiment_name
         / model_name
         / dataset_name
         / str(repetition_id)
         / valuation_method_name
     )
+    if os.path.exists(output_dir / f"{curve_name}.curve.csv"):
+        return logger.info(f"Curve data exists in '{output_dir}'. Skipping...")
 
-    params = load_params_fast()
-    metrics = params["experiments"][experiment_name]["metrics"]
-    metrics_kwargs = metrics[metric_name]
-    metric_fn = metrics_kwargs.pop("fn")
-    metrics_kwargs.pop("plot", None)
-    curve_names = metrics_kwargs.pop("curve")
-    metrics_fn = partial(MetricsRegistry[metric_fn], **metrics_kwargs)
+    values = Accessor.valuation_results(
+        experiment_name, model_name, dataset_name, repetition_id, valuation_method_name
+    ).loc[0, "valuation"]
+    dataset = Accessor.datasets(experiment_name, dataset_name).loc[0]
+    preprocess_info = dataset["preprocess_info"]
+
     os.makedirs(output_dir, exist_ok=True)
 
-    for _, curve in Accessor.curves(
-        experiment_name,
-        model_name,
-        dataset_name,
-        valuation_method_name,
-        curve_names,
-        repetition_id,
-    ).iterrows():
-        curve_name = curve["curve_name"]
-        curve = curve["curve"]
-        if os.path.exists(output_dir / f"{metric_name}.{curve_name}.csv"):
-            continue
+    params = load_params_fast()
+    backend = params["settings"]["backend"]
+    n_jobs = params["settings"]["n_jobs"]
+    parallel_config = ParallelConfig(
+        backend=backend,
+        n_cpus_local=n_jobs,
+        logging_level=logging.INFO,
+    )
+    curves = params["experiments"][experiment_name]["curves"]
+    curves_kwargs = curves[curve_name]
+    curves_idx = curves_kwargs.pop("fn")
+    curves_kwargs.pop("plot", None)
+    curves_fn = partial(CurvesRegistry[curves_idx], **curves_kwargs)
+    curves_fn = reduce(
+        maybe_add_argument,
+        ["data", "values", "info", "n_jobs", "config", "progress", "seed", "cache"],
+        curves_fn,
+    )
 
-        metric = metrics_fn(curve)
-        evaluated_metrics = pd.Series([metric])
-        evaluated_metrics.name = "value"
-        evaluated_metrics.index.name = "metric"
-        evaluated_metrics.to_csv(output_dir / f"{metric_name}.{curve_name}.csv")
+    n_pipeline_step = 5
+    seed = pipeline_seed(repetition_id, n_pipeline_step)
+    cache = None
+    if (
+        "eval_model" in curves_kwargs
+        and "cache_group" in params["valuation_methods"][valuation_method_name]
+    ):
+        cache_group = params["valuation_methods"][valuation_method_name]["cache_group"]
+        prefix = f"{experiment_name}/{dataset_name}/{model_name}/{cache_group}"
+        try:
+            cache = PrefixMemcachedCacheBackend(prefix=prefix)
+        except ConnectionRefusedError:
+            logger.info("Couldn't connect to cache backend.")
+            cache = None
+
+    logger.info("Evaluating metric...")
+    with n_threaded(n_threads=1):
+        metric_curve = curves_fn(
+            data=dataset["test_set"],
+            values=values,
+            info=preprocess_info,
+            n_jobs=n_jobs,
+            config=parallel_config,
+            progress=True,
+            seed=seed,
+            cache=cache,
+        )
+
+    metric_curve.to_csv(output_dir / f"{curve_name}.curve.csv")
 
 
 if __name__ == "__main__":
-    evaluate_metrics()
+    evaluate_curves()

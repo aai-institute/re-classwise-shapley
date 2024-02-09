@@ -35,6 +35,7 @@ active:
   - beta_shapley
   - loo
   - banzhaf_shapley
+  - least_core
   repetitions:
     from: 1
     to: 20
@@ -270,7 +271,7 @@ valuation_methods:
 
   least_core:
     algorithm: least_core
-    n_updates: 5000
+    n_updates: 25000
     progress: false
     cache_group: acc
 

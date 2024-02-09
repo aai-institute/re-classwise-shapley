@@ -177,42 +177,49 @@ def store_val_test_data(
             json.dump(preprocess_info, file, indent=4, sort_keys=True)
 
 
-def walker_product_space(
-    fn: Callable[[Any, ...], Dict]
-) -> Callable[[OneOrMany[Any], ...], pd.DataFrame]:
-    """
-    A decorator that applies a given function to each combination of input instances.
-
-    Args:
-        fn: The function to be applied.
-
-    Returns:
-        A wrapped function that applies to each combination of input instances `fn`.
-    """
-
-    def wrapped_walk_product_space(
-        *product_space: OneOrMany[Any],
-    ) -> pd.DataFrame:
+def walker_product_space(raise_if_not_found: bool = True):
+    def _fn(
+        fn: Callable[[Any, ...], Dict]
+    ) -> Callable[[OneOrMany[Any], ...], pd.DataFrame]:
         """
-        Wrapped function that walks through a product space and applies the given
-        function.
+        A decorator that applies a given function to each combination of input instances.
 
         Args:
-            product_space: The product space to iterate over.
+            fn: The function to be applied.
 
         Returns:
-            A DataFrame containing the results of applying the function to
-                each combination of input instances.
+            A wrapped function that applies to each combination of input instances `fn`.
         """
-        product_space = list(map(ensure_list, product_space))
-        rows = []
-        for folder_instance in product(*product_space):
-            row = fn(*folder_instance)
-            rows.append(row)
 
-        return pd.DataFrame(rows)
+        def wrapped_walk_product_space(
+            *product_space: OneOrMany[Any],
+        ) -> pd.DataFrame:
+            """
+            Wrapped function that walks through a product space and applies the given
+            function.
 
-    return wrapped_walk_product_space
+            Args:
+                product_space: The product space to iterate over.
+
+            Returns:
+                A DataFrame containing the results of applying the function to
+                    each combination of input instances.
+            """
+            product_space = list(map(ensure_list, product_space))
+            rows = []
+            for folder_instance in product(*product_space):
+                try:
+                    row = fn(*folder_instance)
+                    rows.append(row)
+                except ValueError as e:
+                    if raise_if_not_found:
+                        raise e
+
+            return pd.DataFrame(rows)
+
+        return wrapped_walk_product_space
+
+    return _fn
 
 
 class Accessor:
@@ -230,7 +237,31 @@ class Accessor:
     PLOT_PATH = OUTPUT_PATH / "plots"
 
     @staticmethod
-    @walker_product_space
+    @walker_product_space(raise_if_not_found=False)
+    def threshold_characteristics_results(
+        experiment_name: str,
+        dataset_name: str,
+        repetition_id: int,
+    ) -> Dict:
+        folder = (
+            Accessor.THRESHOLD_CHARACTERISTICS_PATH
+            / experiment_name
+            / dataset_name
+            / str(repetition_id)
+        )
+        if not os.path.exists(folder):
+            raise ValueError
+        curves = pd.read_csv(folder / "threshold_characteristics_curves.csv", sep=";")
+        curves = curves.set_index(curves.columns[0])
+        stats = pd.read_csv(folder / "threshold_characteristics_stats.csv")
+        return {
+            "dataset_name": dataset_name,
+            "curves": curves,
+            "stats": stats,
+        }
+
+    @staticmethod
+    @walker_product_space()
     def valuation_results(
         experiment_name: str,
         model_name: str,
@@ -274,7 +305,7 @@ class Accessor:
         } | stats
 
     @staticmethod
-    @walker_product_space
+    @walker_product_space()
     def metrics_and_curves(
         experiment_name: str,
         model_name: str,
@@ -324,7 +355,7 @@ class Accessor:
         }
 
     @staticmethod
-    @walker_product_space
+    @walker_product_space()
     def datasets(
         experiment_name: str,
         dataset_name: str,

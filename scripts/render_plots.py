@@ -35,6 +35,7 @@ from re_classwise_shapley.plotting import (
     plot_histogram,
     plot_metric_boxplot,
     plot_metric_table,
+    plot_threshold_characteristics,
     plot_time,
 )
 from re_classwise_shapley.utils import (
@@ -95,6 +96,25 @@ def _render_plots(experiment_name: str, model_name: str):
         )
 
         plt.switch_backend("agg")
+        logger.info(f"Plot threshold characteristics.")
+        plot_threshold_characteristics_results = (
+            Accessor.threshold_characteristics_results(
+                experiment_name,
+                dataset_names,
+                repetitions,
+            )
+        )
+
+        with plot_threshold_characteristics(
+            plot_threshold_characteristics_results
+        ) as fig:
+            log_figure(
+                fig,
+                output_folder,
+                f"threshold_characteristics.svg",
+                "threshold_characteristics",
+            )
+
         valuation_results = Accessor.valuation_results(
             experiment_name,
             model_name,
@@ -127,9 +147,14 @@ def _render_plots(experiment_name: str, model_name: str):
             ].copy()
 
             len_curve_perc = metrics_def[metric_name].pop("len_curve_perc", None)
+            curve_label = metrics_def[metric_name].pop("curve_label", None)
+            y_label = metrics_def[metric_name].pop("y_label", None)
             logger.info(f"Plotting curve for metric {metric_name}.")
             with plot_curves(
-                metric_and_curves_for_metric, len_curve_perc=len_curve_perc
+                metric_and_curves_for_metric,
+                len_curve_perc=len_curve_perc,
+                x_label=curve_label,
+                y_label=y_label,
             ) as fig:
                 log_figure(fig, output_folder, f"{metric_name}.svg", "curves")
 
@@ -148,8 +173,11 @@ def _render_plots(experiment_name: str, model_name: str):
             with plot_metric_table(metric_table) as fig:
                 log_figure(fig, output_folder, f"{metric_name}.table.svg", "tables")
 
+            metric_label = metrics_def[metric_name].pop("metric_label", None)
             logger.info(f"Plotting boxplot for metric {metric_name}.")
-            with plot_metric_boxplot(metric_and_curves_for_metric) as fig:
+            with plot_metric_boxplot(
+                metric_and_curves_for_metric, x_label=metric_label
+            ) as fig:
                 log_figure(fig, output_folder, f"{metric_name}.box.svg", "boxplots")
 
 

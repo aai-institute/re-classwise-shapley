@@ -121,6 +121,7 @@ def plot_grid_over_datasets(
     grid: bool = False,
     xlabel: str = "",
     ylabel: str = "",
+    x_lims: List[float] = None,
     **kwargs,
 ) -> plt.Figure:
     """
@@ -179,6 +180,9 @@ def plot_grid_over_datasets(
         ax[dataset_idx].set_title(f"({chr(97 + dataset_idx)}) {dataset_name}")
         if grid:
             ax[dataset_idx].grid(True)
+
+        if x_lims is not None:
+            ax[dataset_idx].set_xlim([0, x_lims[dataset_idx]])
 
     plt.tight_layout()
     if legend:
@@ -260,7 +264,7 @@ def plot_histogram(
         legend=True,
         method_names=ensure_list(method_names),
         xlabel="Value",
-        ylabel="counts",
+        ylabel="#",
         format_x_ticks="%.3f",
         grid=True,
     ) as fig:
@@ -317,6 +321,8 @@ def plot_curves(
     patch_size: Tuple[float, float] = (4, 3),
     n_cols: int = 3,
     len_curve_perc: float = None,
+    x_label: str = None,
+    y_label: str = None,
 ) -> plt.Figure:
     """
     Plot the curves of the data values for each dataset and valuation method.
@@ -355,7 +361,8 @@ def plot_curves(
         patch_size=patch_size,
         n_cols=n_cols,
         legend=True,
-        xlabel="s",
+        xlabel=x_label,
+        ylabel=y_label,
         grid=True,
     ) as fig:
         yield fig
@@ -383,6 +390,7 @@ def plot_metric_boxplot(
     data: pd.DataFrame,
     patch_size: Tuple[float, float] = (4, 4),
     n_cols: int = 3,
+    x_label: str = None,
 ) -> plt.Figure:
     """
     Takes a linear pd.DataFrame and creates a table for it, while red
@@ -411,7 +419,7 @@ def plot_metric_boxplot(
         patch_size=patch_size,
         n_cols=n_cols,
         legend=False,
-        xlabel="s",
+        xlabel=x_label,
         ylabel="",
         tick_params_left_only=True,
         grid=True,
@@ -421,9 +429,9 @@ def plot_metric_boxplot(
 
 @contextmanager
 def plot_threshold_characteristics(
-    results: Dict[str, Dict[str, pd.DataFrame]],
-    max_plotting_percentage: float = 1e-4,
-    n_columns: int = 3,
+    results: pd.DataFrame,
+    patch_size: Tuple[float, float] = (4, 4),
+    n_cols: int = 3,
 ) -> plt.Figure:
     """
     Plots threshold characteristics for various datasets. This function takes results
@@ -433,22 +441,46 @@ def plot_threshold_characteristics(
     Args:
         results: A dictionary where each key is a dataset name and the value is another
             dictionary containing a DataFrame of threshold characteristics.
-        max_plotting_percentage: The maximum percentage for plotting, used to determine
-            the range of data to be plotted. Defaults to 1e-4.
-        n_columns: The number of columns in the subplot grid. Defaults to 3.
+        n_cols: The number of columns in the subplot grid. Defaults to 3.
     """
-    dataset_names = list(results.keys())
-    n_rows = int((len(dataset_names) + n_columns - 1) / n_columns)
-    fig, ax = plt.subplots(n_rows, n_columns, figsize=(n_rows * 4, n_columns * 4))
-    ax = ax.flatten()
-    for dataset_idx, dataset_name in enumerate(dataset_names):
-        dataset_df = results[dataset_name]["threshold_characteristics"]
-        idx = np.argwhere(np.max(dataset_df.values, axis=1) >= max_plotting_percentage)[
-            -1, 0
-        ]
-        dataset_df.iloc[:idx].plot(ax=ax[dataset_idx])
-        ax[dataset_idx].set_xlim(0, dataset_df.index[idx])
-        ax[dataset_idx].set_title(f"({chr(97 + dataset_idx)}) {dataset_name}")
 
-    fig.suptitle("In class and out of class characteristic curves.")
-    yield fig
+    def plot_threshold_characteristics_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
+        cols = data.loc[data.index[0], "curves"].columns
+        unfolded = {col: [] for col in cols}
+        for i in data.index:
+            for col in cols:
+                unfolded[col].append(data.loc[i, "curves"][col])
+
+        colors = ["green", "red", "blue", "orange"]
+        for (c_id, lst), color in zip(unfolded.items(), colors):
+            for g in lst:
+                g.plot(ax=ax, alpha=0.5, color=color)
+
+    with plot_grid_over_datasets(
+        results,
+        plot_threshold_characteristics_func,
+        patch_size=patch_size,
+        n_cols=n_cols,
+        legend=False,
+        xlabel="Threshold",
+        ylabel="%",
+        grid=True,
+        x_lims=[0.007, 0.000020, 0.01, 0.0055, 0.035, 0.0055, 0.003, 0.0055, 0.005],
+    ) as fig:
+        legend_kwargs = {"framealpha": 0}
+        handles, labels = fig.get_axes()[0].get_legend_handles_labels()
+        n = int(len(handles) / 4)
+        handles = [handles[n * i] for i in range(4)]
+        labels = [labels[n * i] for i in range(4)]
+        fig.legend(
+            handles,
+            labels,
+            loc="outside lower center",
+            ncol=5,
+            fontsize=12,
+            fancybox=False,
+            shadow=False,
+            **legend_kwargs,
+        )
+        fig.subplots_adjust(bottom=0.08)
+        yield fig

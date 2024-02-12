@@ -186,6 +186,10 @@ def plot_grid_over_datasets(
             ax[dataset_idx].set_xlim([0, x_lims[dataset_idx]])
 
     plt.tight_layout()
+    if n_plots % 2 == 1:
+        last = ax[-1]
+        last.set_axis_off()
+
     if legend:
         handles, labels = ax[0].get_legend_handles_labels()
         if n_plots % 2 == 0:
@@ -203,7 +207,6 @@ def plot_grid_over_datasets(
             fig.subplots_adjust(bottom=0.1)
         else:
             last = ax[-1]
-            last.set_axis_off()
             last.legend(handles, labels, loc="center", prop={"size": 12})
 
     yield fig

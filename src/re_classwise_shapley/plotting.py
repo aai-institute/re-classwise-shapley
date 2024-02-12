@@ -113,7 +113,7 @@ def plot_grid_over_datasets(
     data: pd.DataFrame,
     plot_func: Callable,
     patch_size: Tuple[float, float] = (4, 4),
-    n_cols: int = 3,
+    n_cols: int = 5,
     legend: bool = False,
     format_x_ticks: str = None,
     tick_params_left_only: bool = False,
@@ -145,9 +145,10 @@ def plot_grid_over_datasets(
         A figure containing the plot.
     """
     dataset_names = data["dataset_name"].unique().tolist()
-    n_rows = int((len(dataset_names) + n_cols - 1) / n_cols)
+    n_plots = len(dataset_names)
+    n_rows = int((n_plots + n_cols - 1) / n_cols)
     fig, ax = plt.subplots(
-        n_rows, n_cols, figsize=(n_rows * patch_size[0], n_cols * patch_size[1])
+        n_rows, n_cols, figsize=(n_cols * patch_size[0], n_rows * patch_size[1])
     )
     ax = ax.flatten()
 
@@ -186,19 +187,24 @@ def plot_grid_over_datasets(
 
     plt.tight_layout()
     if legend:
-        legend_kwargs = {"framealpha": 0}
         handles, labels = ax[0].get_legend_handles_labels()
-        fig.legend(
-            handles,
-            labels,
-            loc="outside lower center",
-            ncol=5,
-            fontsize=12,
-            fancybox=False,
-            shadow=False,
-            **legend_kwargs,
-        )
-        fig.subplots_adjust(bottom=0.1)
+        if n_plots % 2 == 0:
+            legend_kwargs = {"framealpha": 0}
+            fig.legend(
+                handles,
+                labels,
+                loc="outside lower center",
+                ncol=5,
+                fontsize=12,
+                fancybox=False,
+                shadow=False,
+                **legend_kwargs,
+            )
+            fig.subplots_adjust(bottom=0.1)
+        else:
+            last = ax[-1]
+            last.set_axis_off()
+            last.legend(handles, labels, loc="center", prop={"size": 12})
 
     yield fig
     plt.close(fig)
@@ -208,8 +214,8 @@ def plot_grid_over_datasets(
 def plot_histogram(
     data: pd.DataFrame,
     method_names: OneOrMany[str],
-    patch_size: Tuple[float, float] = (4, 4),
-    n_cols: int = 3,
+    patch_size: Tuple[float, float] = (5, 5),
+    n_cols: int = 5,
 ) -> plt.Figure:
     """
     Plot the histogram of the data values for each dataset and valuation method.
@@ -274,8 +280,8 @@ def plot_histogram(
 @contextmanager
 def plot_time(
     data: pd.DataFrame,
-    patch_size: Tuple[float, float] = (4, 4),
-    n_cols: int = 3,
+    patch_size: Tuple[float, float] = (5, 5),
+    n_cols: int = 5,
 ) -> plt.Figure:
     """
     Plot execution times as boxplot.
@@ -318,9 +324,9 @@ def plot_time(
 @contextmanager
 def plot_curves(
     data: pd.DataFrame,
-    patch_size: Tuple[float, float] = (4, 3),
-    n_cols: int = 3,
-    len_curve_perc: float = None,
+    patch_size: Tuple[float, float] = (6, 5),
+    n_cols: int = 5,
+    plot_perc: float = None,
     x_label: str = None,
     y_label: str = None,
 ) -> plt.Figure:
@@ -331,7 +337,7 @@ def plot_curves(
         data: A pd.DataFrame with the curve data.
         patch_size: Size of one image patch of the multi plot.
         n_cols: Number of columns for subplot layout.
-        len_curve_perc: Percentage of the curve length to plot.
+        plot_perc: Percentage of the curve length to plot.
     """
 
     def plot_curves_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
@@ -341,10 +347,8 @@ def plot_curves(
             mean_color, shade_color = COLORS[color_name]
 
             results = pd.concat(method_data["curve"].tolist(), axis=1)
-            if len_curve_perc is not None:
-                results = results.iloc[
-                    : int(m.ceil(len_curve_perc * results.shape[0])), :
-                ]
+            if plot_perc is not None:
+                results = results.iloc[: int(m.ceil(plot_perc * results.shape[0])), :]
 
             shaded_mean_normal_confidence_interval(
                 results,
@@ -388,8 +392,8 @@ def plot_metric_table(
 @contextmanager
 def plot_metric_boxplot(
     data: pd.DataFrame,
-    patch_size: Tuple[float, float] = (4, 4),
-    n_cols: int = 3,
+    patch_size: Tuple[float, float] = (5, 5),
+    n_cols: int = 5,
     x_label: str = None,
 ) -> plt.Figure:
     """
@@ -430,8 +434,8 @@ def plot_metric_boxplot(
 @contextmanager
 def plot_threshold_characteristics(
     results: pd.DataFrame,
-    patch_size: Tuple[float, float] = (4, 4),
-    n_cols: int = 3,
+    patch_size: Tuple[float, float] = (5, 5),
+    n_cols: int = 5,
 ) -> plt.Figure:
     """
     Plots threshold characteristics for various datasets. This function takes results
@@ -445,11 +449,11 @@ def plot_threshold_characteristics(
     """
 
     def plot_threshold_characteristics_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
-        cols = data.loc[data.index[0], "curves"].columns
+        cols = data.loc[data.index[0], "characteristics"].columns
         unfolded = {col: [] for col in cols}
         for i in data.index:
             for col in cols:
-                unfolded[col].append(data.loc[i, "curves"][col])
+                unfolded[col].append(data.loc[i, "characteristics"][col])
 
         colors = ["green", "red", "blue", "orange"]
         for (c_id, lst), color in zip(unfolded.items(), colors):
@@ -463,7 +467,7 @@ def plot_threshold_characteristics(
         n_cols=n_cols,
         legend=False,
         xlabel="Threshold",
-        ylabel="%",
+        ylabel="Fraction",
         grid=True,
         x_lims=[0.007, 0.000020, 0.01, 0.0055, 0.035, 0.0055, 0.003, 0.0055, 0.005],
     ) as fig:

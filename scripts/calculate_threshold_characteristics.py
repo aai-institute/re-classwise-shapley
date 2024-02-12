@@ -94,7 +94,7 @@ def _calculate_threshold_characteristics(
     n_jobs = params["settings"]["n_jobs"]
 
     logger.info("Calculating in class characteristics.")
-    in_cls_mar_acc, in_cls_stats = calculate_subset_score(
+    in_cls_mar_acc = calculate_subset_score(
         val_set,
         lambda c: np.argwhere(val_set.y_train == c)[:, 0],
         model_name,
@@ -104,10 +104,11 @@ def _calculate_threshold_characteristics(
         n_jobs,
         backend,
     )
+
     logger.info("Calculating out of class characteristics.")
-    out_of_cls_mar_acc, out_of_cls_stats = calculate_subset_score(
+    global_mar_acc = calculate_subset_score(
         val_set,
-        lambda c: np.argwhere(val_set.y_train != c)[:, 0],
+        lambda c: np.argwhere((val_set.y_train == c) | (val_set.y_train != c))[:, 0],
         model_name,
         model_seed,
         sampler_seed,
@@ -116,20 +117,11 @@ def _calculate_threshold_characteristics(
         backend,
     )
 
-    logger.info("Calculating curves and statistics.")
-    threshold_characteristics_curves = calculate_threshold_characteristic_curves(
-        in_cls_mar_acc, out_of_cls_mar_acc
-    )
-    in_cls_out_of_cls_stats = pd.DataFrame(
-        [in_cls_stats, out_of_cls_stats], index=["in_cls", "out_of_cls"]
-    )
-
     logger.info("Storing files.")
     os.makedirs(output_dir, exist_ok=True)
-    in_cls_out_of_cls_stats.to_csv(output_dir / "threshold_characteristics_stats.csv")
-    threshold_characteristics_curves.to_csv(
-        output_dir / "threshold_characteristics_curves.csv", sep=";"
-    )
+
+    np.savetxt(output_dir / "in_cls_mar_acc.txt", in_cls_mar_acc)
+    np.savetxt(output_dir / "global_mar_acc.txt", global_mar_acc)
 
 
 if __name__ == "__main__":

@@ -73,21 +73,25 @@ def _render_plots(experiment_name: str, model_name: str):
     dataset_names = params_active["datasets"]
     method_names = params_active["valuation_methods"]
     repetitions = params_active["repetitions"]
+    repetitions = list(range(repetitions["from"], repetitions["to"] + 1))
+    curves_def = params["experiments"][experiment_name]["curves"]
+    curve_names = list(curves_def.keys())
     metrics_def = params["experiments"][experiment_name]["metrics"]
-    metrics = list(metrics_def.keys())
+    metric_names = list(metrics_def.keys())
 
     mlflow.set_tracking_uri(params["settings"]["mlflow_tracking_uri"])
     experiment_id = get_or_create_mlflow_experiment(mlflow_id)
     os.makedirs(output_folder, exist_ok=True)
 
-    logger.info("Starting run.")
+    logger.info(f"Starting experiment with id `{experiment_id}.")
     with mlflow.start_run(
         experiment_id=experiment_id,
         run_name=datetime.now().isoformat(),
     ):
-        logger.info("Log parameters.")
+        logger.info("Flatten parameters & upload to mlflow.")
         mlflow.log_params(flatten_dict(params))
-        logger.info("Log datasets.")
+
+        logger.info("Record datasets in mlflow.")
         log_datasets(
             Accessor.datasets(
                 experiment_name,
@@ -96,7 +100,127 @@ def _render_plots(experiment_name: str, model_name: str):
         )
 
         plt.switch_backend("agg")
-        logger.info(f"Plot threshold characteristics.")
+
+        logger.info(f"Load valuations results.")
+        valuation_results = Accessor.valuation_results(
+            experiment_name,
+            model_name,
+            dataset_names,
+            repetitions,
+            method_names,
+        )
+        for method_name in method_names:
+            logger.info(f"Plot histogram for values of method `{method_name}`.")
+            with plot_histogram(valuation_results, [method_name]) as fig:
+                log_figure(
+                    fig, output_folder, f"density.{method_name}.svg", "densities"
+                )
+
+        logger.info("Plot boxplot for execution time.")
+        with plot_time(valuation_results) as fig:
+            log_figure(fig, output_folder, "time.svg", "boxplots")
+
+        logger.info("Loading curves form hard disk.")
+        loaded_curves = Accessor.curves(
+            experiment_name,
+            model_name,
+            dataset_names,
+            method_names,
+            curve_names,
+            repetitions,
+        )
+        for curve_name in curve_names:
+            logger.info(f"Processing curve '{curve_name}'.")
+            selected_loaded_curves = loaded_curves.loc[
+                loaded_curves["curve_name"] == curve_name
+            ].copy()
+            curve_def = curves_def[curve_name]
+            for plot_settings_name in curve_def["plots"]:
+                plot_settings = params["plots"][plot_settings_name]
+                logger.info(
+                    f"Plotting {plot_settings['type']} plot with name '{plot_settings_name}'"
+                )
+                match plot_settings["type"]:
+                    case "line":
+                        plot_perc = plot_settings.get("plot_perc", 1.0)
+                        x_label = plot_settings.get("x_label", None)
+                        y_label = plot_settings.get("y_label", None)
+                        with plot_curves(
+                            selected_loaded_curves,
+                            plot_perc=plot_perc,
+                            x_label=x_label,
+                            y_label=y_label,
+                        ) as fig:
+                            log_figure(
+                                fig, output_folder, f"{curve_name}.svg", "curves"
+                            )
+                    case _:
+                        raise NotImplementedError
+
+            logger.info("Loading metrics form hard disk.")
+            loaded_metrics = Accessor.metrics(
+                experiment_name,
+                model_name,
+                dataset_names,
+                method_names,
+                metric_names,
+                repetitions,
+                curve_name,
+            )
+            for metric_name in metric_names:
+                logger.info(f"Processing metric '{metric_name}'.")
+                selected_loaded_metrics = loaded_metrics.loc[
+                    loaded_metrics["metric_name"] == metric_name
+                ].copy()
+                metric_def = metrics_def[metric_name]
+                for plot_settings_name in metric_def["plots"]:
+                    plot_settings = params["plots"][plot_settings_name]
+                    logger.info(
+                        f"Plotting {plot_settings['type']} plot with name '{plot_settings_name}'"
+                    )
+                    match plot_settings["type"]:
+                        case "table":
+                            logger.info(
+                                f"Converting df to table for metric '{metric_name}'."
+                            )
+                            metric_table = linear_dataframe_to_table(
+                                selected_loaded_metrics,
+                                "dataset_name",
+                                "method_name",
+                                "metric",
+                                np.mean,
+                            )
+                            for dataset_name, row in metric_table.items():
+                                for method_name, v in row.items():
+                                    mlflow.log_metric(
+                                        f"{metric_name}.{dataset_name}.{method_name}", v
+                                    )
+
+                            logger.info(f"Plotting table for metric '{metric_name}'.")
+                            with plot_metric_table(metric_table) as fig:
+                                log_figure(
+                                    fig,
+                                    output_folder,
+                                    f"{metric_name}.{curve_name}.table.svg",
+                                    "tables",
+                                )
+                        case "boxplot":
+                            x_label = plot_settings.get("x_label", None)
+                            logger.info(f"Plotting boxplot for metric '{metric_name}'.")
+                            with plot_metric_boxplot(
+                                selected_loaded_metrics, x_label=x_label
+                            ) as fig:
+                                log_figure(
+                                    fig,
+                                    output_folder,
+                                    f"{metric_name}.{curve_name}.box.svg",
+                                    "boxplots",
+                                )
+
+                        case _:
+                            raise NotImplementedError
+
+        logger.info(f"Load threshold characteristics.")
         plot_threshold_characteristics_results = (
             Accessor.threshold_characteristics_results(
                 experiment_name,
@@ -105,6 +229,7 @@ def _render_plots(experiment_name: str, model_name: str):
             )
         )
 
+        logger.info(f"Plot threshold characteristics.")
         with plot_threshold_characteristics(
             plot_threshold_characteristics_results
         ) as fig:
@@ -115,70 +240,7 @@ def _render_plots(experiment_name: str, model_name: str):
                 "threshold_characteristics",
             )
 
-        valuation_results = Accessor.valuation_results(
-            experiment_name,
-            model_name,
-            dataset_names,
-            repetitions,
-            method_names,
-        )
-        for method_name in method_names:
-            logger.info(f"Plot histogram for method {method_name} values.")
-            with plot_histogram(valuation_results, [method_name]) as fig:
-                log_figure(
-                    fig, output_folder, f"density.{method_name}.svg", "densities"
-                )
-
-        logger.info("Plot boxplot for execution time.")
-        with plot_time(valuation_results) as fig:
-            log_figure(fig, output_folder, "time.svg", "boxplots")
-
-        metrics_and_curves = Accessor.metrics_and_curves(
-            experiment_name,
-            model_name,
-            dataset_names,
-            method_names,
-            repetitions,
-            metrics,
-        )
-        for metric_name in metrics:
-            metric_and_curves_for_metric = metrics_and_curves.loc[
-                metrics_and_curves["metric_name"] == metric_name
-            ].copy()
-
-            len_curve_perc = metrics_def[metric_name].pop("len_curve_perc", None)
-            curve_label = metrics_def[metric_name].pop("curve_label", None)
-            y_label = metrics_def[metric_name].pop("y_label", None)
-            logger.info(f"Plotting curve for metric {metric_name}.")
-            with plot_curves(
-                metric_and_curves_for_metric,
-                len_curve_perc=len_curve_perc,
-                x_label=curve_label,
-                y_label=y_label,
-            ) as fig:
-                log_figure(fig, output_folder, f"{metric_name}.svg", "curves")
-
-            logger.info(f"Plotting table for metric {metric_name}.")
-            metric_table = linear_dataframe_to_table(
-                metric_and_curves_for_metric,
-                "dataset_name",
-                "method_name",
-                "metric",
-                np.mean,
-            )
-            for dataset_name, row in metric_table.items():
-                for method_name, v in row.items():
-                    mlflow.log_metric(f"{metric_name}.{dataset_name}.{method_name}", v)
-
-            with plot_metric_table(metric_table) as fig:
-                log_figure(fig, output_folder, f"{metric_name}.table.svg", "tables")
-
-            metric_label = metrics_def[metric_name].pop("metric_label", None)
-            logger.info(f"Plotting boxplot for metric {metric_name}.")
-            with plot_metric_boxplot(
-                metric_and_curves_for_metric, x_label=metric_label
-            ) as fig:
-                log_figure(fig, output_folder, f"{metric_name}.box.svg", "boxplots")
+    logger.info(f"Finished rendering plots and metrics.")
 
 
 if __name__ == "__main__":

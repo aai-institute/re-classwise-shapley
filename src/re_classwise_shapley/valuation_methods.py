@@ -249,8 +249,4 @@ def calculate_subset_score(
     subset_mar_acc = np.take_along_axis(
         subset_mar_acc, data_set.y_train.reshape([-1, 1]), axis=1
     ).reshape(-1)
-    subset_stats = {
-        "mean": np.mean(subset_mar_acc),
-        "std": np.std(subset_mar_acc),
-    }
-    return subset_mar_acc, subset_stats
+    return subset_mar_acc

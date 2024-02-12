@@ -133,7 +133,7 @@ def linear_dataframe_to_table(
 
 def calculate_threshold_characteristic_curves(
     in_cls_mar_acc: NDArray[np.float_],
-    out_of_cls_mar_acc: NDArray[np.float_],
+    global_mar_acc: NDArray[np.float_],
     n_thresholds: int = 100,
 ) -> pd.DataFrame:
     """
@@ -143,49 +143,25 @@ def calculate_threshold_characteristic_curves(
 
     Args:
         in_cls_mar_acc: In-class marginal accuracies.
-        out_of_cls_mar_acc: Out-of-class marginal accuracies.
+        global_mar_acc: Global marginal accuracies.
         n_thresholds: Number of thresholds to use for calculating the curve.
 
     Returns:
         A pd.DataFrame with all four characteristic curves.
     """
-    max_x = np.max(np.maximum(np.abs(in_cls_mar_acc), np.abs(out_of_cls_mar_acc)))
+    max_x = np.max(np.maximum(np.abs(in_cls_mar_acc), np.abs(global_mar_acc)))
     x_axis = np.linspace(0, max_x, n_thresholds)
 
-    characteristics = pd.DataFrame(index=x_axis, columns=["<,<", "<,>", ">,<", ">,>"])
+    characteristics = pd.DataFrame(index=x_axis, columns=["1:1", "1:2", "1:3", "1:4"])
     n_data = len(in_cls_mar_acc)
 
     for i, threshold in enumerate(characteristics.index):
-        characteristics.iloc[i, 0] = (
-            np.sum(
-                np.logical_and(
-                    in_cls_mar_acc < -threshold, out_of_cls_mar_acc < -threshold
+        for k in range(4):
+            characteristics.iloc[i, k] = (
+                np.sum(
+                    in_cls_mar_acc < -threshold & global_mar_acc > (k + 1) * threshold
                 )
+                / n_data
             )
-            / n_data
-        )
-        characteristics.iloc[i, 1] = (
-            np.sum(
-                np.logical_and(
-                    in_cls_mar_acc < -threshold, out_of_cls_mar_acc > threshold
-                )
-            )
-            / n_data
-        )
-        characteristics.iloc[i, 2] = (
-            np.sum(
-                np.logical_and(
-                    in_cls_mar_acc > threshold, out_of_cls_mar_acc < -threshold
-                )
-            )
-            / n_data
-        )
-        characteristics.iloc[i, 3] = (
-            np.sum(
-                np.logical_and(
-                    in_cls_mar_acc > threshold, out_of_cls_mar_acc > threshold
-                )
-            )
-            / n_data
-        )
+
     return characteristics

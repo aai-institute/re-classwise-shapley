@@ -168,7 +168,7 @@ def run_pipeline():
                     )
 
             logger.info(f"Render plots for {experiment_name} and {model_name}.")
-            # _render_plots(experiment_name, model_name)
+            _render_plots(experiment_name, model_name)
 
     except KeyboardInterrupt:
         logger.info("Interrupted by Ctrl+C.")

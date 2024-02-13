@@ -112,7 +112,7 @@ def _evaluate_curves(
     curves = params["experiments"][experiment_name]["curves"]
     curves_kwargs = curves[curve_name]
     curves_idx = curves_kwargs.pop("fn")
-    curves_kwargs.pop("plot", None)
+    curves_kwargs.pop("plots", None)
     curves_fn = partial(CurvesRegistry[curves_idx], **curves_kwargs)
     curves_fn = reduce(
         maybe_add_argument,

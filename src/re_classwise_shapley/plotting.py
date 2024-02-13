@@ -305,7 +305,8 @@ def plot_time(
             data=data,
             x="time_s",
             y="method_name",
-            palette=COLOR_ENCODING,
+            hue=[COLOR_ENCODING[mn] for mn in data["method_name"]],
+            legend=False,
             width=0.5,
             ax=ax,
         )
@@ -415,7 +416,8 @@ def plot_metric_boxplot(
             data=data,
             x="metric",
             y="method_name",
-            palette=COLOR_ENCODING,
+            hue=[COLOR_ENCODING[mn] for mn in data["method_name"]],
+            legend=False,
             width=0.5,
             ax=ax,
         )

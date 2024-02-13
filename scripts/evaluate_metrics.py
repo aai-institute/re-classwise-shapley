@@ -13,20 +13,16 @@ Evaluate metrics using calculated Shapley values as specified in the
 directory. The metrics are usually stored as `*.csv` files. Each metric consists of
 a single value and a curve. The curve is stored as `*.curve.csv` file.
 """
-import logging
 import os
-from functools import partial, reduce
+from functools import partial
 
 import click
 import pandas as pd
-from pydvl.parallel import ParallelConfig
-from pydvl.utils.functional import maybe_add_argument
 
-from re_classwise_shapley.cache import PrefixMemcachedCacheBackend
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
-from re_classwise_shapley.metric import CurvesRegistry, MetricsRegistry
-from re_classwise_shapley.utils import load_params_fast, n_threaded, pipeline_seed
+from re_classwise_shapley.metric import MetricsRegistry
+from re_classwise_shapley.utils import load_params_fast
 
 logger = setup_logger("evaluate_metrics")
 
@@ -81,7 +77,9 @@ def _evaluate_metrics(
     repetition_id: int,
     metric_name: str,
 ):
-    logger.info("Loading values, test set and preprocess info.")
+    logger.info(
+        f"Evaluate metrics for {experiment_name}/{dataset_name}/{model_name}/{valuation_method_name}/{repetition_id}/{metric_name}."
+    )
     output_dir = (
         Accessor.METRICS_PATH
         / experiment_name
@@ -99,15 +97,18 @@ def _evaluate_metrics(
     curve_names = metrics_kwargs.pop("curve")
     metrics_fn = partial(MetricsRegistry[metric_fn], **metrics_kwargs)
     os.makedirs(output_dir, exist_ok=True)
-
-    for _, curve in Accessor.curves(
-        experiment_name,
-        model_name,
-        dataset_name,
-        valuation_method_name,
-        curve_names,
-        repetition_id,
-    ).iterrows():
+    curves = list(
+        Accessor.curves(
+            experiment_name,
+            model_name,
+            dataset_name,
+            valuation_method_name,
+            curve_names,
+            repetition_id,
+        ).iterrows()
+    )
+    for i, (_, curve) in enumerate(curves):
+        logger.info(f"Processing curve {i+1}/{len(curves)}")
         curve_name = curve["curve_name"]
         curve = curve["curve"]
         if os.path.exists(output_dir / f"{metric_name}.{curve_name}.csv"):

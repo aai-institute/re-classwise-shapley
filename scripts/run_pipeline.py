@@ -45,6 +45,7 @@ def run_pipeline():
 
     try:
         params = load_params_fast()
+        stages = params["settings"]["stages"]
         active_params = params["active"]
         repetitions = active_params["repetitions"]
         active_params["repetitions"] = list(
@@ -53,9 +54,11 @@ def run_pipeline():
 
         for dataset_name in active_params["datasets"]:
             logger.info(f"Fetching dataset {dataset_name}.")
-            repeat(_fetch_data, dataset_name)
+            if stages["fetch_data"]:
+                repeat(_fetch_data, dataset_name)
             logger.info(f"Preprocessing dataset {dataset_name}.")
-            _preprocess_data(dataset_name)
+            if stages["preprocess_data"]:
+                _preprocess_data(dataset_name)
 
         for (
             experiment_name,
@@ -72,15 +75,17 @@ def run_pipeline():
             logger.info(
                 f"Sample dataset {dataset_name} for experiment {experiment_name}."
             )
-            _sample_data(experiment_name, dataset_name)
+            if stages["sample_data"]:
+                _sample_data(experiment_name, dataset_name)
 
-            for repetition_id in active_params["repetitions"]:
-                repeat(
-                    _calculate_threshold_characteristics,
-                    experiment_name,
-                    dataset_name,
-                    repetition_id,
-                )
+            if stages["calculate_threshold_characteristics"]:
+                for repetition_id in active_params["repetitions"]:
+                    repeat(
+                        _calculate_threshold_characteristics,
+                        experiment_name,
+                        dataset_name,
+                        repetition_id,
+                    )
 
         for experiment_name, model_name in product(
             *[
@@ -91,35 +96,36 @@ def run_pipeline():
                 ]
             ]
         ):
-            logger.info(
-                f"Running experiment {experiment_name} with model {model_name}."
-            )
-            for (
-                dataset_name,
-                valuation_method_name,
-                repetition_id,
-            ) in product(
-                *[
-                    active_params[k]
-                    for k in [
-                        "datasets",
-                        "valuation_methods",
-                        "repetitions",
-                    ]
-                ]
-            ):
+            if stages["calculate_values"]:
                 logger.info(
-                    f"Calculate values for dataset {dataset_name}, valuation method "
-                    f"{valuation_method_name} and seed {repetition_id}."
+                    f"Running experiment {experiment_name} with model {model_name}."
                 )
-                repeat(
-                    _calculate_values,
-                    experiment_name,
+                for (
                     dataset_name,
-                    model_name,
                     valuation_method_name,
                     repetition_id,
-                )
+                ) in product(
+                    *[
+                        active_params[k]
+                        for k in [
+                            "datasets",
+                            "valuation_methods",
+                            "repetitions",
+                        ]
+                    ]
+                ):
+                    logger.info(
+                        f"Calculate values for dataset {dataset_name}, valuation method "
+                        f"{valuation_method_name} and seed {repetition_id}."
+                    )
+                    repeat(
+                        _calculate_values,
+                        experiment_name,
+                        dataset_name,
+                        model_name,
+                        valuation_method_name,
+                        repetition_id,
+                    )
 
             for (
                 dataset_name,
@@ -130,46 +136,49 @@ def run_pipeline():
                 active_params["valuation_methods"],
                 active_params["repetitions"],
             ):
-                for curve_name in params["experiments"][experiment_name][
-                    "curves"
-                ].keys():
-                    logger.info(
-                        f"Calculate metric {curve_name} for dataset {dataset_name}, "
-                        f"valuation method {valuation_method_name} and seed "
-                        f"{repetition_id}."
-                    )
-                    logger.info(f"Evaluate metric {curve_name}.")
-                    repeat(
-                        _evaluate_curves,
-                        experiment_name,
-                        dataset_name,
-                        model_name,
-                        valuation_method_name,
-                        repetition_id,
-                        curve_name,
-                    )
+                if stages["evaluate_curves"]:
+                    for curve_name in params["experiments"][experiment_name][
+                        "curves"
+                    ].keys():
+                        logger.info(
+                            f"Calculate metric {curve_name} for dataset {dataset_name}, "
+                            f"valuation method {valuation_method_name} and seed "
+                            f"{repetition_id}."
+                        )
+                        logger.info(f"Evaluate metric {curve_name}.")
+                        repeat(
+                            _evaluate_curves,
+                            experiment_name,
+                            dataset_name,
+                            model_name,
+                            valuation_method_name,
+                            repetition_id,
+                            curve_name,
+                        )
 
-                for metric_name in params["experiments"][experiment_name][
-                    "metrics"
-                ].keys():
-                    logger.info(
-                        f"Calculate metric {metric_name} for dataset {dataset_name}, "
-                        f"valuation method {valuation_method_name} and seed "
-                        f"{repetition_id}."
-                    )
-                    logger.info(f"Evaluate metric {metric_name}.")
-                    repeat(
-                        _evaluate_metrics,
-                        experiment_name,
-                        dataset_name,
-                        model_name,
-                        valuation_method_name,
-                        repetition_id,
-                        metric_name,
-                    )
+                if stages["evaluate_metrics"]:
+                    for metric_name in params["experiments"][experiment_name][
+                        "metrics"
+                    ].keys():
+                        logger.info(
+                            f"Calculate metric {metric_name} for dataset {dataset_name}, "
+                            f"valuation method {valuation_method_name} and seed "
+                            f"{repetition_id}."
+                        )
+                        logger.info(f"Evaluate metric {metric_name}.")
+                        repeat(
+                            _evaluate_metrics,
+                            experiment_name,
+                            dataset_name,
+                            model_name,
+                            valuation_method_name,
+                            repetition_id,
+                            metric_name,
+                        )
 
-            logger.info(f"Render plots for {experiment_name} and {model_name}.")
-            _render_plots(experiment_name, model_name)
+            if stages["render_plots"]:
+                logger.info(f"Render plots for {experiment_name} and {model_name}.")
+                _render_plots(experiment_name, model_name)
 
     except KeyboardInterrupt:
         logger.info("Interrupted by Ctrl+C.")

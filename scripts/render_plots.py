@@ -102,6 +102,7 @@ def _render_plots(experiment_name: str, model_name: str):
         plt.switch_backend("agg")
 
         params = load_params_fast()
+        plot_format = params["settings"]["plot_format"]
         threshold_characteristics_settings = params["settings"][
             "threshold_characteristics"
         ]
@@ -122,7 +123,7 @@ def _render_plots(experiment_name: str, model_name: str):
                 log_figure(
                     fig,
                     output_folder,
-                    f"threshold_characteristics.svg",
+                    f"threshold_characteristics.{plot_format}",
                     "threshold_characteristics",
                 )
         logger.info(f"Load valuations results.")
@@ -137,7 +138,7 @@ def _render_plots(experiment_name: str, model_name: str):
             logger.info(f"Plot histogram for values of method `{method_name}`.")
             with plot_histogram(valuation_results, [method_name]) as fig:
                 log_figure(
-                    fig, output_folder, f"density.{method_name}.svg", "densities"
+                    fig, output_folder, f"density.{method_name}.{plot_format}", "densities"
                 )
 
         params = load_params_fast()
@@ -145,7 +146,7 @@ def _render_plots(experiment_name: str, model_name: str):
         if time_settings.get("active", False):
             logger.info("Plot boxplot for execution time.")
             with plot_time(valuation_results) as fig:
-                log_figure(fig, output_folder, "time.svg", "boxplots")
+                log_figure(fig, output_folder, f"time.{plot_format}", "boxplots")
 
         logger.info("Loading curves form hard disk.")
         loaded_curves = Accessor.curves(
@@ -179,7 +180,7 @@ def _render_plots(experiment_name: str, model_name: str):
                             y_label=y_label,
                         ) as fig:
                             log_figure(
-                                fig, output_folder, f"{curve_name}.svg", "curves"
+                                fig, output_folder, f"{curve_name}.{plot_format}", "curves"
                             )
                     case _:
                         raise NotImplementedError
@@ -228,7 +229,7 @@ def _render_plots(experiment_name: str, model_name: str):
                                 log_figure(
                                     fig,
                                     output_folder,
-                                    f"{metric_name}.{curve_name}.table.svg",
+                                    f"{metric_name}.{curve_name}.table.{plot_format}",
                                     "tables",
                                 )
                         case "boxplot":
@@ -240,7 +241,7 @@ def _render_plots(experiment_name: str, model_name: str):
                                 log_figure(
                                     fig,
                                     output_folder,
-                                    f"{metric_name}.{curve_name}.box.svg",
+                                    f"{metric_name}.{curve_name}.box.{plot_format}",
                                     "boxplots",
                                 )
 

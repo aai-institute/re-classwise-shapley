@@ -2,6 +2,7 @@ settings:
   n_jobs: 95
   backend: joblib
   mlflow_tracking_uri: http://localhost:5000
+  plot_format: pdf
 
   stages:
     fetch_data: false

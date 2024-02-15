@@ -286,7 +286,7 @@ def plot_histogram(
 @contextmanager
 def plot_time(
     data: pd.DataFrame,
-    patch_size: Tuple[float, float] = (5, 5),
+    patch_size: Tuple[float, float] = (5, 4),
     n_cols: int = 5,
 ) -> plt.Figure:
     """
@@ -355,6 +355,7 @@ def plot_curves(
             mean_color, shade_color = COLORS[color_name]
 
             results = pd.concat(method_data["curve"].tolist(), axis=1)
+            results = results.iloc[1:-1]
             if plot_perc is not None:
                 results = results.iloc[: int(m.ceil(plot_perc * results.shape[0])), :]
 
@@ -400,7 +401,7 @@ def plot_metric_table(
 @contextmanager
 def plot_metric_boxplot(
     data: pd.DataFrame,
-    patch_size: Tuple[float, float] = (5, 5),
+    patch_size: Tuple[float, float] = (5, 4),
     n_cols: int = 5,
     x_label: str = None,
 ) -> plt.Figure:

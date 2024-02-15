@@ -136,15 +136,15 @@ def _curve_precision_recall_ranking(
         the ranking. The index of the series is the recall and the values are the
         corresponding precision values.
     """
-    precision, recall = np.zeros(len(ranked_list) - 2), np.zeros(len(ranked_list) - 2)
-    for idx in range(2, len(ranked_list)):
+    precision, recall = np.zeros(len(ranked_list)), np.zeros(len(ranked_list))
+    for idx in range(len(ranked_list)):
         partial_list = ranked_list[: idx + 1]
         intersection = list(set(target_list) & set(partial_list))
-        precision[idx - 2] = float(len(intersection) / len(partial_list))
-        recall[idx - 2] = float(len(intersection) / len(target_list))
+        precision[idx] = float(len(intersection) / np.maximum(1, len(partial_list)))
+        recall[idx] = float(len(intersection) / np.maximum(1, len(target_list)))
 
-    graph = pd.Series(precision, index=recall)
-    graph = graph[~graph.index.duplicated(keep="first")]
+    graph = pd.DataFrame({"precision": precision, "recall": recall})
+    graph = graph.groupby("recall")["precision"].mean()
     graph = graph.sort_index(ascending=True)
     graph.index.name = "recall"
     graph.name = "precision"

@@ -15,7 +15,7 @@ settings:
 
 
   time:
-    active: false
+    active: true
 
   threshold_characteristics:
     active: false
@@ -47,9 +47,9 @@ active:
   - classwise_shapley
   - tmc_shapley
   - beta_shapley
-  - banzhaf_shapley
+  - loo
   repetitions:
-    from: 1
+    from: 6
     to: 20
 
 experiments:

@@ -31,6 +31,7 @@ def principal_resnet_components(
     features = resnet(x.type(torch.float))
     features = features.detach().numpy()
 
+    features = (features - features.mean()) / features.std()
     logger.info("Fitting PCA.")
     pca = PCA(n_components=n_components)
     return pca.fit_transform(features)

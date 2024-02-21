@@ -4,6 +4,7 @@ from typing import Callable, Dict, Tuple
 
 import numpy as np
 import openml
+from numpy import ndarray
 from numpy.typing import NDArray
 from pydvl.utils.dataset import Dataset
 from sklearn import preprocessing
@@ -32,6 +33,7 @@ def create_openml_dataset(
     dev_size: int,
     test_size: int,
     filters: Dict = None,
+    stratified: bool = True,
 ) -> Tuple[Dataset, Dataset]:
     data = fetch_openml(data_id=openml_id)
     X = data.data.to_numpy()
@@ -42,19 +44,9 @@ def create_openml_dataset(
             data_filter = FilterRegistry[filter_name]
             X, y = data_filter(X, y, **filter_kwargs)
 
-    # sample some subsets for the datasets
-    num_data = train_size + dev_size + test_size
-    p = np.random.permutation(len(X))[:num_data]
-    train_idx = p[:train_size]
-    dev_idx = p[train_size : train_size + dev_size]
-    test_idx = p[train_size + dev_size :]
-
-    x_train = X[train_idx]
-    y_train = y[train_idx]
-    x_dev = X[dev_idx]
-    y_dev = y[dev_idx]
-    x_test = X[test_idx]
-    y_test = y[test_idx]
+    (x_train, y_train), (x_dev, y_dev), (x_test, y_test) = subsample(
+        X, y, train_size, dev_size, test_size, stratified=stratified
+    )
 
     le = preprocessing.LabelEncoder()
     le.fit(np.concatenate((y_train, y_test, y_dev)))
@@ -82,6 +74,59 @@ def create_openml_dataset(
     )
 
     return val_dataset, test_dataset
+
+
+def subsample(
+    features: NDArray[np.float_],
+    labels: NDArray[np.int_],
+    *sizes: int,
+    stratified: bool = True
+) -> tuple[tuple[NDArray[np.float_], NDArray[np.int_]], ...]:
+    """
+    Sub-samples a dataset into different sets. It supports normal sampling and
+    stratified sampling.
+
+    :param features: Array with the features to be sub-sampled.
+    :param labels: Array containing the label data. Same size as ``features``.
+    :param sizes: List of the test set sizes which shall be achieved.
+    :param stratified: True, if the label distribution shall be reproduced in each
+        subset.
+    :return: A tuple
+    """
+    if stratified:
+        unique_labels, num_labels = np.unique(labels, return_counts=True)
+        label_indices = [np.argwhere(labels == label)[:, 0] for label in unique_labels]
+        label_indices = [np.random.permutation(idx) for idx in label_indices]
+        relative_set_sizes = num_labels / len(labels)
+
+        data = [list() for _ in sizes]
+        it_idx = [0 for _ in unique_labels]
+
+        for i, size in enumerate(sizes):
+            absolute_set_sizes = (relative_set_sizes * size).astype(np.int_)
+            absolute_set_sizes[-1] = size - np.sum(absolute_set_sizes[:-1])
+
+            for j in range(len(unique_labels)):
+                label_idx = label_indices[j]
+                window_idx = label_idx[it_idx[j] : it_idx[j] + absolute_set_sizes[j]]
+                it_idx[j] += absolute_set_sizes[j]
+                data[i].append((features[window_idx], labels[window_idx]))
+
+        data = [
+            (np.concatenate([t[0] for t in lst]), np.concatenate([t[1] for t in lst]))
+            for lst in data
+        ]
+
+    else:
+        data = list()
+        p = np.random.permutation(len(features))
+        it_idx = 0
+        for i, size in enumerate(sizes):
+            window_idx = p[it_idx : it_idx + size]
+            it_idx += size
+            data.append((features[window_idx], labels[window_idx]))
+
+    return tuple(data)
 
 
 def pca_feature_transformer(

@@ -8,11 +8,11 @@ from pydvl.value import (
     RelativeTruncation,
     ShapleyMode,
     ValuationResult,
+    classwise_shapley,
     compute_shapley_values,
     naive_loo,
 )
 from pydvl.value.semivalues import SemiValueMode, compute_semivalues
-from pydvl.value.shapley.classwise import _class_wise_shapley_worker, class_wise_shapley
 
 
 def compute_values(
@@ -25,13 +25,15 @@ def compute_values(
     elif valuation_method == "loo":
         values = naive_loo(utility, progress=progress)
 
-    elif valuation_method == "cs_shapley":
-        values = _class_wise_shapley_worker(
+    elif valuation_method == "classwise_shapley":
+        values = classwise_shapley(
             utility.data.indices,
             utility,
             progress=progress,
             done=MaxUpdates(kwargs["n_updates"]),
-            truncation=RelativeTruncation(utility, rtol=1e-5),
+            truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),
+            normalize_score=kwargs["normalize_score"],
+            n_resample_complement_sets=kwargs["n_resample_complement_sets"],
         )
 
     elif valuation_method == "beta_shapley":

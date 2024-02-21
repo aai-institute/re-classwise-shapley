@@ -30,6 +30,9 @@ def preprocess_data(dataset_name: str):
 def preprocess_dataset(dataset_name: str, dataset_kwargs: Dict):
     dataset_folder = Config.RAW_PATH / dataset_name
     preprocessed_folder = Config.PREPROCESSED_PATH / dataset_name
+    if os.path.exists(preprocessed_folder):
+        logger.info(f"Preprocessed data exists in '{preprocessed_folder}'.")
+        return
 
     x = np.load(dataset_folder / "x.npy")
     y = np.load(dataset_folder / "y.npy", allow_pickle=True)

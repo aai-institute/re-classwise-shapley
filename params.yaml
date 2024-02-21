@@ -24,12 +24,9 @@ active:
   - phoneme
   valuation_methods:
   - loo
-  - classwise_shapley
   - beta_shapley
   - tmc_shapley
-  - banzhaf_shapley
-  - owen_sampling_shapley
-  - least_core
+  - classwise_shapley
   repetitions:
   - 1
   - 2

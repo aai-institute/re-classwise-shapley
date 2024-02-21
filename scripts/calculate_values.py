@@ -96,9 +96,29 @@ def _calculate_values(
 
     mc_config = MemcachedConfig()
     mc = Client(**asdict(mc_config)["client_config"])
-    if dataset_name != mc.get("last_dataset", None):
+    last_run = mc.get("last_run", None)
+    if last_run is None or (
+        experiment_name != last_run["experiment"]
+        or dataset_name != last_run["dataset"]
+        or model_name != last_run["model"]
+        or (
+            valuation_method_name != last_run["method"]
+            and (
+                valuation_method_name == "classwise_shapley"
+                or last_run["last_method"] == "classwise_shapley"
+            )
+        )
+    ):
         mc.flush_all()
-        mc.set("last_dataset", dataset_name)
+        mc.set(
+            "last_run",
+            {
+                "experiment": experiment_name,
+                "dataset": dataset_name,
+                "model": model_name,
+                "method": valuation_method_name,
+            },
+        )
 
     val_set = Accessor.datasets(experiment_name, dataset_name).loc[0, "val_set"]
 

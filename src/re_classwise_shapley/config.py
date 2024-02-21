@@ -1,7 +1,5 @@
 from pathlib import Path
 
-from dvc.parsing import make_definition
-
 
 class Config:
     """

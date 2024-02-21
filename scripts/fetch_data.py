@@ -5,7 +5,7 @@ from dvc.api import params_show
 from sklearn.datasets import fetch_openml
 
 from re_classwise_shapley.config import Config
-from re_classwise_shapley.data.util import store_dataset
+from re_classwise_shapley.io import store_dataset
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import RawDataset
 

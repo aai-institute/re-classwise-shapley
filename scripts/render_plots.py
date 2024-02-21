@@ -1,6 +1,5 @@
 import json
 import os
-import re
 from pathlib import Path
 
 import click
@@ -9,21 +8,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from dvc.api import params_show
-from pandas.plotting import table
 
-from re_classwise_shapley.constants import OUTPUT_DIR, RANDOM_SEED
+from re_classwise_shapley.config import Config
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.plotting import (
     plot_curve,
     plot_values_histogram,
     setup_plotting,
 )
-from re_classwise_shapley.utils import set_random_seed
 
 logger = setup_logger()
 
 setup_plotting()
-set_random_seed(RANDOM_SEED)
 
 
 @click.command()
@@ -33,21 +29,11 @@ def render_plots(experiment_name: str):
 
     params = params_show()
     logger.info(f"Using parameters:\n{params}")
-    plot_order = [
-        "cifar10",
-        "click",
-        "covertype",
-        "cpu",
-        "diabetes",
-        "fmnist_binary",
-        "mnist_binary",
-        "mnist_multi",
-        "phoneme",
-    ]
-    plot_ax_index = {col: idx for idx, col in enumerate(plot_order)}
+    active_datasets = params["active"]["datasets"]
+    plot_ax_index = {col: idx for idx, col in enumerate(active_datasets)}
     figsize = (20, 6)
 
-    experiment_input_dir = OUTPUT_DIR / "results" / experiment_name / plot_order[0]
+    experiment_input_dir = Config.RESULT_PATH / experiment_name / active_datasets[0]
     model_input_dir = experiment_input_dir / "logistic_regression"
     metrics, valuation_results, curves = load_results(
         model_input_dir,
@@ -67,14 +53,12 @@ def render_plots(experiment_name: str):
         plt_axes[f"histogram_{method_name}"] = (fig, ax)
 
     for model_name in params["models"].keys():
-        plots_output_dir = OUTPUT_DIR / "plots" / experiment_name / model_name
+        plots_output_dir = Config.PLOT_PATH / experiment_name / model_name
         key_metrics = {key: {} for key in all_keys}
 
         for dataset_name in params["datasets"].keys():
             dataset_index = plot_ax_index[dataset_name]
-            experiment_input_dir = (
-                OUTPUT_DIR / "results" / experiment_name / dataset_name
-            )
+            experiment_input_dir = Config.RESULT_PATH / experiment_name / dataset_name
             model_input_dir = experiment_input_dir / model_name
             os.makedirs(plots_output_dir, exist_ok=True)
             dataset_letter = chr(ord("`") + dataset_index + 1)

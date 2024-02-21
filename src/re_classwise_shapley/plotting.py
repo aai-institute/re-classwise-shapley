@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Any, Sequence
 
 import matplotlib.pyplot as plt

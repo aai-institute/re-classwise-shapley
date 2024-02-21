@@ -11,18 +11,37 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
+from re_classwise_shapley.types import Seed
 
-def instantiate_model(model_name: str, model_kwargs: Dict) -> SupervisedModel:
+
+def instantiate_model(
+    model_name: str, model_kwargs: Dict, seed: Seed = None
+) -> SupervisedModel:
+    seed = seed.generate_state(1)[0]
+    random_state = np.random.RandomState(seed)
+
     if model_name == "gradient_boosting_classifier":
-        model = make_pipeline(GradientBoostingClassifier(**model_kwargs))
+        model = make_pipeline(
+            GradientBoostingClassifier(**model_kwargs, random_state=random_state)
+        )
     elif model_name == "logistic_regression":
-        model = make_pipeline(StandardScaler(), LogisticRegression(**model_kwargs))
+        model = make_pipeline(
+            StandardScaler(),
+            LogisticRegression(**model_kwargs, random_state=random_state),
+        )
     elif model_name == "knn":
-        model = make_pipeline(StandardScaler(), KNeighborsClassifier(**model_kwargs))
+        model = make_pipeline(
+            StandardScaler(),
+            KNeighborsClassifier(**model_kwargs, random_state=random_state),
+        )
     elif model_name == "svm":
-        model = make_pipeline(StandardScaler(), SVC(**model_kwargs))
+        model = make_pipeline(
+            StandardScaler(), SVC(**model_kwargs, random_state=random_state)
+        )
     elif model_name == "mlp":
-        model = make_pipeline(StandardScaler(), MLPClassifier(**model_kwargs))
+        model = make_pipeline(
+            StandardScaler(), MLPClassifier(**model_kwargs, random_state=random_state)
+        )
     else:
         raise ValueError(f"Unknown model '{model_name}'")
 

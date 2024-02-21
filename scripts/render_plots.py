@@ -1,10 +1,11 @@
 import os
 import os.path
+import pickle
 import shutil
 import tarfile
 from datetime import datetime
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List, Tuple
 
 import click
 import dataframe_image as dfi
@@ -12,17 +13,19 @@ import matplotlib.pyplot as plt
 import mlflow
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from dotenv import load_dotenv
 from dvc.api import params_show
+from numpy._typing import NDArray
 from PIL import Image
 from plotly.subplots import make_subplots
+from pydvl.value import ValuationResult
+from scipy.stats import gaussian_kde
 
+from re_classwise_shapley.accessor import Accessor
 from re_classwise_shapley.config import Config
 from re_classwise_shapley.log import setup_logger
-from re_classwise_shapley.plotting import (
-    setup_plotting,
-    shaded_mean_normal_confidence_interval,
-)
+from re_classwise_shapley.plotting import shaded_mean_normal_confidence_interval
 
 logger = setup_logger()
 
@@ -82,13 +85,12 @@ def make_tarfile(output_filename, source_dir):
 def render_plots(experiment_name: str, model_name: str):
     load_dotenv()
     logger.info("Starting plotting of data valuation experiment")
-    setup_plotting()
     experiment_path = Config.RESULT_PATH / experiment_name / model_name
     output_folder = Config.PLOT_PATH / experiment_name / model_name
-    experiment_name = f"{experiment_name}.{model_name}"
+    mlflow_id = f"{experiment_name}.{model_name}"
     mlflow.set_tracking_uri("http://localhost:5000")
 
-    experiment_id = get_or_create_mlflow_experiment(experiment_name)
+    experiment_id = get_or_create_mlflow_experiment(mlflow_id)
     os.makedirs(output_folder, exist_ok=True)
 
     logger.info("Starting run.")
@@ -96,6 +98,8 @@ def render_plots(experiment_name: str, model_name: str):
         experiment_id=experiment_id,
         run_name=datetime.now().isoformat(),
     ):
+        plot_histogram(experiment_name, model_name, output_folder)
+
         logger.info("Log params.")
         params = params_show()
         params = flatten_dict(params)
@@ -109,6 +113,7 @@ def render_plots(experiment_name: str, model_name: str):
         mlflow.log_artifact(tar_filename)
         os.remove(tar_filename)
 
+        # plot curves and metrics
         results_per_dataset = load_results_per_dataset(experiment_path)
         metrics_per_dataset = {
             dataset: {method: v["metrics"] for method, v in method_config.items()}
@@ -131,6 +136,79 @@ def render_plots(experiment_name: str, model_name: str):
             f"Experiment '{experiment_name}' on model '{model_name}'",
             output_folder,
         )
+
+
+def mean_and_confidence_interval(
+    values: NDArray[ValuationResult],
+    hist_range: Tuple[int, int],
+    bins: int = 50,
+) -> Tuple[NDArray[np.float_], NDArray[np.float_]]:
+    x = np.linspace(*hist_range, bins)
+    densities = []
+    for v in values:
+        kde = gaussian_kde(v)
+        density = kde(x)
+        densities.append(density)
+
+    mean = np.mean(densities, axis=0)
+    std = 1.96 * np.std(densities, axis=0) / np.sqrt(len(densities))
+    return mean, std
+
+
+def plot_histogram(experiment_name: str, model_name: str, output_folder: Path):
+    params = params_show()
+    params_active = params["active"]
+    dataset_names = params_active["datasets"]
+    valuation_methods = params_active["valuation_methods"]
+    repetitions = params_active["repetitions"]
+    bins = 20
+
+    accessor = Accessor(experiment_name, model_name)
+    valuation_results = accessor.valuation_results(
+        dataset_names, valuation_methods, repetitions
+    )
+    min_value = min(np.min(v) for d in valuation_results.values() for v in d.values())
+    max_value = max(np.max(v) for d in valuation_results.values() for v in d.values())
+    hist_range = (min_value, max_value)
+
+    figsize = (4, 3)
+    h = 2
+    w = int(len(valuation_results) / 2) + 1
+    fig, ax = plt.subplots(h, w, figsize=(w * figsize[0], h * figsize[1]))
+    ax = ax.T.flatten()
+    idx = 0
+    for dataset_name, dataset_config in valuation_results.items():
+        for method_name, method_values in dataset_config.items():
+            mean_bars, std_bars = mean_and_confidence_interval(
+                method_values, hist_range=hist_range, bins=bins
+            )
+
+            # Plot the mean histogram
+            bin_edges = np.linspace(hist_range[0], hist_range[1], bins + 1)
+            bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+            mean_color, std_color = COLORS[COLOR_ENCODING[method_name]]
+            sns.histplot(
+                data=method_values.reshape(-1),
+                multiple="layer",
+                kde=True,
+                ax=ax[idx],
+                color=mean_color,
+                label="Mean Histogram",
+                alpha=0.7,
+            )
+            ax[idx].fill_between(
+                bin_centers,
+                mean_bars - std_bars,
+                mean_bars + std_bars,
+                color=std_color,
+                alpha=0.3,
+            )
+
+        idx += 1
+
+    output_file = output_folder / f"density.png"
+    mlflow.log_figure(fig, "density.png")
+    fig.savefig(output_file)
 
 
 def plot_metric_curves(results_per_dataset: Dict, title: str, output_folder: Path):
@@ -168,6 +246,7 @@ def plot_metric_curves(results_per_dataset: Dict, title: str, output_folder: Pat
                 results = results_per_dataset[dataset_name][method_name][metric_name]
                 color_name = COLOR_ENCODING[method_name]
                 mean_color, shade_color = COLORS[color_name]
+                results = results.sort_index()
                 shaded_mean_normal_confidence_interval(
                     results,
                     abscissa=results.index,

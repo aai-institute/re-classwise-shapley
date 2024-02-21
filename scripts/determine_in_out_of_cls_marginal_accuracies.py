@@ -37,7 +37,7 @@ logger = setup_logger("determine_in_out_of_clas_accuracy")
 @click.command()
 @click.option("--experiment-name", type=str, required=True)
 @click.option("--model-name", type=str, required=True)
-@click.option("--valuation-method-name", type=str, default="loo")
+@click.option("--valuation-method-name", type=str, default="tmc_shapley")
 @click.option("--max-plotting-percentage", type=float, default=1e-4)
 def determine_in_cls_out_of_cls_marginal_accuracies(
     experiment_name: str,
@@ -62,7 +62,7 @@ def determine_in_cls_out_of_cls_marginal_accuracies(
 def _determine_in_cls_out_of_cls_marginal_accuracies(
     experiment_name: str,
     model_name: str = "logistic_regression",
-    valuation_method_name: str = "loo",
+    valuation_method_name: str = "tmc_shapley",
     max_plotting_percentage: float = 1e-4,
 ):
     output_dir = Accessor.INFO_PATH / experiment_name

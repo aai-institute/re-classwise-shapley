@@ -43,7 +43,7 @@ def instantiate_model(
         "mlp_classifier": MLPClassifier,
     }
     model_class = model_dict[model_idx]
-    model = maybe_add_argument(model_class, random_state)(
+    model = maybe_add_argument(model_class, "random_state")(
         **model_kwargs, random_state=random_state
     )
     pipeline = make_pipeline(StandardScaler(), model)

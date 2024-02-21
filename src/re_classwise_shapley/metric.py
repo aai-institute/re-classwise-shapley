@@ -10,7 +10,7 @@ from pydvl.parallel import (
     init_executor,
     init_parallel_backend,
 )
-from pydvl.utils import Dataset, Scorer, Seed, Utility
+from pydvl.utils import CacheBackend, Dataset, Scorer, Seed, Utility
 from pydvl.value.result import ValuationResult
 from sklearn.metrics import auc
 from tqdm import tqdm
@@ -57,7 +57,8 @@ def metric_weighted_metric_drop(
     n_jobs: int = 1,
     config: ParallelConfig = ParallelConfig(),
     progress: bool = False,
-    seed: Optional[Seed] = None,
+    seed: Seed | None = None,
+    cache: CacheBackend | None = None,
 ) -> Tuple[float, pd.Series]:
     r"""
     Calculates the weighted reciprocal difference average of a valuation function. The
@@ -89,7 +90,7 @@ def metric_weighted_metric_drop(
         model=model,
         scorer=Scorer(metric, default=np.nan),
         catch_errors=True,
-        enable_cache=True,
+        cache_backend=cache,
     )
     curve = _curve_score_over_point_removal_or_addition(
         u_eval,

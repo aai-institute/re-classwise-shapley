@@ -61,8 +61,6 @@ def determine_in_cls_out_of_cls_marginal_accuracies(
     Args:
         experiment_name: Name of the executed experiment. As specified in the
             `params.experiments` section.
-        dataset_name: The name of the dataset to preprocess. As specified in th
-            `params.datasets` section.
         model_name: Model to use. As specified in the `params.models` section.
     """
     _determine_in_cls_out_of_cls_marginal_accuracies(experiment_name, model_name)
@@ -73,6 +71,12 @@ def _determine_in_cls_out_of_cls_marginal_accuracies(
     model_name: str = "logistic_regression",
     valuation_method_name: str = "tmc_shapley",
 ):
+    output_dir = Accessor.INFO_PATH / experiment_name
+    if os.path.exists(output_dir / "threshold_characteristics.svg") and os.path.exists(
+        output_dir / "characteristics.json"
+    ):
+        return logger.info(f"Plot exist in '{output_dir}'. Skipping...")
+
     params = load_params_fast()
     results = {}
 
@@ -201,7 +205,6 @@ def _determine_in_cls_out_of_cls_marginal_accuracies(
         result["detr"] = s
         results[dataset_name] = result
 
-    output_dir = Accessor.INFO_PATH / experiment_name
     os.makedirs(output_dir, exist_ok=True)
     n_cols = 3
     n_rows = int((len(dataset_names) + n_cols - 1) / n_cols)

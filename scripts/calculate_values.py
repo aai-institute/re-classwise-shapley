@@ -98,7 +98,8 @@ def _calculate_values(
     mc = Client(**asdict(mc_config)["client_config"])
     last_run = mc.get("last_run", None)
     if last_run is None or (
-        experiment_name != last_run["experiment"]
+        "calculate_values" != last_run.get("stage", "")
+        or experiment_name != last_run["experiment"]
         or dataset_name != last_run["dataset"]
         or model_name != last_run["model"]
         or (
@@ -113,6 +114,7 @@ def _calculate_values(
         mc.set(
             "last_run",
             {
+                "stage": "calculate_values",
                 "experiment": experiment_name,
                 "dataset": dataset_name,
                 "model": model_name,

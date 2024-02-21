@@ -38,19 +38,17 @@ stages:
     matrix:
       experiment: ${active.experiments}
       dataset: ${active.datasets}
-      repetition: ${active.repetitions}
     cmd: >
       python -m scripts.sample_data
       --experiment-name ${item.experiment}
       --dataset-name ${item.dataset}
-      --repetition-id ${item.repetition}
     params:
       - experiments.${item.experiment}.sampler
     deps:
       - scripts/sample_data.py
       - output/preprocessed/${item.dataset}
     outs:
-      - output/sampled/${item.experiment}/${item.dataset}/${item.repetition}:
+      - output/sampled/${item.experiment}/${item.dataset}:
           persist: true
   
   calculate-values:

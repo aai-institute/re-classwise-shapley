@@ -98,7 +98,7 @@ def _evaluate_metrics(
     values = Accessor.valuation_results(
         experiment_name, model_name, dataset_name, repetition_id, valuation_method_name
     ).loc[0, "valuation"]
-    dataset = Accessor.datasets(experiment_name, dataset_name, repetition_id).loc[0]
+    dataset = Accessor.datasets(experiment_name, dataset_name).loc[0]
     preprocess_info = dataset["preprocess_info"]
 
     os.makedirs(output_dir, exist_ok=True)

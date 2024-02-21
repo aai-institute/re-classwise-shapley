@@ -220,7 +220,6 @@ class Accessor:
     def datasets(
         experiment_name: str,
         dataset_name: str,
-        repetition_id: int,
     ) -> Dict:
         """
         Load datasets from the specified directory.
@@ -228,24 +227,20 @@ class Accessor:
         Args:
             experiment_name: The name of the experiment.
             dataset_name: The name of the dataset.
-            repetition_id: The repetition ID.
 
         Returns:
             A dictionary containing the loaded datasets and relevant information.
         """
-        base_path = (
-            Accessor.SAMPLED_PATH / experiment_name / dataset_name / str(repetition_id)
-        )
-        with open(base_path / f"val_set.pkl", "rb") as file:
+        base_path = Accessor.SAMPLED_PATH / experiment_name / dataset_name
+        with open(base_path / "val_set.pkl", "rb") as file:
             val_set = pickle.load(file)
 
-        with open(base_path / f"test_set.pkl", "rb") as file:
+        with open(base_path / "test_set.pkl", "rb") as file:
             test_set = pickle.load(file)
 
         row = {
             "experiment_name": experiment_name,
             "dataset_name": dataset_name,
-            "repetition_id": repetition_id,
             "val_set": val_set,
             "test_set": test_set,
         }

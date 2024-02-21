@@ -44,10 +44,13 @@ def subsample(
         subset.
     :return: A tuple
     """
+
     if stratified:
+        p = np.random.permutation(len(features))
+        features = features[p]
+        labels = labels[p]
         unique_labels, num_labels = np.unique(labels, return_counts=True)
         label_indices = [np.argwhere(labels == label)[:, 0] for label in unique_labels]
-        label_indices = [np.random.permutation(idx) for idx in label_indices]
         relative_set_sizes = num_labels / len(labels)
 
         data = [list() for _ in sizes]

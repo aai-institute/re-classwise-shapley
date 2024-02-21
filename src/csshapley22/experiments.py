@@ -1,3 +1,5 @@
+import pickle
+
 from sklearn.metrics import precision_recall_curve
 
 from csshapley22.log import setup_logger
@@ -12,7 +14,7 @@ from typing import Callable, Optional, Tuple
 import numpy as np
 import pandas as pd
 from numpy._typing import NDArray
-from pydvl.utils import ClasswiseScorer, Scorer, SupervisedModel, Utility
+from pydvl.utils import ClasswiseScorer, Dataset, Scorer, SupervisedModel, Utility
 from pydvl.value.result import ValuationResult
 
 from csshapley22.metrics.weighted_reciprocal_average import (
@@ -29,11 +31,23 @@ class ExperimentResult:
     valuation_results: pd.DataFrame
     metric: pd.DataFrame
     curves: Optional[pd.DataFrame]
+    val_set: Dataset
+    test_set: Dataset
     metric_name: str = None
 
     def store(self, output_dir: Path) -> "ExperimentResult":
         logger.info("Saving results to disk")
         output_dir.mkdir(parents=True, exist_ok=True)
+
+        validation_set_path = str(output_dir / "val_set.pkl")
+        test_set_path = str(output_dir / "test_set.pkl")
+        for set_path, set in [
+            (validation_set_path, self.val_set),
+            (test_set_path, self.test_set),
+        ]:
+            with open(set_path, "wb") as file:
+                pickle.dump(set, file)
+
         self.metric.to_csv(output_dir / "metric.csv")
         self.valuation_results.to_pickle(output_dir / "valuation_results.pkl")
         if self.curves is not None:
@@ -53,45 +67,50 @@ def _dispatch_experiment(
     base_frame = pd.DataFrame(
         index=list(datasets.keys()), columns=list(valuation_methods.keys())
     )
+    dataset_idxs = list(datasets.keys())
+    assert len(dataset_idxs) == 1, "Only one dataset is supported for now."
+    dataset_idx = dataset_idxs[0]
+    dataset_factory = datasets[dataset_idx]
+    val_dataset, test_dataset = dataset_factory()
     result = ExperimentResult(
-        metric=copy(base_frame), valuation_results=copy(base_frame), curves=None
+        metric=copy(base_frame),
+        valuation_results=copy(base_frame),
+        curves=None,
+        val_set=val_dataset,
+        test_set=test_dataset,
     )
+    logger.info(f"Loading dataset '{dataset_idx}'.")
+    logger.debug("Creating utility")  # type: ignore
 
-    for dataset_idx, (val_dataset, test_dataset) in datasets.items():
-        logger.info(f"Loading dataset '{dataset_idx}'.")
-        logger.debug("Creating utility")  # type: ignore
+    if data_pre_process_fn is not None:
+        val_dataset.y_train = data_pre_process_fn(val_dataset.y_train)
+        test_dataset.y_train = val_dataset.y_train
 
-        if data_pre_process_fn is not None:
-            val_dataset.y_train = data_pre_process_fn(val_dataset.y_train)
-            test_dataset.y_train = val_dataset.y_train
+    for valuation_method_name, valuation_method in valuation_methods.items():
+        scorer = Scorer("accuracy", default=0.0)
+        utility = Utility(data=val_dataset, model=model, scorer=scorer)
+        logger.info(f"Computing values using '{valuation_method_name}'.")
 
-        for valuation_method_name, valuation_method in valuation_methods.items():
-            scorer = Scorer("accuracy", default=0.0)
-            utility = Utility(data=val_dataset, model=model, scorer=scorer)
-            logger.info(f"Computing values using '{valuation_method_name}'.")
+        # valuation_method = timeout(10800)(valuation_method)
+        values = valuation_method(utility)
+        result.valuation_results.loc[dataset_idx, valuation_method_name] = values
 
-            # valuation_method = timeout(10800)(valuation_method)
-            values = valuation_method(utility)
-            result.valuation_results.loc[dataset_idx, valuation_method_name] = values
+        if values is None:
+            result.metric.loc[dataset_idx, valuation_method_name] = values
+            continue
 
-            if values is None:
-                result.metric.loc[dataset_idx, valuation_method_name] = values
-                continue
+        logger.info("Computing best data points removal score on separate test set.")
+        test_utility = Utility(
+            data=test_dataset, model=model, scorer=Scorer(scoring="accuracy")
+        )
+        metric, graph = metric_fn(test_utility, values)
+        result.metric.loc[dataset_idx, valuation_method_name] = metric
 
-            logger.info(
-                "Computing best data points removal score on separate test set."
-            )
-            test_utility = Utility(
-                data=test_dataset, model=model, scorer=Scorer(scoring="accuracy")
-            )
-            metric, graph = metric_fn(test_utility, values)
-            result.metric.loc[dataset_idx, valuation_method_name] = metric
+        if graph is not None:
+            if result.curves is None:
+                result.curves = copy(base_frame)
 
-            if graph is not None:
-                if result.curves is None:
-                    result.curves = copy(base_frame)
-
-                result.curves.loc[dataset_idx, valuation_method_name] = [graph]
+            result.curves.loc[dataset_idx, valuation_method_name] = [graph]
 
     if result.curves is not None:
         result.curves = result.curves.applymap(lambda x: x[0])

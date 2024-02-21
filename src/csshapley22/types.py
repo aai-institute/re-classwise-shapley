@@ -7,7 +7,7 @@ from pydvl.value import ValuationResult
 K: dataset_name
 V: A tuple of a validation and test set. Both shall contain the same training data.
 """
-ValTestSetFactory = Dict[str, Tuple[Dataset, Dataset]]
+ValTestSetFactory = Dict[str, Callable[[], Tuple[Dataset, Dataset]]]
 
 """
 K: valuation_method_name

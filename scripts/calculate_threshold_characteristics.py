@@ -74,9 +74,6 @@ def _calculate_threshold_characteristics(
 
     params = load_params_fast()
     threshold_characteristics_settings = params["settings"]["threshold_characteristics"]
-    if not threshold_characteristics_settings["active"]:
-        return logger.info("Calculation was deactivated in the settings...")
-
     model_name = threshold_characteristics_settings["model"]
     valuation_method_name = threshold_characteristics_settings["valuation_method"]
 

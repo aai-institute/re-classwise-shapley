@@ -136,8 +136,8 @@ def _curve_precision_recall_ranking(
         the ranking. The index of the series is the recall and the values are the
         corresponding precision values.
     """
-    precision, recall = np.zeros(len(ranked_list)), np.zeros(len(ranked_list))
-    for idx in range(len(ranked_list)):
+    precision, recall = np.zeros(len(ranked_list) - 3), np.zeros(len(ranked_list))
+    for idx in range(2, len(ranked_list)):
         partial_list = ranked_list[: idx + 1]
         intersection = list(set(target_list) & set(partial_list))
         precision[idx] = float(len(intersection) / len(partial_list))

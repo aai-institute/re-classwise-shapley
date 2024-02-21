@@ -26,14 +26,14 @@ logger = setup_logger(__name__)
 
 # Mapping from method names to single colors
 COLOR_ENCODING = {
-    "RND": "black",
-    "BETS": "blue",
-    "LOO": "orange",
-    "TMCS": "green",
-    "CWS": "red",
-    "OWS": "purple",
-    "BZHS": "turquoise",
-    "LC": "gray",
+    "Random": "black",
+    "Beta Shapley": "blue",
+    "Leave-One-Out": "orange",
+    "Truncated Monte-Carlo Shapley": "green",
+    "Classwise Shapley": "red",
+    "Owen Sampling": "purple",
+    "Banzhaf Shapley": "orange",
+    "Least Core": "orange",
 }
 
 # Mapping from colors to mean and shade color.
@@ -50,14 +50,14 @@ COLORS = {
 
 
 LABELS = {
-    "random": "RND",
-    "beta_shapley": "BETS",
-    "loo": "LOO",
-    "tmc_shapley": "TMCS",
-    "classwise_shapley": "CWS",
-    "owen_sampling_shapley": "OWS",
-    "banzhaf_shapley": "BZHS",
-    "least_core": "LC",
+    "random": "Random",
+    "beta_shapley": "Beta Shapley",
+    "loo": "Leave-One-Out",
+    "tmc_shapley": "Truncated Monte-Carlo Shapley",
+    "classwise_shapley": "Classwise Shapley",
+    "owen_sampling_shapley": "Owen Sampling",
+    "banzhaf_shapley": "Banzhaf Shapley",
+    "least_core": "Least Core",
 }
 
 
@@ -199,7 +199,7 @@ def plot_grid_over_datasets(
                 labels,
                 loc="outside lower center",
                 ncol=5,
-                fontsize=12,
+                fontsize=13.5,
                 fancybox=False,
                 shadow=False,
                 **legend_kwargs,
@@ -207,7 +207,7 @@ def plot_grid_over_datasets(
             fig.subplots_adjust(bottom=0.1)
         else:
             last = ax[-1]
-            last.legend(handles, labels, loc="center", prop={"size": 12})
+            last.legend(handles, labels, loc="center", prop={"size": 13.5})
 
     yield fig
     plt.close(fig)
@@ -488,7 +488,7 @@ def plot_threshold_characteristics(
             labels,
             loc="outside lower center",
             ncol=5,
-            fontsize=12,
+            fontsize=13.5,
             fancybox=False,
             shadow=False,
             **legend_kwargs,

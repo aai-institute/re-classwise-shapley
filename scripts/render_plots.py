@@ -116,9 +116,12 @@ def _render_plots(experiment_name: str, model_name: str):
                     fig, output_folder, f"density.{method_name}.svg", "densities"
                 )
 
-        logger.info("Plot boxplot for execution time.")
-        with plot_time(valuation_results) as fig:
-            log_figure(fig, output_folder, "time.svg", "boxplots")
+        params = load_params_fast()
+        time_settings = params["settings"]["time"]
+        if time_settings.get("active", False):
+            logger.info("Plot boxplot for execution time.")
+            with plot_time(valuation_results) as fig:
+                log_figure(fig, output_folder, "time.svg", "boxplots")
 
         logger.info("Loading curves form hard disk.")
         loaded_curves = Accessor.curves(

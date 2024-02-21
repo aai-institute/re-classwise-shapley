@@ -23,16 +23,9 @@ def run(model_name: str):
 
     params = params_show()
     logger.info(f"Using parameters:\n{params}")
-    experiment_one_params = params["experiment_one"]
-    valuation_methods = experiment_one_params["valuation_methods"]
+    valuation_methods = params["settings"]["valuation_methods"]
 
     datasets = fetch_datasets()
-    valuation_functions = {
-        valuation_method_name: partial(
-            compute_values, valuation_method=valuation_method_name
-        )
-        for valuation_method_name in valuation_methods.keys()
-    }
     n_repetitions = params["settings"]["n_repetitions"]
 
     # Create the output directory
@@ -50,7 +43,7 @@ def run(model_name: str):
         result = run_experiment_one(
             model_name=model_name,
             datasets=datasets,
-            valuation_functions=valuation_functions,
+            valuation_methods=valuation_methods,
         )
         logger.info("Saving results to disk")
         result.metric.to_csv(repetition_output_dir / "weighted_accuracy_drops.csv")

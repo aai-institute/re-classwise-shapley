@@ -79,10 +79,13 @@ def plot_metric_curves(results_per_dataset: Dict, title: str, output_dir: Path):
             dataset_results = results_per_dataset[dataset_name]
             d = {}
             for valuation_method_name in valuation_method_names:
+                ld = len(dataset_results[0].curves[valuation_method_name][metric_name])
                 d[valuation_method_name] = (
                     pd.concat(
                         [
-                            result.curves[valuation_method_name][metric_name]
+                            result.curves[valuation_method_name][metric_name].iloc[
+                                : int((ld + 1) / 2)
+                            ]
                             for result in dataset_results
                         ],
                         axis=1,

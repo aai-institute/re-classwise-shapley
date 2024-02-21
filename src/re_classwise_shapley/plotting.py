@@ -44,7 +44,7 @@ def shaded_mean_normal_confidence_interval(
 
     ax.fill_between(
         abscissa,
-        upper_bound,
+        np.minimum(upper_bound, 1.0),
         lower_bound,
         alpha=0.3,
         color=shade_color,

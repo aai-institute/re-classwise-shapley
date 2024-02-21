@@ -22,7 +22,7 @@ stages:
     matrix:
       dataset: ${active.datasets}
       model: ${active.models}
-    cmd: python -m scripts.run_experiment_wad_drop --dataset-name ${item.dataset} --model-name ${item.model}
+    cmd: python -m scripts.run_experiment_wad_drop --dataset-name ${item.dataset} --model-name ${item.model} --seed ${settings.random.seed}
     deps:
       - scripts/run_experiment_wad_drop.py
       - output/preprocessed/${item.dataset}
@@ -43,7 +43,7 @@ stages:
     matrix:
       dataset: ${active.datasets}
       model: ${active.models}
-    cmd: python -m scripts.run_experiment_noise_removal --dataset-name ${item.dataset} --model-name ${item.model}
+    cmd: python -m scripts.run_experiment_noise_removal --dataset-name ${item.dataset} --model-name ${item.model}  --seed ${settings.random.seed}
     deps:
       - scripts/run_experiment_noise_removal.py
       - output/preprocessed/${item.dataset}
@@ -65,7 +65,7 @@ stages:
       dataset: ${active.datasets}
       model: ${active.models}
       transfer_model: ${experiments.wad_drop_transfer.transfer_models}
-    cmd: python -m scripts.run_experiment_wad_drop --dataset-name ${item.dataset} --model-name ${item.model} --transfer-model-name ${item.transfer_model}
+    cmd: python -m scripts.run_experiment_wad_drop --dataset-name ${item.dataset} --model-name ${item.model} --transfer-model-name ${item.transfer_model}  --seed ${settings.random.seed}
     deps:
       - scripts/run_experiment_wad_drop.py
       - output/preprocessed/${item.dataset}

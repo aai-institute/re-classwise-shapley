@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import torch
 from numpy.typing import NDArray
-from preprocess_data import logger
 from pydvl.utils import Dataset, ensure_seed_sequence, maybe_progress
 from sklearn import preprocessing
 from sklearn.decomposition import PCA
@@ -15,7 +14,9 @@ from re_classwise_shapley.filter import FilterRegistry
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import RawDataset, Seed
 
-logger = setup_logger()
+__all__ = ["PreprocessorRegistry"]
+
+logger = setup_logger(__name__)
 
 
 def principal_resnet_components(

@@ -15,6 +15,8 @@ from tqdm import tqdm
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import OneOrMany, RawDataset, ensure_list
 
+__all__ = ["store_raw_dataset", "load_raw_dataset", "Accessor"]
+
 logger = setup_logger(__name__)
 
 

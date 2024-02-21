@@ -54,6 +54,14 @@ def sample_data(
         repetition_id: Repetition id of the experiment. It is used also as a seed for
             all randomness.
     """
+    _sample_data(experiment_name, dataset_name, repetition_id)
+
+
+def _sample_data(
+    experiment_name: str,
+    dataset_name: str,
+    repetition_id: int,
+):
     params = load_params_fast()
     input_folder = Accessor.PREPROCESSED_PATH / dataset_name
     output_dir = (

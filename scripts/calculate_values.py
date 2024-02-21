@@ -61,10 +61,22 @@ def calculate_values(
         repetition_id: Repetition id of the experiment. It is used also as a seed for
             all randomness.
     """
-
-    input_dir = (
-        Accessor.SAMPLED_PATH / experiment_name / dataset_name / str(repetition_id)
+    _calculate_values(
+        experiment_name,
+        dataset_name,
+        model_name,
+        valuation_method_name,
+        repetition_id,
     )
+
+
+def _calculate_values(
+    experiment_name: str,
+    dataset_name: str,
+    model_name: str,
+    valuation_method_name: str,
+    repetition_id: int,
+):
     output_dir = (
         Accessor.VALUES_PATH
         / experiment_name

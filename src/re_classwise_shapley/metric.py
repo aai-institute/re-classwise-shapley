@@ -16,14 +16,13 @@ from sklearn.metrics import auc
 from tqdm import tqdm
 
 from re_classwise_shapley.log import setup_logger
+from re_classwise_shapley.model import instantiate_model
+from re_classwise_shapley.utils import load_params_fast
 
 __all__ = [
     "metric_weighted_metric_drop",
     "metric_roc_auc",
 ]
-
-from re_classwise_shapley.model import instantiate_model
-from re_classwise_shapley.utils import load_params_fast
 
 logger = setup_logger(__name__)
 

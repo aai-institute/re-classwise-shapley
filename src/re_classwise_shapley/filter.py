@@ -3,6 +3,8 @@ from typing import Tuple, Union
 import numpy as np
 from numpy.typing import NDArray
 
+__all__ = ["FilterRegistry"]
+
 
 def binarize_classes(
     features: NDArray[np.float_],

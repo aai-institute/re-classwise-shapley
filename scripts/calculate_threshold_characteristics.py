@@ -61,7 +61,12 @@ def _calculate_threshold_characteristics(
     dataset_name: str,
     repetition_id: int,
 ):
-    output_dir = Accessor.THRESHOLD_CHARACTERISTICS_PATH / experiment_name
+    output_dir = (
+        Accessor.THRESHOLD_CHARACTERISTICS_PATH
+        / experiment_name
+        / dataset_name
+        / repetition_id
+    )
     if os.path.exists(
         output_dir / "threshold_characteristics_stats.csv"
     ) and os.path.exists(output_dir / "threshold_characteristics_curves.csv"):

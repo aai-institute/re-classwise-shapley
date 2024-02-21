@@ -64,8 +64,7 @@ def _dispatch_experiment(
             test_dataset.y_train = val_dataset.y_train
 
         for valuation_method_name, valuation_method in valuation_methods.items():
-            n_classes = len(np.unique(val_dataset.y_train))
-            scorer = Scorer("accuracy", default=1 / n_classes)
+            scorer = Scorer("accuracy", default=0.0)
             utility = Utility(data=val_dataset, model=model, scorer=scorer)
             logger.info(f"Computing values using '{valuation_method_name}'.")
 
@@ -123,7 +122,7 @@ def experiment_wad(
         eval_utility = Utility(
             data=test_utility.data,
             model=test_model if test_model is not None else model,
-            scorer=Scorer("accuracy"),
+            scorer=Scorer("accuracy", default=0),
         )
         weighted_accuracy_drop, graph = weighted_reciprocal_diff_average(
             u=eval_utility, values=values, progress=progress

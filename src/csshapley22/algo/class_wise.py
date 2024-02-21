@@ -1,9 +1,12 @@
+import numbers
 import warnings
 from typing import Tuple
 
 import numpy as np
-from pydvl.utils import Utility
-from pydvl.value.results import ValuationResult, ValuationStatus
+from numpy._typing import NDArray
+from pydvl.utils import Utility, random_powerset
+from pydvl.value import ValuationStatus
+from pydvl.value.results import ValuationResult
 
 __all__ = ["class_wise_shapley"]
 
@@ -19,71 +22,66 @@ def powerset_wo_null(iterable):
     return chain.from_iterable(combinations(xs, n) for n in range(1, len(xs) + 1))
 
 
-def class_wise_shapley(u: Utility, *, progress: bool = True) -> ValuationResult:
+def class_wise_shapley(
+    u: Utility, *, progress: bool = True, num_sets: int = 500, eps: float = 1e-4
+) -> ValuationResult:
     r"""Computes the class-wise Shapley value using the formulation with permutations:
 
     :param u: Utility object with model, data, and scoring function
     :param progress: Whether to display progress bars for each job.
+    :param num_sets: The number of sets to use in the truncated monte carlo estimator.
+    :param eps: The threshold when updating using the truncated monte carlo estimator.
     :return: Object with the data values.
     """
 
-    if u.data.y_train.dtype != np.int64:
+    if not all(map(lambda v: isinstance(v, numbers.Integral), u.data.y_train)):
         raise ValueError("The supplied dataset has to be a classification dataset.")
 
-    x_train = u.data.x_train
+    n_train = len(u.data)
     y_train = u.data.y_train
-    n_train = len(x_train)
-
-    # Note that the cache in utility saves most of the refitting because we
-    # use frozenset for the input.
-    if n_train > 10:
-        warnings.warn(
-            f"Large dataset! Computation requires {n_train}! calls to utility()",
-            RuntimeWarning,
-        )
-
     values = np.zeros(n_train)
-    num_sets = 500
-    eps = 1e-4
 
-    all_cls = np.unique(y_train)
-    for cls_num, cls_val in enumerate(all_cls):
-        cls_idx_train = np.where(y_train == cls_val)[0]
-        inv_cls_idx_train = invert_idx(cls_idx_train, n_train)
+    unique_labels = np.unique(y_train)
+    for idx_label, label in enumerate(unique_labels):
+        active_elements = y_train == label
+        label_set = np.where(active_elements)[0]
+        complement_label_set = np.where(~active_elements)[0]
+        last_permutation_label_set = np.arange(len(label_set))
 
-        for k in range(1, num_sets + 1):
-            cls_idx_perm_train = np.random.permutation(cls_idx_train)
-            subset_length = np.random.randint(1, len(inv_cls_idx_train) + 1)
-            inv_cls_idx_subset_train = np.random.permutation(inv_cls_idx_train)[
-                :subset_length
-            ]
+        for num_subset, subset_complement in enumerate(
+            random_powerset(complement_label_set, max_subsets=num_sets)
+        ):
+            permutation_label_set = np.random.permutation(label_set)
+            train_set = np.concatenate((label_set, subset_complement))
+            in_cls_acc, out_of_cls_acc = estimate_data_value(u, train_set, label)
 
-            idx_train_all = np.concatenate((cls_idx_train, inv_cls_idx_subset_train))
-            v_its = np.empty(len(cls_idx_train) + 1)
-            in_cls_acc, out_of_cls_acc = estimate_data_value(u, idx_train_all, cls_val)
-            v_its[0] = 0
-            v_its[-1] = in_cls_acc * np.exp(out_of_cls_acc)
+            data_value = 0
+            final_data_value = in_cls_acc * np.exp(out_of_cls_acc)
 
-            for j in range(len(cls_idx_train)):
-                if np.abs(v_its[-1] - v_its[j]) < eps:
-                    v_its[j + 1] = v_its[j]
+            for j in range(len(label_set)):
+                if np.abs(final_data_value - data_value) < eps:
+                    next_data_value = data_value
 
                 else:
-                    idx_train_all = np.concatenate(
-                        (cls_idx_perm_train[: j + 1], inv_cls_idx_subset_train)
+                    train_set = np.concatenate(
+                        (permutation_label_set[: j + 1], subset_complement)
                     )
                     in_cls_acc, out_of_cls_acc = estimate_data_value(
-                        u, idx_train_all, cls_val
+                        u, train_set, label
                     )
-                    v_its[j + 1] = in_cls_acc * np.exp(out_of_cls_acc)
+                    next_data_value = in_cls_acc * np.exp(out_of_cls_acc)
 
-                values[cls_idx_perm_train[j]] = (k - 1) / k * values[
-                    cls_idx_perm_train[j]
-                ] + 1 / k * (v_its[j + 1] - v_its[j])
+                diff_data_value = next_data_value - data_value
+                values[permutation_label_set[j]] = (
+                    num_subset * values[last_permutation_label_set[j]] + diff_data_value
+                ) / (num_subset + 1)
+                data_value = next_data_value
 
-        sigma_c = np.sum(values[cls_idx_train])
-        in_cls_acc, _ = estimate_data_value(u, np.arange(n_train), cls_val)
-        values[cls_idx_train] *= in_cls_acc / sigma_c  # TODO Remove divisor hack
+            last_permutation_label_set = permutation_label_set
+
+        sigma_c = np.sum(values[label_set])
+        in_cls_acc, _ = estimate_data_value(u, np.arange(n_train), label)
+        values[label_set] *= in_cls_acc / sigma_c
 
     return ValuationResult(
         algorithm="class_wise_shapley",
@@ -95,17 +93,17 @@ def class_wise_shapley(u: Utility, *, progress: bool = True) -> ValuationResult:
 
 
 def estimate_data_value(
-    u: Utility, idx_train_all: np.ndarray, cls_val: int
+    u: Utility, indices: NDArray[np.int_], label: np.int_
 ) -> Tuple[float, float]:
-    x_train_s = u.data.x_train[idx_train_all]
-    y_train_s = u.data.y_train[idx_train_all]
+    x_train_s = u.data.x_train[indices]
+    y_train_s = u.data.y_train[indices]
     u.model.fit(x_train_s, y_train_s)
 
     x_dev = u.data.x_test
     y_dev = u.data.y_test
     y_dev_pred = u.model.predict(x_dev)
     y_dev_matched = y_dev_pred == y_dev
-    cls_idx_dev = np.where(y_dev == cls_val)[0]
+    cls_idx_dev = np.where(y_dev == label)[0]
     n_dev = len(x_dev)
     inv_cls_idx_dev = invert_idx(cls_idx_dev, n_dev)
 

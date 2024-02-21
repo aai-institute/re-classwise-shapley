@@ -14,7 +14,7 @@ def run_classwise_shapley():
     """Compares the combinatorial exact shapley and permutation exact shapley with
     the analytic_shapley calculation for a dummy model.
     """
-    num_samples = 20
+    num_samples = 100
     sigma = 0.2
     means = np.asarray([[0.0, 0.0], [1.0, 1.0]])
     train_data, val_data, test_data = synthetic_classification_dataset(
@@ -24,7 +24,6 @@ def run_classwise_shapley():
     model = LogisticRegression()
     dataset = Dataset(*train_data, *val_data)
     u = Utility(model=model, data=dataset)
-    u.model.fit(*train_data)
     valuation_result = class_wise_shapley(u)
     print(valuation_result.values)
 

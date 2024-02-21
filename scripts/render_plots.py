@@ -1,10 +1,15 @@
+import json
 import os
 import re
 from pathlib import Path
 
 import click
+import dataframe_image as dfi
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from dvc.api import params_show
+from pandas.plotting import table
 
 from csshapley22.constants import OUTPUT_DIR, RANDOM_SEED
 from csshapley22.log import setup_logger
@@ -19,97 +24,103 @@ set_random_seed(RANDOM_SEED)
 
 @click.command()
 @click.argument("experiment-name", type=str, nargs=1)
-@click.option("--dataset-name", type=str, required=True)
-def render_plots(experiment_name: str, dataset_name: str):
+def render_plots(experiment_name: str):
     logger.info("Starting plotting of data valuation experiment")
 
     params = params_show()
     logger.info(f"Using parameters:\n{params}")
+    plot_order = [
+        "cifar10",
+        "click",
+        "covertype",
+        "cpu",
+        "diabetes",
+        "fmnist_binary",
+        "mnist_binary",
+        "mnist_multi",
+        "phoneme",
+    ]
+    plot_ax_index = {col: idx for idx, col in enumerate(plot_order)}
+    figsize = (20, 6)
 
-    experiment_input_dir = OUTPUT_DIR / "results" / experiment_name / dataset_name
-    plots_output_dir = OUTPUT_DIR / "plots" / experiment_name / dataset_name
-    for model_name in os.listdir(experiment_input_dir):
-        model_input_dir = experiment_input_dir / model_name
-        model_plots_output_dir = plots_output_dir / model_name
-        os.makedirs(model_plots_output_dir, exist_ok=True)
+    experiment_input_dir = OUTPUT_DIR / "results" / experiment_name / plot_order[0]
+    model_input_dir = experiment_input_dir / "logistic_regression"
+    metrics, valuation_results, curves = load_results(
+        model_input_dir,
+        load_scores=True,
+    )
+    plt_axes = {}
+    all_keys = curves.iloc[0, 0].keys()
 
-        if experiment_name == "wad_drop":
+    for key in all_keys:
+        fig, ax = plt.subplots(2, 5, figsize=figsize)
+        ax = np.array(ax).flatten()
+        plt_axes[key] = (fig, ax)
+
+    for method_name in valuation_results.columns:
+        fig, ax = plt.subplots(2, 5, figsize=figsize)
+        ax = np.array(ax).flatten()
+        plt_axes[f"histogram_{method_name}"] = (fig, ax)
+
+    for model_name in params["models"].keys():
+        plots_output_dir = OUTPUT_DIR / "plots" / experiment_name / model_name
+        key_metrics = {key: {} for key in all_keys}
+
+        for dataset_name in params["datasets"].keys():
+            dataset_index = plot_ax_index[dataset_name]
+            experiment_input_dir = (
+                OUTPUT_DIR / "results" / experiment_name / dataset_name
+            )
+            model_input_dir = experiment_input_dir / model_name
+            os.makedirs(plots_output_dir, exist_ok=True)
+            dataset_letter = chr(ord("`") + dataset_index + 1)
             metrics, valuation_results, curves = load_results(
                 model_input_dir,
                 load_scores=True,
             )
-            if not isinstance(curves.iloc[0, 0], dict):
-                curves = curves.applymap(lambda s: {"highest_wad_drop": s})
 
-            for key in curves.iloc[0, 0].keys():
-                plot_curve(
-                    curves.applymap(lambda s: [s[key]]).applymap(lambda x: x[0]),
-                    output_dir=model_plots_output_dir,
-                    label_x="Number of removed instances",
-                    label_y="Accuracy",
-                    title=f"Experiment 1: Weighted-Accuracy Drop {key} for model '{model_name}'",
-                    plot_name=f"wad_{key}",
-                )
+            for key in all_keys:
+                key_metrics[key][dataset_name] = metrics.applymap(
+                    lambda v: v[key]
+                ).mean(axis=0)
 
-            plot_values_histogram(
-                valuation_results,
-                output_dir=model_plots_output_dir,
-                title=f"Experiment 1: Histogram for model '{model_name}'",
-            )
-        elif experiment_name == "noise_removal":
-            metrics, valuation_results, curves = load_results(
-                model_input_dir,
-                load_scores=True,
-            )
-
-            if not isinstance(curves.iloc[0, 0], dict):
-                curves = curves.applymap(lambda s: {"highest_wad_drop": s})
-
-            for key in curves.iloc[0, 0].keys():
-                plot_curve(
-                    curves,
-                    output_dir=model_plots_output_dir,
-                    label_x="Recall",
-                    label_y="Precision",
-                    title=f"Experiment 2: Precision-Recall curve for model '{model_name}'",
-                    plot_name=f"flipping_{key}",
-                )
-
-            plot_values_histogram(
-                valuation_results,
-                output_dir=model_plots_output_dir,
-                title=f"Experiment 2: Histogram for model '{model_name}'",
-            )
-
-        elif experiment_name == "wad_drop_transfer":
-            for sub_folder in os.listdir(model_input_dir / "repetition=0"):
-                metrics, valuation_results, curves = load_results(
-                    model_input_dir,
-                    load_scores=True,
-                    sub_folder=sub_folder,
-                )
-                sub_plots_output_dir = model_plots_output_dir / sub_folder
-                os.makedirs(sub_plots_output_dir, exist_ok=True)
-
+            if experiment_name == "wad_drop":
                 if not isinstance(curves.iloc[0, 0], dict):
                     curves = curves.applymap(lambda s: {"highest_wad_drop": s})
 
                 for key in curves.iloc[0, 0].keys():
+                    fig, ax = plt_axes[key]
                     plot_curve(
                         curves.applymap(lambda s: [s[key]]).applymap(lambda x: x[0]),
-                        output_dir=sub_plots_output_dir,
-                        label_x="Number of removed instances",
-                        label_y="Accuracy",
-                        title=f"Experiment 3: Weighted-Accuracy Drop {key} of"
-                        f" model '{sub_folder}' \\ "
-                        f"used by values from model '{model_name}'",
-                        plot_name=f"wad_transfer_{key}",
+                        title=f"({dataset_letter}) {dataset_name}",
+                        ax=ax[dataset_index],
                     )
-                plot_values_histogram(
-                    valuation_results,
-                    output_dir=sub_plots_output_dir,
-                    title=f"Experiment 3: Histogram for model '{model_name}'",
-                )
+                    fig.suptitle(
+                        f"Experiment 1: Weighted-accuracy-drop (WAD) usign {key} for model '{model_name}'"
+                    )
+
+                for method_name in valuation_results.columns:
+                    fig, ax = plt_axes[f"histogram_{method_name}"]
+                    plot_values_histogram(
+                        valuation_results.loc[:, method_name],
+                        title=f"({dataset_letter}) {dataset_name}",
+                        ax=ax[dataset_index],
+                    )
+                    fig.suptitle(
+                        f"Experiment 1: Histogram for model '{model_name}' and method '{method_name}'"
+                    )
+
+        key_metrics = {
+            key: pd.DataFrame(key_metrics[key]).T for key in key_metrics.keys()
+        }
+        for key in key_metrics.keys():
+            df = key_metrics[key]
+            df_styled = df.style.highlight_max(color="lightgreen", axis=1)
+            dfi.export(df_styled, plots_output_dir / f"metrics_{key}.png")
+
+        for key, (fig, ax) in plt_axes.items():
+            fig.subplots_adjust(hspace=0.3)
+            fig.savefig(plots_output_dir / f"{key}.png")
 
         logger.info("Finished plotting.")
 
@@ -149,6 +160,7 @@ def load_results(
     valuation_results = valuation_results.reset_index(drop=True).applymap(
         lambda x: x.values
     )
+    metrics = metrics.applymap(lambda v: json.loads(v.replace("'", '"')))
 
     if load_scores:
         curves = curves.reset_index(drop=True)

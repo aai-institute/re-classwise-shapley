@@ -60,59 +60,46 @@ def shaded_mean_normal_confidence_interval(
 
 
 def plot_values_histogram(
-    values_df: pd.DataFrame, *, output_dir: Path, title: str = None
+    values_df: pd.DataFrame, *, ax: Axes, title: str = None
 ) -> None:
-    for method_name in values_df.columns:
-        fig, ax = plt.subplots()
-        df = values_df.loc[:, method_name].reset_index(drop=True)
-        df = df.apply(lambda s: s)
+    df = values_df.reset_index(drop=True)
+    df = df.apply(lambda s: s)
 
-        data = np.concatenate(tuple(df.to_numpy()))
-        ax = sns.histplot(
-            data=data,
-            multiple="layer",
-            kde=True,
-            ax=ax,
-        )
-        ymin, ymax = ax.get_ylim()
-        plt.legend(bbox_to_anchor=(0.5, 0.05))
-        sns.move_legend(
-            ax,
-            "lower center",
-            bbox_to_anchor=(0.5, 1),
-            ncol=5,
-            frameon=False,
-        )
-        ax.set_xlabel("Value")
-        if title is not None:
-            plt.title(title + f" and method '{method_name}'")
+    data = np.concatenate(tuple(df.to_numpy()))
+    sns.histplot(
+        data=data,
+        multiple="layer",
+        kde=True,
+        ax=ax,
+    )
+    if title is not None:
+        ax.set_title(title, y=-0.3)
 
-        fig.tight_layout()
-        ymin, ymax = ax.get_ylim()
-        ax.vlines(np.mean(data), color="r", ymin=ymin, ymax=ymax)
-        fig.savefig(
-            output_dir / f"values_histogram_{method_name=}.pdf",
-            bbox_inches="tight",
-        )
+    ymin, ymax = ax.get_ylim()
+    ax.vlines(np.mean(data), color="r", ymin=ymin, ymax=ymax)
 
 
 def plot_curve(
     scores_df: pd.DataFrame,
     *,
-    output_dir: Path,
-    label_x: str,
-    label_y: str,
     title: str = None,
-    plot_name: str = None,
+    ax: Axes = None,
 ) -> None:
     mean_colors = ["dodgerblue", "darkorange", "limegreen", "indianred", "darkorchid"]
     shade_colors = ["lightskyblue", "gold", "seagreen", "firebrick", "plum"]
-    color_pos = ["beta_shapley", "loo", "tmc_shapley", "classwise_shapley", "random"]
+    color_pos = [
+        "beta_shapley",
+        "loo",
+        "tmc_shapley",
+        "classwise_shapley",
+        "classwise_shapley_add_idx",
+    ]
     color_pos = {v: i for i, v in enumerate(color_pos)}
 
-    fig, ax = plt.subplots()
-
     for i, method_name in enumerate(scores_df.columns):
+        if method_name not in color_pos:
+            continue
+
         mean_color = mean_colors[color_pos[method_name]]
         shade_color = shade_colors[color_pos[method_name]]
 
@@ -125,22 +112,8 @@ def plot_curve(
             abscissa=abscissa,
             mean_color=mean_color,
             shade_color=shade_color,
-            xlabel=label_x,
-            ylabel=label_y,
             label=method_name,
             ax=ax,
         )
-    plt.legend(loc="lower left")
     if title is not None:
-        plt.title(title)
-    sns.move_legend(
-        ax,
-        "upper left",
-        bbox_to_anchor=(1, 1),
-        ncol=1,
-        frameon=False,
-    )
-    fig.savefig(
-        output_dir / f"{plot_name}_{label_x}_{label_y}.pdf",
-        bbox_inches="tight",
-    )
+        ax.set_title(title, y=-0.25)

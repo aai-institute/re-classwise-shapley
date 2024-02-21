@@ -5,6 +5,7 @@ import shutil
 
 from pydvl.utils import ClasswiseScorer, ParallelConfig, Utility
 from pydvl.value import (
+    HistoryDeviation,
     MaxUpdates,
     RelativeTruncation,
     ShapleyMode,
@@ -42,7 +43,7 @@ def compute_values(
         utility.scorer = ClasswiseScorer("accuracy", default=0.0)
         values = compute_classwise_shapley_values(
             utility,
-            done=MaxUpdates(n_updates=int(kwargs["n_updates"])),
+            done=HistoryDeviation(n_steps=kwargs["n_updates"], rtol=0.05),
             truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),
             normalize_values=kwargs["normalize_values"],
             n_resample_complement_sets=kwargs["n_resample_complement_sets"],

@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from dotenv import load_dotenv
+from matplotlib.ticker import FormatStrFormatter, StrMethodFormatter
 from mlflow.data.pandas_dataset import PandasDataset
 from numpy._typing import NDArray
 from PIL import Image
@@ -107,8 +108,6 @@ def render_plots(experiment_name: str, model_name: str):
         plot_metric_table(results_per_dataset, output_folder)
 
         for mode in ["light", "dark"]:
-            output_folder = output_folder / mode
-            os.makedirs(output_folder, exist_ok=True)
             dark_mode = mode == "dark"
             logger.info(f"Plotting histogram in {mode}.")
             plot_histogram(
@@ -188,7 +187,7 @@ def plot_histogram(
     model_name: str,
     output_folder: Path,
     dark_mode: bool,
-    patch_size: Tuple[int, int] = (4, 3),
+    patch_size: Tuple[float, float] = (4, 4),
 ):
     """
     Plot the histogram of the data values for each dataset and valuation method.
@@ -211,6 +210,7 @@ def plot_histogram(
         dataset_names, valuation_methods, repetitions
     )
 
+    output_folder = output_folder / "densities"
     activate_mode(dark_mode)
     h = 3
     w = int((len(valuation_results) + h - 1) / h)
@@ -223,14 +223,13 @@ def plot_histogram(
 
             if method_name not in fig_ax_d.keys():
                 fig, ax = plt.subplots(
-                    h, w, figsize=(w * patch_size[0], h * patch_size[1])
+                    w, h, figsize=(w * patch_size[0], h * patch_size[1])
                 )
                 ax = ax.flatten()
 
                 if dark_mode:
                     for i in range(len(ax)):
-                        ax[i].patch.set_facecolor("none")
-                        ax[i].patch.set_alpha(0.0)
+                        ax[i].yaxis.label.set_color("w")
 
                 fig_ax_d[method_name] = (fig, ax)
 
@@ -238,26 +237,38 @@ def plot_histogram(
             sns.histplot(
                 method_values.reshape(-1), kde=True, ax=ax[idx], bins="sturges"
             )
-            if int(idx / w) != 0:
+            if idx % h != 0:
                 ax[idx].set_ylabel("")
 
-            ax[idx].set_title(f"({chr(97 + idx)}) {dataset_name}")
+            ax[idx].set_title(
+                f"({chr(97 + idx)}) {dataset_name}",
+                color="white" if dark_mode else "black",
+            )
 
         idx += 1
 
-    num_datasets = len(valuation_results)
     for key, (fig, ax) in fig_ax_d.items():
-        if len(ax) == num_datasets + 1:
-            ax[-1].grid(False)
-            ax[-1].axis("off")
+        for i in range(len(ax)):
+            ax[i].xaxis.set_ticks(np.linspace(*ax[i].get_xlim(), 5))
+            ax[i].xaxis.set_major_formatter(FormatStrFormatter("%.3f"))
 
-        fig.subplots_adjust(hspace=0.4)
-        f_name = f"density.{key}.png"
+        if dark_mode:
+            for i in range(len(ax)):
+                ax[i].patch.set_facecolor("none")
+                ax[i].patch.set_alpha(0.0)
+
+        f_name = f"density.{key}.svg"
         logger.info(f"Logging plot '{f_name}'")
-        output_file = output_folder / f_name
         path = "light" if not dark_mode else "dark"
-        mlflow.log_figure(fig, f"densities/{path}/{f_name}")
-        fig.savefig(output_file)
+        mode_output_folder = output_folder / path
+        os.makedirs(mode_output_folder, exist_ok=True)
+        output_file = mode_output_folder / f_name
+
+        plt.subplots_adjust(
+            left=0.05, right=0.98, top=0.97, bottom=0.03, hspace=0.17, wspace=0.17
+        )
+        fig.savefig(output_file, transparent=dark_mode)
+        mlflow.log_artifact(str(output_file), f"densities/{path}")
         plt.close(fig)
 
 
@@ -268,6 +279,7 @@ def plot_curves(
     title: str,
     output_folder: Path,
     dark_mode: bool,
+    patch_size: Tuple[float, float] = (4, 3),
 ):
     """
     Plot the curves of the data values for each dataset and valuation method.
@@ -277,6 +289,7 @@ def plot_curves(
             the distribution over curves.
         title: Title of the plot.
         output_folder: Output folder to store the plots in.
+        patch_size: Size of one image patch of the multi plot.
     """
     params = load_params_fast()
     params_active = params["active"]
@@ -289,15 +302,11 @@ def plot_curves(
     os.makedirs(output_folder, exist_ok=True)
     activate_mode(dark_mode)
     num_datasets = len(dataset_names)
-    h = 3
-    w = int((len(dataset_names) + h - 1) / h)
+    w = 3
+    h = int((len(dataset_names) + w - 1) / w)
     for metric_name in metric_names:
-        fig, ax = plt.subplots(h, w, figsize=(w * 20 / 4, h * 5 / 2))
+        fig, ax = plt.subplots(h, w, figsize=(h * patch_size[0], w * patch_size[1]))
         ax = ax.flatten()
-        if dark_mode:
-            for i in range(len(ax)):
-                ax[i].patch.set_facecolor("none")
-                ax[i].patch.set_alpha(0.0)
 
         for idx, dataset_name in enumerate(dataset_names):
             for method_name in valuation_methods:
@@ -308,6 +317,7 @@ def plot_curves(
                 color_name = COLOR_ENCODING[method_name]
                 mean_color, shade_color = COLORS[color_name]
                 results = results.sort_index()
+
                 shaded_mean_normal_confidence_interval(
                     results,
                     abscissa=results.index,
@@ -316,27 +326,43 @@ def plot_curves(
                     label=method_name,
                     ax=ax[idx],
                 )
-                ax[idx].set_title(f"({chr(97 + idx)}) {dataset_name}")
+                ax[idx].set_title(
+                    f"({chr(97 + idx)}) {dataset_name}",
+                    color="white" if dark_mode else "black",
+                )
 
         handles, labels = ax[num_datasets - 1].get_legend_handles_labels()
         for i in range(num_datasets, len(ax)):
             ax[i].grid(False)
             ax[i].axis("off")
+            ax[i].patch.set_facecolor("none")
+            ax[i].patch.set_alpha(0.0)
 
-        fig.legend(
+        legend_kwargs = {}
+        if dark_mode:
+            legend_kwargs["framealpha"] = 0
+
+        leg = fig.legend(
             handles,
             labels,
             loc="outside lower center",
-            ncol=len(valuation_methods),
+            ncol=5,
+            fontsize=12,
             fancybox=True,
             shadow=True,
+            **legend_kwargs,
         )
-        fig.subplots_adjust(hspace=0.4)
 
-        output_file = output_folder / f"{metric_name}.png"
+        for text in leg.get_texts():
+            plt.setp(text, color="w" if dark_mode else "k")
+
+        plt.subplots_adjust(left=0.05, right=0.99, top=0.97, bottom=0.13, hspace=0.3)
         path = "light" if not dark_mode else "dark"
-        mlflow.log_figure(fig, f"curves/{path}/{metric_name}.png")
-        fig.savefig(output_file)
+        mode_output_folder = output_folder / path
+        os.makedirs(mode_output_folder, exist_ok=True)
+        local_path = mode_output_folder / f"{metric_name}.svg"
+        fig.savefig(local_path, transparent=dark_mode)
+        mlflow.log_artifact(str(local_path), f"curves/{path}")
         plt.close(fig)
 
 
@@ -350,7 +376,6 @@ def activate_mode(dark_mode):
             "axes.edgecolor": "w",
         }
         plt.rcParams.update(params)
-        plt.style.use("dark_background")
 
 
 def plot_metric_table(

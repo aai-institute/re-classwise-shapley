@@ -24,6 +24,8 @@ __all__ = [
     "Accessor",
 ]
 
+from re_classwise_shapley.utils import calculate_threshold_characteristic_curves
+
 logger = setup_logger(__name__)
 
 
@@ -252,13 +254,16 @@ class Accessor:
         )
         if not os.path.exists(folder):
             raise ValueError
-        curves = pd.read_csv(folder / "threshold_characteristics_curves.csv", sep=";")
-        curves = curves.set_index(curves.columns[0])
-        stats = pd.read_csv(folder / "threshold_characteristics_stats.csv")
+
+        in_cls_mar_acc = np.loadtxt(folder / "in_cls_mar_acc.txt")
+        global_mar_acc = np.loadtxt(folder / "global_mar_acc.txt")
+        characteristics = calculate_threshold_characteristic_curves(
+            in_cls_mar_acc, global_mar_acc
+        )
+        characteristics = characteristics.set_index(characteristics.columns[0])
         return {
             "dataset_name": dataset_name,
-            "curves": curves,
-            "stats": stats,
+            "characteristics": characteristics,
         }
 
     @staticmethod
@@ -354,42 +359,26 @@ class Accessor:
 
     @staticmethod
     @walker_product_space()
-    def metrics_and_curves(
+    def metrics(
         experiment_name: str,
         model_name: str,
         dataset_name: str,
         method_name: str,
-        repetition_id: int,
         metric_name: str,
+        repetition_id: int,
+        curve_name: str,
     ) -> Dict:
-        """
-        Load metrics and curves from the results directory.
-
-        Args:
-            experiment_name: The name of the experiment.
-            model_name: The name of the model.
-            dataset_name: The name of the dataset.
-            method_name: The name of the method.
-            repetition_id: The repetition ID.
-            metric_name: The name of the metric.
-
-        Returns:
-            A dictionary containing the metrics and curves.
-        """
         base_path = (
-            Accessor.CURVES_PATH
+            Accessor.METRICS_PATH
             / experiment_name
             / model_name
             / dataset_name
             / str(repetition_id)
             / method_name
         )
-        metric = pd.read_csv(base_path / f"{metric_name}.csv")
-        metric = metric.iloc[-1, -1]
 
-        curve = pd.read_csv(base_path / f"{metric_name}.curve.csv")
-        curve.index = curve[curve.columns[0]]
-        curve = curve.drop(columns=[curve.columns[0]]).iloc[:, -1]
+        metric = pd.read_csv(base_path / f"{metric_name}.{curve_name}.csv")
+        metric = metric.iloc[-1, -1]
 
         return {
             "experiment_name": experiment_name,
@@ -399,7 +388,6 @@ class Accessor:
             "repetition_id": repetition_id,
             "metric_name": metric_name,
             "metric": metric,
-            "curve": curve,
         }
 
     @staticmethod

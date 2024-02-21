@@ -1,10 +1,10 @@
 settings:
-  n_jobs: 4
+  n_jobs: 95
   backend: joblib
   mlflow_tracking_uri: http://localhost:5000
 
   threshold_characteristics:
-    active: false
+    active: true
     valuation_method: banzhaf_shapley  # Method used to calculate the threshold characteristics.
     model: logistic_regression  # Default model to use for determining the values
     max_plotting_percentage: 1e-4  # Threshold for stopping plotting in direction of x-axis.
@@ -34,8 +34,6 @@ active:
   - tmc_shapley
   - beta_shapley
   - loo
-  - banzhaf_shapley
-  - least_core
   repetitions:
     from: 1
     to: 20
@@ -48,31 +46,31 @@ experiments:
         fn: metric
         metric: accuracy
         eval_model: logistic_regression
-        plot:
+        plots:
           - accuracy
       weighted_accuracy_drop_knn:
         fn: metric
         metric: accuracy
         eval_model: knn
-        plot:
+        plots:
           - accuracy
       weighted_accuracy_drop_gradient_boosting_classifier:
         fn: metric
         metric: accuracy
         eval_model: gradient_boosting_classifier
-        plot:
+        plots:
           - accuracy
       weighted_accuracy_drop_svm:
         fn: metric
         metric: accuracy
         eval_model: svm
-        plot:
+        plots:
           - accuracy
       weighted_accuracy_drop_mlp:
         fn: metric
         metric: accuracy
         eval_model: mlp
-        plot:
+        plots:
           - accuracy
 
     metrics:
@@ -85,9 +83,9 @@ experiments:
           - weighted_accuracy_drop_mlp
         fn: geometric_weighted_drop
         input_perc: 1.0
-        plot:
-          - table
-          - boxplot
+        plots:
+          - table_wad
+          - box_wad
 
       geometric_weighted_drop_half:
         curve:
@@ -98,9 +96,9 @@ experiments:
           - weighted_accuracy_drop_mlp
         fn: geometric_weighted_drop
         input_perc: 0.5
-        plot:
-          - table
-          - boxplot
+        plots:
+          - table_wad
+          - box_wad
 
   noise_removal:
     sampler: default
@@ -118,14 +116,14 @@ experiments:
         curve:
           - precision_recall
         fn: roc_auc
-        plot:
-          - table
-          - boxplot
+        plots:
+          - table_auc
+          - box_auc
 
 plots:
   accuracy:
     type: line
-    len_curve_perc: 0.5
+    plot_perc: 0.5
     x_label: "n"
     y_label: "Accuracy"
 
@@ -133,6 +131,20 @@ plots:
     type: line
     x_label: "Recall"
     y_label: "Precision"
+
+  table_wad:
+    type: table
+
+  table_auc:
+    type: table
+
+  box_wad:
+    type: boxplot
+    x_label: "WAD"
+
+  box_auc:
+    type: boxplot
+    x_label: "AUC"
 
 
 samplers:

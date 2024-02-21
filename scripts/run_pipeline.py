@@ -40,20 +40,24 @@ def run_pipeline():
         dataset_name,
         repetition_id,
     ) in product(
-        active_params[k]
-        for k in [
-            "experiments",
-            "datasets",
-            "repetitions",
+        *[
+            active_params[k]
+            for k in [
+                "experiments",
+                "datasets",
+                "repetitions",
+            ]
         ]
     ):
         _sample_data(experiment_name, dataset_name, repetition_id)
 
     for experiment_name, model_name in product(
-        active_params[k]
-        for k in [
-            "experiments",
-            "models",
+        *[
+            active_params[k]
+            for k in [
+                "experiments",
+                "models",
+            ]
         ]
     ):
         for (
@@ -61,11 +65,13 @@ def run_pipeline():
             valuation_method_name,
             repetition_id,
         ) in product(
-            active_params[k]
-            for k in [
-                "datasets",
-                "valuation_methods",
-                "repetitions",
+            *[
+                active_params[k]
+                for k in [
+                    "datasets",
+                    "valuation_methods",
+                    "repetitions",
+                ]
             ]
         ):
             _calculate_values(

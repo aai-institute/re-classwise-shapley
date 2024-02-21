@@ -1,9 +1,13 @@
 import numpy as np
+import openml
 from numpy.typing import NDArray
 from pydvl.utils.dataset import Dataset
+from scipy.io import arff
+from sklearn import preprocessing
+from sklearn.datasets import fetch_openml, load_diabetes
 from sklearn.model_selection import train_test_split
 
-__all__ = ["create_synthetic_dataset"]
+__all__ = ["create_synthetic_dataset", "create_diabetes_dataset"]
 
 
 def flip_labels(
@@ -81,3 +85,13 @@ def create_synthetic_dataset(
     )
 
     return train_dataset, test_dataset
+
+
+def create_diabetes_dataset(train_size: float) -> Dataset:
+    le = preprocessing.LabelEncoder()
+    dataset = Dataset.from_sklearn(fetch_openml(data_id=37), train_size=train_size)
+
+    le.fit(np.concatenate((dataset.y_train, dataset.y_test)))
+    dataset.y_train = le.transform(dataset.y_train)
+    dataset.y_test = le.transform(dataset.y_test)
+    return dataset

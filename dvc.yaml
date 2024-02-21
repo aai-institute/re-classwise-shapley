@@ -1,20 +1,43 @@
 stages:
-  data-valuation-experiment:
-    foreach: ${data_valuation.budgets}
+  data-valuation-synthetic-experiment:
+    foreach: ${data_valuation.common.budgets}
     do:
-      cmd: python -m src.csshapley22.experiments.data_valuation --budget=${item}
+      cmd: python -m src.csshapley22.experiments.data_valuation --dataset-name=synthetic --budget=${item}
       params:
-      - data_valuation
+      - data_valuation.common
+      - data_valuation.synthetic
       deps:
       - src/csshapley22/experiments/data_valuation.py
       outs:
-      - output/data_valuation/results/dataset=${data_valuation.dataset}/budget=${item}
-  data-valuation:
-    cmd: python -m src.csshapley22.plots.data_valuation
+      - output/data_valuation/dataset=synthetic/results/budget=${item}
+  data-valuation-synthetic-plots:
+    cmd: python -m src.csshapley22.plots.data_valuation --dataset-name=synthetic
     params:
-    - data_valuation
+    - data_valuation.common
+    - data_valuation.synthetic
     deps:
     - src/csshapley22/plots/data_valuation.py
-    - output/data_valuation/results/dataset=${data_valuation.dataset}
+    - output/data_valuation/dataset=synthetic/results
     outs:
-    - output/data_valuation/plots/dataset=${data_valuation.dataset}
+    - output/data_valuation/dataset=synthetic/plots
+  data-valuation-diabetes-experiment:
+    foreach: ${data_valuation.common.budgets}
+    do:
+      cmd: python -m src.csshapley22.experiments.data_valuation --dataset-name=diabetes --budget=${item}
+      params:
+      - data_valuation.common
+      - data_valuation.diabetes
+      deps:
+      - src/csshapley22/experiments/data_valuation.py
+      outs:
+      - output/data_valuation/dataset=diabetes/results/budget=${item}
+  data-valuation-diabetes-plots:
+    cmd: python -m src.csshapley22.plots.data_valuation --dataset-name=diabetes
+    params:
+    - data_valuation.common
+    - data_valuation.diabetes
+    deps:
+    - src/csshapley22/plots/data_valuation.py
+    - output/data_valuation/dataset=diabetes/results
+    outs:
+    - output/data_valuation/dataset=diabetes/plots

@@ -1,18 +1,22 @@
+from pathlib import Path
+
 import click
-import numpy as np
 import pandas as pd
 from dvc.api import params_show
+from dvc.repo import Repo
 from pydvl.reporting.scores import compute_removal_score
-from pydvl.utils import Utility
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
+from pydvl.utils import Scorer, Utility
+from pydvl.value.shapley.classwise import CSScorer
 
-from csshapley22.constants import OUTPUT_DIR, RANDOM_SEED
-from csshapley22.dataset import create_synthetic_dataset
+from csshapley22.constants import RANDOM_SEED
+from csshapley22.dataset import create_diabetes_dataset, create_synthetic_dataset
+from csshapley22.metrics.weighted_reciprocal_average import (
+    weighted_reciprocal_diff_average,
+)
 from csshapley22.utils import (
     compute_values,
     convert_values_to_dataframe,
+    instantiate_model,
     set_random_seed,
     setup_logger,
 )
@@ -24,64 +28,56 @@ set_random_seed(RANDOM_SEED)
 
 @click.command()
 @click.option(
-    "--budget",
-    type=int,
-    help="Value computation budget i.e. number of iterations",
-    required=True,
+    "--dataset-name", type=str, required=True, help="Name of the dataset to use"
 )
-def run(budget: int):
+@click.option("--model-name", type=str, required=True, help="Name of the model to use")
+@click.option("--budget", type=int, required=True, help="Computation budget")
+def run(dataset_name: str, model_name: str, budget: int):
     logger.info("Starting data valuation experiment")
-
-    random_state = np.random.RandomState(RANDOM_SEED)
 
     params = params_show()
     logger.info(f"Using parameters:\n{params}")
 
     n_jobs = params["common"]["n_jobs"]
-    n_repetitions = params["common"]["n_repetitions"]
 
     data_valuation_params = params["data_valuation"]
-    dataset_type = data_valuation_params["dataset"]
-    removal_percentages = data_valuation_params["removal_percentages"]
-    method_names = data_valuation_params["method_names"]
+    n_repetitions = data_valuation_params["common"]["n_repetitions"]
+    method_names = data_valuation_params["common"]["method_names"]
 
     # Create the output directory
     experiment_output_dir = (
-        OUTPUT_DIR
+        Path(Repo.find_root())
+        / "output"
         / "data_valuation"
+        / f"dataset={dataset_name}"
         / "results"
-        / f"dataset={dataset_type}"
-        / f"budget={budget}"
+        / f"{budget=}"
     )
     experiment_output_dir.mkdir(parents=True, exist_ok=True)
-
-    # We do not set the random_state in the model itself
-    # because we are testing the method and not the model
-    model = make_pipeline(StandardScaler(), LogisticRegression(solver="liblinear"))
 
     for repetition in range(n_repetitions):
         logger.info(f"{repetition=}")
 
+        repetition_output_dir = experiment_output_dir / f"{repetition=}"
+        repetition_output_dir.mkdir(parents=True, exist_ok=True)
+
         all_values = []
         all_scores = []
 
-        if dataset_type == "synthetic":
-            n_features = data_valuation_params["n_features"]
-            n_train_samples = data_valuation_params["n_train_samples"]
-            n_test_samples = data_valuation_params["n_test_samples"]
-            dataset = create_synthetic_dataset(
-                n_features=n_features,
-                n_train_samples=n_train_samples,
-                n_test_samples=n_test_samples,
-                random_state=random_state,
+        if dataset_name == "diabetes":
+            diabetes_dataset_params = data_valuation_params["diabetes"]
+            train_size = diabetes_dataset_params["train_size"]
+            dataset = create_diabetes_dataset(
+                train_size=train_size,
             )
+        else:
+            raise ValueError(f"Unknown dataset '{dataset_name}'")
+
+        scorer = CSScorer()
+        model = instantiate_model(model_name)
 
         logger.info("Creating utility")
-        utility = Utility(
-            data=dataset,
-            model=model,
-            score_range=(0.0, 1.0),
-        )
+        utility = Utility(data=dataset, model=model, scorer=scorer)
 
         for method_name in method_names:
             logger.info(f"{method_name=}")
@@ -95,38 +91,21 @@ def run(budget: int):
             df["method"] = method_name
             all_values.append(df)
 
-            logger.info("Computing worst data points removal score")
-            scores = compute_removal_score(
-                u=utility,
-                values=values,
-                percentages=removal_percentages,
-                remove_best=False,
-            )
-            scores["method"] = method_name
-            scores["type"] = "worst"
-            all_scores.append(scores)
-
             logger.info("Computing best data points removal score")
-            scores = compute_removal_score(
-                u=utility,
-                values=values,
-                percentages=removal_percentages,
-                remove_best=True,
+            accuracy_utility = Utility(
+                data=dataset, model=model, scorer=Scorer(scoring="accuracy")
             )
-            scores["method"] = method_name
-            scores["type"] = "best"
-            all_scores.append(scores)
+            weighted_accuracy_drop = weighted_reciprocal_diff_average(
+                u=accuracy_utility, values=values, progress=True
+            )
+            all_scores.append(weighted_accuracy_drop)
 
         logger.info("Saving results to disk")
-        scores_df = pd.DataFrame(all_scores)
-        scores_df.to_csv(
-            experiment_output_dir / f"scores_{repetition}.csv", index=False
-        )
+        scores_df = pd.Series(all_scores)
+        scores_df.to_csv(repetition_output_dir / "scores.csv", index=False)
 
         values_df = pd.concat(all_values)
-        values_df.to_csv(
-            experiment_output_dir / f"values_{repetition}.csv", index=False
-        )
+        values_df.to_csv(repetition_output_dir / "values.csv", index=False)
 
     logger.info("Finished data valuation experiment")
 

@@ -3,9 +3,8 @@ import logging
 import numpy as np
 from pydvl.utils import Utility
 from pydvl.utils.dataset import Dataset, synthetic_classification_dataset
+from pydvl.value.shapley.classwise import CSScorer, class_wise_shapley
 from sklearn.linear_model import LogisticRegression
-
-from csshapley22.algo.class_wise import CSScorer, class_wise_shapley
 
 log = logging.getLogger(__name__)
 
@@ -24,7 +23,7 @@ def run_classwise_shapley():
     model = LogisticRegression()
     dataset = Dataset(*train_data, *val_data)
     scorer = CSScorer()
-    u = Utility(model=model, data=dataset, scoring=scorer)
+    u = Utility(model=model, data=dataset, scorer=scorer)
     valuation_result = class_wise_shapley(u)
     print(valuation_result.values)
 

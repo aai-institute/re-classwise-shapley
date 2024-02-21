@@ -39,7 +39,7 @@ stages:
     do:
       cmd: python -m scripts.run_experiment wad_drop --dataset-name ${key}
       deps:
-      - scripts/run_experiments.py
+      - scripts/run_experiment.py
       - output/preprocessed/${key}
       outs:
       - output/results/wad_drop/${key}
@@ -47,9 +47,9 @@ stages:
   data-valuation-wad-drop-generate-plots:
     foreach: ${datasets}
     do:
-      cmd: python -m scripts.generate_plots wad_drop --dataset-name ${key}
+      cmd: python -m scripts.render_plots wad_drop --dataset-name ${key}
       deps:
-        - scripts/generate_plots.py
+        - scripts/render_plots.py
         - output/results/wad_drop/${key}
       outs:
         - output/plots/wad_drop/${key}
@@ -59,7 +59,7 @@ stages:
     do:
       cmd: python -m scripts.run_experiment noise_removal --dataset-name ${key}
       deps:
-        - scripts/run_experiments.py
+        - scripts/run_experiment.py
         - output/preprocessed/${key}
       outs:
         - output/results/noise_removal/${key}
@@ -67,9 +67,9 @@ stages:
   data-valuation-noise-removal-generate-plots:
     foreach: ${datasets}
     do:
-      cmd: python -m scripts.generate_plots noise_removal --dataset-name ${key}
+      cmd: python -m scripts.render_plots noise_removal --dataset-name ${key}
       deps:
-        - scripts/generate_plots.py
+        - scripts/render_plots.py
         - output/results/noise_removal/${key}
       outs:
         - output/plots/noise_removal/${key}
@@ -79,7 +79,7 @@ stages:
     do:
       cmd: python -m scripts.run_experiment wad_drop_transfer --dataset-name ${key}
       deps:
-        - scripts/run_experiments.py
+        - scripts/run_experiment.py
         - output/preprocessed/${key}
       outs:
         - output/results/wad_drop_transfer/${key}
@@ -87,9 +87,9 @@ stages:
   data-valuation-wad-drop-transfer-generate-plots:
     foreach: ${datasets}
     do:
-      cmd: python -m scripts.generate_plots wad_drop_transfer --dataset-name ${key}
+      cmd: python -m scripts.render_plots wad_drop_transfer --dataset-name ${key}
       deps:
-        - scripts/generate_plots.py
+        - scripts/render_plots.py
         - output/results/wad_drop_transfer/${key}
       outs:
         - output/plots/wad_drop_transfer/${key}

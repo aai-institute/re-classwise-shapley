@@ -109,7 +109,7 @@ def _render_plots(experiment_name: str, model_name: str):
                     fig, output_folder, f"density.{method_name}.svg", "densities"
                 )
 
-        logger.info(f"Plot boxplot for execution time.")
+        logger.info("Plot boxplot for execution time.")
         with plot_time(valuation_results) as fig:
             log_figure(fig, output_folder, "time.svg", "boxplots")
 

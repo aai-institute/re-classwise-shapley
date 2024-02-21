@@ -182,7 +182,7 @@ def preprocess_dataset(raw_dataset: RawDataset, dataset_kwargs: Dict) -> RawData
             data_filter = FilterRegistry[filter_name]
             x, y = data_filter(x, y, **filter_kwargs)
 
-    logger.info(f"Applying preprocessors.")
+    logger.info("Applying preprocessors.")
     preprocessor_definitions = dataset_kwargs.pop("preprocessor", None)
     if preprocessor_definitions is not None:
         for (
@@ -193,7 +193,7 @@ def preprocess_dataset(raw_dataset: RawDataset, dataset_kwargs: Dict) -> RawData
             preprocessor = PreprocessorRegistry[preprocessor_name]
             x, y = preprocessor(x, y, **preprocessor_kwargs)
 
-    logger.info(f"Encoding labels to integers.")
+    logger.info("Encoding labels to integers.")
     le = preprocessing.LabelEncoder()
     le.fit(y)
     y = le.transform(y)

@@ -1,28 +1,183 @@
 schema: '2.0'
 stages:
-  data-valuation-fetch-data:
-    cmd: python -m src.csshapley22.stages.fetch_data
+  data-valuation-fetch-data@diabetes:
+    cmd: python -m scripts.fetch_data --dataset-name diabetes
     deps:
-    - path: src/csshapley22/stages/fetch_data.py
-      md5: e153fc3cea918d8e186272f4d50af119
-      size: 1776
+    - path: scripts/fetch_data.py
+      md5: c42255317ca8fab2bd5ab005057e99ce
+      size: 1778
+    params:
+      params.yaml:
+        datasets:
+          diabetes: &id001
+            openml_id: 37
+            train_size: 128
+            dev_size: 128
+            test_size: 512
+          click:
+            openml_id: 1216
+            train_size: 500
+            dev_size: 500
+            test_size: 2000
+          phoneme:
+            openml_id: 1489
+            train_size: 500
+            dev_size: 500
+            test_size: 2000
+          fmnist_binary:
+            openml_id: 40996
+            preprocessor:
+              principal_resnet_components:
+                n_components: 32
+                size: 28
+            filters:
+              binarization:
+                label_zero: '0'
+                label_one: '1'
+            train_size: 500
+            dev_size: 500
+            test_size: 2000
+          mnist_binary:
+            openml_id: 554
+            preprocessor:
+              principal_resnet_components:
+                n_components: 32
+                size: 28
+            filters:
+              binarization:
+                label_zero: '1'
+                label_one: '7'
+            train_size: 500
+            dev_size: 500
+            test_size: 2000
+        datasets.diabetes: *id001
     outs:
-    - path: output/raw
-      md5: dba08cc009e8a86bddec398c55387035.dir
-      size: 439432037
-      nfiles: 6
-  data-valuation-preprocess-data:
-    cmd: python -m src.csshapley22.stages.preprocess_data
+    - path: output/raw/37
+      md5: 3e23427351eb2041c4ed0cf74f615aa9.dir
+      size: 55033
+      nfiles: 3
+  data-valuation-preprocess-data@diabetes:
+    cmd: python -m scripts.preprocess_data --dataset-name diabetes
     deps:
-    - path: output/raw
-      md5: dba08cc009e8a86bddec398c55387035.dir
-      size: 439432037
-      nfiles: 6
-    - path: src/csshapley22/stages/preprocess_data.py
-      md5: 9d375a54058060b1a7376f4eac903914
-      size: 4246
+    - path: output/raw/37
+      md5: 3e23427351eb2041c4ed0cf74f615aa9.dir
+      size: 55033
+      nfiles: 3
+    - path: scripts/preprocess_data.py
+      md5: 8540cd1987cafd0e87897b5d09d63f17
+      size: 4113
+    params:
+      params.yaml:
+        datasets:
+          diabetes: &id002
+            openml_id: 37
+            train_size: 128
+            dev_size: 128
+            test_size: 512
+          click:
+            openml_id: 1216
+            train_size: 500
+            dev_size: 500
+            test_size: 2000
+          phoneme:
+            openml_id: 1489
+            train_size: 500
+            dev_size: 500
+            test_size: 2000
+          fmnist_binary:
+            openml_id: 40996
+            preprocessor:
+              principal_resnet_components:
+                n_components: 32
+                size: 28
+            filters:
+              binarization:
+                label_zero: '0'
+                label_one: '1'
+            train_size: 500
+            dev_size: 500
+            test_size: 2000
+          mnist_binary:
+            openml_id: 554
+            preprocessor:
+              principal_resnet_components:
+                n_components: 32
+                size: 28
+            filters:
+              binarization:
+                label_zero: '1'
+                label_one: '7'
+            train_size: 500
+            dev_size: 500
+            test_size: 2000
+        datasets.diabetes: *id002
     outs:
-    - path: output/preprocessed
-      md5: 0fc1acea49bd36f8b2e320aebf604b39.dir
-      size: 662806
-      nfiles: 6
+    - path: output/preprocessed/diabetes
+      md5: 308743cd33ebd96343ef6872b70c5bca.dir
+      size: 67733
+      nfiles: 3
+  data-valuation-fetch-data@mnist_binary:
+    cmd: python -m scripts.fetch_data --dataset-name mnist_binary
+    deps:
+    - path: scripts/fetch_data.py
+      md5: c42255317ca8fab2bd5ab005057e99ce
+      size: 1778
+    params:
+      params.yaml:
+        datasets:
+          diabetes:
+            openml_id: 37
+            train_size: 128
+            dev_size: 128
+            test_size: 512
+          click:
+            openml_id: 1216
+            train_size: 500
+            dev_size: 500
+            test_size: 2000
+          phoneme:
+            openml_id: 1489
+            train_size: 500
+            dev_size: 500
+            test_size: 2000
+          fmnist_binary:
+            openml_id: 40996
+            preprocessor:
+              principal_resnet_components:
+                n_components: 32
+                size: 28
+            filters:
+              binarization:
+                label_zero: '0'
+                label_one: '1'
+            train_size: 500
+            dev_size: 500
+            test_size: 2000
+          mnist_binary: &id003
+            openml_id: 554
+            preprocessor:
+              principal_resnet_components:
+                n_components: 32
+                size: 28
+            filters:
+              binarization:
+                label_zero: '1'
+                label_one: '7'
+            train_size: 500
+            dev_size: 500
+            test_size: 2000
+          mnist_multi:
+            openml_id: 554
+            preprocessor:
+              principal_resnet_components:
+                n_components: 32
+                size: 28
+            train_size: 500
+            dev_size: 500
+            test_size: 2000
+        datasets.mnist_binary: *id003
+    outs:
+    - path: output/raw/554
+      md5: 79b71fe3a32af9e639e3bdf55b30a177.dir
+      size: 439199609
+      nfiles: 3

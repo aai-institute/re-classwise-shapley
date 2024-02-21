@@ -1,8 +1,8 @@
 import math as m
 from contextlib import contextmanager
 from typing import Any, Callable, List, Sequence, Tuple, Union
-import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -139,7 +139,9 @@ def plot_grid_over_datasets(
         patch_size: Size of one image patch of the multi plot.
         n_cols: Number of columns for subplot layout.
         legend: True, if a legend should be plotted below and outside the grid of
-            subplots. Pass a list of legend handles to use a custom legend.
+            subplots. Pass a list of legend handles to use a custom legend. Depending
+            on the number of subplots, e.g. if it is even or odd, the legend will be
+            drawn on the last filled.
         format_x_ticks: If not None, it defines the format of the x ticks.
         tick_params_below_only: If True, only the x ticks below the plot are shown.
         tick_params_left_only: If True, only the y ticks left of the plot are shown.
@@ -194,20 +196,22 @@ def plot_grid_over_datasets(
                 FormatStrFormatter(format_x_ticks)
             )
 
-    if n_plots % 2 == 1:
-        last = ax[-1]
+    i_first_unfilled_plot = 2 * n_plots - n_rows * n_cols
+    use_last_as_legend = False
+    for i in range(i_first_unfilled_plot, n_plots):
+        last = ax[i]
         last.set_axis_off()
+        use_last_as_legend = True
 
-    if isinstance(legend, list):
-        last = ax[-1]
-        last.legend(handles=legend, loc="center", prop={"size": 9})
-    elif legend:
-        handles, labels = ax[0].get_legend_handles_labels()
-        if n_plots % 2 == 0:
+    if legend or isinstance(legend, list):
+        handles_labels = ax[0].get_legend_handles_labels() if legend else (legend,)
+        if use_last_as_legend:
+            last = ax[-1]
+            last.legend(*list(handles_labels), loc="center", prop={"size": 9})
+        else:
             legend_kwargs = {"framealpha": 0}
             fig.legend(
-                handles,
-                labels,
+                *list(handles_labels),
                 loc="outside lower center",
                 ncol=5,
                 fontsize=9,
@@ -216,10 +220,6 @@ def plot_grid_over_datasets(
                 **legend_kwargs,
             )
             fig.subplots_adjust(bottom=0.1)
-        else:
-            last = ax[-1]
-            last.legend(handles, labels, loc="center", prop={"size": 9})
-
     yield fig
     plt.close(fig)
 
@@ -432,7 +432,9 @@ def plot_metric_boxplot(
             x="metric",
             y="method_name",
             hue="method_name",
-            palette={label: COLORS[COLOR_ENCODING[label]][0] for label in LABELS.values()},
+            palette={
+                label: COLORS[COLOR_ENCODING[label]][0] for label in LABELS.values()
+            },
             legend=False,
             bootstrap=10000,
             width=0.5,
@@ -442,11 +444,12 @@ def plot_metric_boxplot(
         ax.tick_params(axis="y", length=0)
 
     legend_patches = [
-            Patch(color=COLORS[COLOR_ENCODING[LABELS[method]]][0],
-                  label=LABELS[method],
-                  )
-            for method in data["method_name"].unique()
-            ]
+        Patch(
+            color=COLORS[COLOR_ENCODING[LABELS[method]]][0],
+            label=LABELS[method],
+        )
+        for method in data["method_name"].unique()
+    ]
 
     with plot_grid_over_datasets(
         data,

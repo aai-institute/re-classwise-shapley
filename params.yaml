@@ -14,11 +14,11 @@ active:
     gradient_boosting_classifier
   ]
   datasets: [
-    diabetes,
-    cpu,
+    cifar10,
     click,
     covertype,
-    cifar10,
+    cpu,
+    diabetes,
     fmnist_binary,
     mnist_binary,
     mnist_multi,

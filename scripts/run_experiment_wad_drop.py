@@ -71,13 +71,13 @@ def run_experiment_wad_drop(
             }
         }
 
-    params = params_show()
     output_dir = Config.RESULT_PATH / experiment_name / model_name
     if transfer_model_name is not None:
         output_dir /= transfer_model_name
 
     output_dir /= dataset_name
     os.makedirs(output_dir, exist_ok=True)
+    params = params_show()
     run_and_store_experiment(
         experiment_name,
         dataset_name=dataset_name,

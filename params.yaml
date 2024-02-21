@@ -10,7 +10,8 @@ active:
   models: [
     logistic_regression,
     svm,
-    knn
+    knn,
+    gradient_boosting_classifier
   ]
   datasets: [
     diabetes,
@@ -29,9 +30,9 @@ active:
     classwise_shapley,
     beta_shapley,
     tmc_shapley,
-    banzhaf_shapley,
-    owen_sampling_shapley,
-    least_core
+    #banzhaf_shapley,
+    #owen_sampling_shapley,
+    #least_core
   ]
   repetitions: [ 1, 2, 3, 4, 5 ]
 

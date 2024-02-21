@@ -10,7 +10,7 @@ active:
   models: [
     logistic_regression,
     svm,
-    knn,
+    knn
   ]
   datasets: [
     diabetes,
@@ -39,101 +39,26 @@ experiments:
   point_removal:
     sampler: default
     metrics:
-      
-      # Logistic Regression
       weighted_accuracy_drop_logistic_regression:
-        type: metric
         idx: weighted_metric_drop
         metric: accuracy
         eval_model: logistic_regression
-      highest_point_removal_accuracy_logistic_regression:
-        type: curve
-        idx: point_removal
-        metric: accuracy
-        eval_model: logistic_regression
-        highest_point_removal: True
-      lowest_point_addition_accuracy_logistic_regression:
-        type: curve
-        idx: point_removal
-        metric: accuracy
-        eval_model: logistic_regression
-        highest_point_removal: False
-      
-      # KNN
       weighted_accuracy_drop_knn:
-        type: metric
         idx: weighted_metric_drop
         metric: accuracy
         eval_model: knn
-      highest_point_removal_accuracy_knn:
-        type: curve
-        idx: point_removal
-        metric: accuracy
-        eval_model: knn
-        highest_point_removal: True
-      lowest_point_addition_accuracy_knn:
-        type: curve
-        idx: point_removal
-        metric: accuracy
-        eval_model: knn
-        highest_point_removal: False
-      
-      # Gradient Boosting Classifier
       weighted_accuracy_drop_gradient_boosting_classifier:
-        type: metric
         idx: weighted_metric_drop
         metric: accuracy
         eval_model: gradient_boosting_classifier
-      highest_point_removal_accuracy_gradient_boosting_classifier:
-        type: curve
-        idx: point_removal
-        metric: accuracy
-        eval_model: gradient_boosting_classifier
-        highest_point_removal: True
-      lowest_point_addition_accuracy_gradient_boosting_classifier:
-        type: curve
-        idx: point_removal
-        metric: accuracy
-        eval_model: gradient_boosting_classifier
-        highest_point_removal: False
-
-      # SVM
       weighted_accuracy_drop_svm:
-        type: metric
         idx: weighted_metric_drop
         metric: accuracy
         eval_model: svm
-      highest_point_removal_accuracy_svm:
-        type: curve
-        idx: point_removal
-        metric: accuracy
-        eval_model: svm
-        highest_point_removal: True
-      lowest_point_addition_accuracy_svm:
-        type: curve
-        idx: point_removal
-        metric: accuracy
-        eval_model: svm
-        highest_point_removal: False
-
-      # MLP
       weighted_accuracy_drop_mlp:
-        type: metric
         idx: weighted_metric_drop
         metric: accuracy
         eval_model: mlp
-      highest_point_removal_accuracy_mlp:
-        type: curve
-        idx: point_removal
-        metric: accuracy
-        eval_model: svm
-        highest_point_removal: True
-      lowest_point_addition_accuracy_mlp:
-        type: curve
-        idx: point_removal
-        metric: accuracy
-        eval_model: svm
-        highest_point_removal: False
   
   noise_removal:
     sampler: default
@@ -142,12 +67,7 @@ experiments:
         perc: 0.2
     metrics:
       roc_auc:
-        type: metric
-        idx: "roc_auc"
-        flipped_labels: preprocessor.flip_labels.idx
-      precision_recall:
-        type: curve
-        idx: "precision_recall"
+        idx: roc_auc
         flipped_labels: preprocessor.flip_labels.idx
 
 samplers:

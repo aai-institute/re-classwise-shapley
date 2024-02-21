@@ -67,10 +67,10 @@ def _calculate_threshold_characteristics(
         / dataset_name
         / str(repetition_id)
     )
-    if os.path.exists(
-        output_dir / "threshold_characteristics_stats.csv"
-    ) and os.path.exists(output_dir / "threshold_characteristics_curves.csv"):
-        return logger.info(f"Plot exist in '{output_dir}'. Skipping...")
+    if os.path.exists(output_dir / "in_cls_mar_acc.txt") and os.path.exists(
+        output_dir / "global_mar_acc.txt"
+    ):
+        return logger.info(f"Characteristics exist in '{output_dir}'. Skipping...")
 
     params = load_params_fast()
     threshold_characteristics_settings = params["settings"]["threshold_characteristics"]

@@ -34,7 +34,7 @@ def compute_values(
         values = naive_loo(utility, progress=progress)
 
     elif valuation_method == "classwise_shapley":
-        utility.scorer = ClasswiseScorer("accuracy")
+        utility.scorer = ClasswiseScorer("accuracy", default=0.0)
         values = classwise_shapley(
             utility,
             done=MaxUpdates(kwargs["n_updates"]),

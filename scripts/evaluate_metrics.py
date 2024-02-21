@@ -23,7 +23,10 @@ from pydvl.parallel import ParallelConfig
 from pydvl.utils import MemcachedClientConfig
 from pydvl.utils.functional import maybe_add_argument
 
-from re_classwise_shapley.cache import PrefixedMemcachedCacheBackend
+from re_classwise_shapley.cache import (
+    PrefixedMemcachedCacheBackend,
+    PrefixMemcachedClientConfig,
+)
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.metric import MetricRegistry
@@ -132,9 +135,7 @@ def _evaluate_metrics(
     ):
         cache_group = params["valuation_methods"][valuation_method_name]["cache_group"]
         prefix = f"{experiment_name}/{dataset_name}/{cache_group}"
-        cache = PrefixedMemcachedCacheBackend(
-            config=MemcachedClientConfig(), prefix=prefix
-        )
+        cache = PrefixedMemcachedCacheBackend(prefix=prefix)
 
     logger.info("Evaluating metric...")
     with n_threaded(n_threads=1):

@@ -1,4 +1,3 @@
-from functools import partial
 from pathlib import Path
 
 import click
@@ -6,11 +5,13 @@ from dvc.api import params_show
 from dvc.repo import Repo
 
 from csshapley22.constants import RANDOM_SEED
-from csshapley22.data.fetch import fetch_datasets
-from csshapley22.experiments.experiment_one import run_experiment_one
-from csshapley22.experiments.experiment_two import run_experiment_two
-from csshapley22.utils import set_random_seed, setup_logger
-from csshapley22.valuation_methods import compute_values
+from csshapley22.experiments.all import experiment_noise_removal, experiment_wad
+from csshapley22.preprocess import (
+    parse_datasets_config,
+    parse_models_config,
+    parse_valuation_methods_config,
+)
+from csshapley22.utils import instantiate_model, set_random_seed, setup_logger
 
 logger = setup_logger()
 
@@ -18,42 +19,72 @@ set_random_seed(RANDOM_SEED)
 
 
 @click.command()
-@click.option("--model-name", type=str, required=True, help="Name of the model to use")
-def run(model_name: str):
+def run():
     logger.info("Starting data valuation experiment")
 
     params = params_show()
     logger.info(f"Using parameters:\n{params}")
-    valuation_methods = params["settings"]["valuation_methods"]
+    general_settings = params["general"]
 
-    datasets = fetch_datasets()
-    n_repetitions = params["settings"]["n_repetitions"]
+    # preprocess valuation methods to be callable from utility to valuation result.
+    valuation_methods = general_settings["valuation_methods"]
+    valuation_methods = parse_valuation_methods_config(valuation_methods)
+
+    # preprocess datasets
+    datasets_settings = general_settings["datasets"]
+    datasets = parse_datasets_config(datasets_settings)
+
+    # preprocess models
+    models = general_settings["models"]
+    model_generator_factory = parse_models_config(models)
+
+    n_repetitions = general_settings["n_repetitions"]
 
     # Create the output directory
-    experiment_output_dir = (
-        Path(Repo.find_root()) / "output" / "data_valuation" / "results"
-    )
+    experiment_output_dir = Path(Repo.find_root()) / "output" / "results"
     experiment_output_dir.mkdir(parents=True, exist_ok=True)
 
     for repetition in range(n_repetitions):
         logger.info(f"{repetition=}")
-
         repetition_output_dir = experiment_output_dir / f"{repetition=}"
         repetition_output_dir.mkdir(parents=True, exist_ok=True)
 
-        result = run_experiment_two(
-            model_name=model_name,
-            datasets=datasets,
-            valuation_methods=valuation_methods,
-        )
+        for model_name in models.keys():
+            # Experiment One
+            model = model_generator_factory[model_name]()
+            experiment_one_path = repetition_output_dir / "wad"
+            experiment_wad(
+                model=model,
+                datasets=datasets,
+                valuation_methods=valuation_methods,
+            ).store(experiment_one_path)
 
-        result = run_experiment_one(
-            model_name=model_name,
-            datasets=datasets,
-            valuation_methods=valuation_methods,
-        )
-        logger.info("Saving results to disk")
-        result.metric.to_csv(repetition_output_dir / "weighted_accuracy_drops.csv")
+            # Experiment Two
+            model = model_generator_factory[model_name]()
+            experiment_two_path = repetition_output_dir / "noise_removal"
+            experiment_noise_removal(
+                model=model,
+                datasets=datasets,
+                valuation_methods=valuation_methods,
+            ).store(experiment_two_path)
+
+            # Experiment Three
+            model = model_generator_factory[model_name]()
+            experiment_three_settings = params["experiment_3"]
+            experiment_three_path = repetition_output_dir / "value_transfer"
+
+            for test_model_name in experiment_three_settings["test_models"]:
+                if test_model_name not in models:
+                    raise ValueError(f"The model '{test_model_name}' doesn't exist.")
+
+                test_model = model_generator_factory[test_model_name]()
+                experiment_three_test_path = experiment_three_path / test_model_name
+                experiment_wad(
+                    model=model,
+                    datasets=datasets,
+                    valuation_methods=valuation_methods,
+                    test_model=test_model,
+                ).store(experiment_three_test_path)
 
     logger.info("Finished data valuation experiment")
 

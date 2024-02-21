@@ -3,14 +3,14 @@ settings:
     n_repetitions: 3
 
   parallel:
-    n_jobs: 40
+    n_jobs: 4
     backend: joblib
     temp_dir: /raid/tmp/ray
 
 active:
-  models: [ "logistic_regression" ]#, "knn" ]
-  datasets: [ "diabetes" ]#, "cpu", "click", "covertype", "phoneme", "fmnist_binary", "mnist_binary", "mnist_multi", "cifar10" ]
-  valuation_methods: [ "random" ]#, "loo", "classwise_shapley", "classwise_shapley_add_idx", "beta_shapley", "tmc_shapley" ]
+  models: [ "logistic_regression" ]
+  datasets: [ "diabetes" , "cpu", "covertype" ]
+  valuation_methods: [ "random", "loo" ]
 
 experiments:
   wad_drop:

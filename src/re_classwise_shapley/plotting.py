@@ -50,7 +50,6 @@ def shaded_mean_normal_confidence_interval(
         color=shade_color,
     )
     ax.plot(abscissa, mean, color=mean_color, **kwargs)
-
     ax.set_title(title)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
@@ -83,7 +82,13 @@ def plot_curve(
     *,
     title: str = None,
     ax: Axes = None,
-) -> None:
+):
+    """
+    Plot a dictionary of curves.
+    :param curves: A dictionary of curves, where each curve is a tuple of (results, plot_info).
+    :param title: The title of the plot.
+    :param ax: The axis to plot on.
+    """
     colors = {
         "black": ("black", "silver"),
         "blue": ("dodgerblue", "lightskyblue"),
@@ -95,20 +100,14 @@ def plot_curve(
 
     for method_name, (results, plot_info) in curves.items():
         mean_color, shade_color = colors[plot_info["color"]]
-        plot_single = plot_info["plot_single"]
-        if plot_single:
-            for i in range(results.shape[1]):
-                short_result = results.iloc[:, i].dropna()
-                ax.plot(short_result.index, short_result, label=method_name)
+        shaded_mean_normal_confidence_interval(
+            results,
+            abscissa=results.index,
+            mean_color=mean_color,
+            shade_color=shade_color,
+            label=method_name,
+            ax=ax,
+        )
 
-        else:
-            shaded_mean_normal_confidence_interval(
-                results,
-                abscissa=results.index,
-                mean_color=mean_color,
-                shade_color=shade_color,
-                label=method_name,
-                ax=ax,
-            )
     if title is not None:
         ax.set_title(title, y=-0.25)

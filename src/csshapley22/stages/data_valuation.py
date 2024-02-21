@@ -57,14 +57,6 @@ def run():
             logger.info(f"Executing repetition {repetition} for model '{model_name}'.")
             experiments_output_dir = repetition_output_dir / model_name
 
-            _run_and_measure_experiment_one(
-                datasets,
-                model_name,
-                model_generator_factory,
-                valuation_methods_factory,
-                experiments_output_dir,
-            )
-
             _run_and_measure_experiment_two(
                 datasets,
                 model_name,

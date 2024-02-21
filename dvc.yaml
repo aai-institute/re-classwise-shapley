@@ -1,20 +1,7 @@
 stages:
-  data-valuation-experiment-one:
-    cmd: python -m src.csshapley22.experiments.data_valuation --model-names=synthetic
-    params:
-    - data_valuation.common
-    - data_valuation.synthetic
+  data-valuation-fetch-download:
+    cmd: python -m src.csshapley22.experiments.fetch_data
     deps:
-    - src/csshapley22/experiments/data_valuation.py
+    - src/csshapley22/experiments/fetch_data.py
     outs:
-    - output/data_valuation/dataset=synthetic/results
-  data-valuation-experiment-one-plots:
-    cmd: python -m src.csshapley22.plots.data_valuation --dataset-name=synthetic
-    params:
-    - data_valuation.common
-    - data_valuation.synthetic
-    deps:
-    - src/csshapley22/plots/data_valuation.py
-    - output/data_valuation/dataset=synthetic/results
-    outs:
-    - output/data_valuation/dataset=synthetic/plots
+    - output/data

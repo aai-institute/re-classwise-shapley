@@ -98,18 +98,14 @@ def _calculate_values(
     mc = Client(**asdict(mc_config)["client_config"])
     last_run = mc.get("last_run", None)
     if last_run is None or (
-        "experiment" not in last_run
-        or "dataset" not in last_run
-        or "model" not in last_run
-        or "method" not in last_run
-        or experiment_name != last_run["experiment"]
+        experiment_name != last_run["experiment"]
         or dataset_name != last_run["dataset"]
         or model_name != last_run["model"]
         or (
             valuation_method_name != last_run["method"]
             and (
                 valuation_method_name == "classwise_shapley"
-                or last_run["last_method"] == "classwise_shapley"
+                or last_run["method"] == "classwise_shapley"
             )
         )
     ):

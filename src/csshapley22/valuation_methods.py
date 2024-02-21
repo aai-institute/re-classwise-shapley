@@ -2,7 +2,7 @@ import io
 import logging
 from contextlib import redirect_stderr
 
-from pydvl.utils import ParallelConfig, Utility
+from pydvl.utils import ClasswiseScorer, ParallelConfig, Utility
 from pydvl.value import (
     MaxUpdates,
     RelativeTruncation,
@@ -19,9 +19,9 @@ def compute_values(
     utility: Utility, valuation_method: str, **kwargs
 ) -> ValuationResult:
     progress = kwargs.get("progress", False)
-    n_jobs = 1
+    n_jobs = 4
     parallel_config = ParallelConfig(
-        backend="sequential", n_cpus_local=n_jobs, logging_level=logging.WARNING
+        backend="ray", n_cpus_local=n_jobs, logging_level=logging.WARNING
     )
     if valuation_method == "random":
         values = ValuationResult.from_random(size=len(utility.data))

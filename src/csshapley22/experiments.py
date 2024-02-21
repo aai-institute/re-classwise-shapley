@@ -10,7 +10,7 @@ from typing import Callable, Optional, Tuple
 import numpy as np
 import pandas as pd
 from numpy._typing import NDArray
-from pydvl.utils import ClassWiseScorer, Scorer, SupervisedModel, Utility
+from pydvl.utils import ClasswiseScorer, Scorer, SupervisedModel, Utility
 from pydvl.value.result import ValuationResult
 
 from csshapley22.metrics.weighted_reciprocal_average import (
@@ -54,9 +54,8 @@ def _dispatch_experiment(
 
     for dataset_idx, (val_dataset, test_dataset) in datasets.items():
         logger.info(f"Loading dataset '{dataset_idx}'.")
-        scorer = ClassWiseScorer("accuracy")
-
         logger.debug("Creating utility")
+        scorer = Scorer("accuracy", default=1 / len(np.unique(val_dataset.y_train)))
         utility = Utility(data=val_dataset, model=model, scorer=scorer)  # type: ignore
 
         if data_pre_process_fn is not None:

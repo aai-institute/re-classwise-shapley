@@ -22,20 +22,30 @@ general:
   valuation_methods:
 
     loo: {
+      progress: True
     }
 
     classwise_shapley: {
       n_updates: 500,
-      rtol: 1e-4,
       normalize_values: True,
-      n_resample_complement_sets: 32
+      n_resample_complement_sets: 32,
+      rtol: 1e-4,
+      progres: True
     }
 
     beta_shapley: {
       alpha: 16.0,
       beta: 1.0,
       n_updates: 500,
+      progress: True
     }
+
+    tmc_shapley: {
+      rtol: 1e-4,
+      n_updates: 500,
+      progress: True
+    }
+
 
   datasets:
 
@@ -81,7 +91,6 @@ general:
       dev_size: 500,
       test_size: 2000,
     }
-
 
     cifar10: {
       openml_id: 40927,

@@ -23,7 +23,7 @@ def weighted_reciprocal_diff_average(
     values.sort(reverse=True)
     full_accuracy = u(u.data.indices)
     avg = 0
-    line = pd.Series(index=np.arange(len(u.data)))
+    line = pd.Series(index=np.arange(len(u.data)), dtype=np.float64)
 
     for j in maybe_progress(len(u.data), display=progress, desc="Removal Scores"):
         j_accuracy = u(values.indices[j + 1 :])

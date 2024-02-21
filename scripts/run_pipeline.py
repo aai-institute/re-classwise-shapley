@@ -5,7 +5,7 @@ Runs the whole pipeline without dvc.
 2. Preprocess data
 3. Sample data
 4. Calculate Shapley values
-5. Evaluate metrics
+5. Evaluate Curves
 6. Render plots
 """
 import os
@@ -14,6 +14,7 @@ from itertools import product
 import click
 from calculate_threshold_characteristics import _calculate_threshold_characteristics
 from calculate_values import _calculate_values
+from evaluate_curves import _evaluate_curves
 from evaluate_metrics import _evaluate_metrics
 from fetch_data import _fetch_data
 from preprocess_data import _preprocess_data
@@ -35,6 +36,10 @@ def run_pipeline():
     try:
         params = load_params_fast()
         active_params = params["active"]
+        repetitions = active_params["repetitions"]
+        active_params["repetitions"] = list(
+            range(repetitions["from"], repetitions["to"] + 1)
+        )
 
         for dataset_name in active_params["datasets"]:
             logger.info(f"Fetching dataset {dataset_name}.")
@@ -104,36 +109,55 @@ def run_pipeline():
 
             for (
                 dataset_name,
-                metric_name,
                 valuation_method_name,
                 repetition_id,
             ) in product(
                 active_params["datasets"],
-                params["experiments"][experiment_name]["metrics"].keys(),
                 active_params["valuation_methods"],
                 active_params["repetitions"],
             ):
-                logger.info(
-                    f"Calculate metric {metric_name} for dataset {dataset_name}, "
-                    f"valuation method {valuation_method_name} and seed "
-                    f"{repetition_id}."
-                )
-                logger.info(f"Evaluate metric {metric_name}.")
-                _evaluate_metrics(
-                    experiment_name,
-                    dataset_name,
-                    model_name,
-                    valuation_method_name,
-                    repetition_id,
-                    metric_name,
-                )
+                for curve_name in params["experiments"][experiment_name][
+                    "curves"
+                ].keys():
+                    logger.info(
+                        f"Calculate metric {curve_name} for dataset {dataset_name}, "
+                        f"valuation method {valuation_method_name} and seed "
+                        f"{repetition_id}."
+                    )
+                    logger.info(f"Evaluate metric {curve_name}.")
+                    _evaluate_curves(
+                        experiment_name,
+                        dataset_name,
+                        model_name,
+                        valuation_method_name,
+                        repetition_id,
+                        curve_name,
+                    )
+
+                for metric_name in params["experiments"][experiment_name][
+                    "metrics"
+                ].keys():
+                    logger.info(
+                        f"Calculate metric {metric_name} for dataset {dataset_name}, "
+                        f"valuation method {valuation_method_name} and seed "
+                        f"{repetition_id}."
+                    )
+                    logger.info(f"Evaluate metric {metric_name}.")
+                    _evaluate_metrics(
+                        experiment_name,
+                        dataset_name,
+                        model_name,
+                        valuation_method_name,
+                        repetition_id,
+                        metric_name,
+                    )
 
             logger.info(f"Render plots for {experiment_name} and {model_name}.")
-            _render_plots(experiment_name, model_name)
+            # _render_plots(experiment_name, model_name)
 
     except KeyboardInterrupt:
         logger.info("Interrupted by Ctrl+C.")
-    except:
+    finally:
         logger.info("Shutdown system.")
         os.system("sudo shutdown now")
 

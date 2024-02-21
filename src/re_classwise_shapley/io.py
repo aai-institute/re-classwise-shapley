@@ -233,7 +233,8 @@ class Accessor:
     THRESHOLD_CHARACTERISTICS_PATH = OUTPUT_PATH / "threshold_characteristics"
     SAMPLED_PATH = OUTPUT_PATH / "sampled"
     VALUES_PATH = OUTPUT_PATH / "values"
-    RESULT_PATH = OUTPUT_PATH / "results"
+    CURVES_PATH = OUTPUT_PATH / "results"
+    METRICS_PATH = OUTPUT_PATH / "metrics"
     PLOT_PATH = OUTPUT_PATH / "plots"
 
     @staticmethod
@@ -306,6 +307,53 @@ class Accessor:
 
     @staticmethod
     @walker_product_space()
+    def curves(
+        experiment_name: str,
+        model_name: str,
+        dataset_name: str,
+        method_name: str,
+        curve_name: str,
+        repetition_id: int,
+    ) -> Dict:
+        """
+        Load metrics and curves from the results directory.
+
+        Args:
+            experiment_name: The name of the experiment.
+            model_name: The name of the model.
+            dataset_name: The name of the dataset.
+            method_name: The name of the method.
+            repetition_id: The repetition ID.
+            curve_name: The name of the curve.
+
+        Returns:
+            A dictionary containing the metrics and curves.
+        """
+
+        base_path = (
+            Accessor.CURVES_PATH
+            / experiment_name
+            / model_name
+            / dataset_name
+            / str(repetition_id)
+            / method_name
+        )
+        curve = pd.read_csv(base_path / f"{curve_name}.curve.csv")
+        curve.index = curve[curve.columns[0]]
+        curve = curve.drop(columns=[curve.columns[0]]).iloc[:, -1]
+
+        return {
+            "experiment_name": experiment_name,
+            "model_name": model_name,
+            "dataset_name": dataset_name,
+            "method_name": method_name,
+            "repetition_id": repetition_id,
+            "curve_name": curve_name,
+            "curve": curve,
+        }
+
+    @staticmethod
+    @walker_product_space()
     def metrics_and_curves(
         experiment_name: str,
         model_name: str,
@@ -329,7 +377,7 @@ class Accessor:
             A dictionary containing the metrics and curves.
         """
         base_path = (
-            Accessor.RESULT_PATH
+            Accessor.CURVES_PATH
             / experiment_name
             / model_name
             / dataset_name

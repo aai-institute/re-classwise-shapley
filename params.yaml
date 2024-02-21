@@ -30,81 +30,109 @@ active:
   - phoneme
   valuation_methods:
   - random
-  - loo
-  - beta_shapley
-  - tmc_shapley
   - classwise_shapley
+  - tmc_shapley
+  - beta_shapley
+  - loo
   - banzhaf_shapley
   repetitions:
-  - 1
-  - 2
-  - 3
-  - 4
-  - 5
-  - 6
-  - 7
-  - 8
-  - 9
-  - 10
-  - 11
-  - 12
-  - 13
-  - 14
-  - 15
-  - 16
-  - 17
-  - 18
-  - 19
-  - 20
+    from: 1
+    to: 20
+
 experiments:
   point_removal:
     sampler: default
-    metrics:
+    curves:
       weighted_accuracy_drop_logistic_regression:
-        idx: weighted_metric_drop
+        fn: metric
         metric: accuracy
         eval_model: logistic_regression
-        len_curve_perc: 0.5
-      weighted_accuracy_drop_logistic_regression_balanced:
-        idx: weighted_metric_drop
-        metric: accuracy
-        eval_model: logistic_regression_balanced
-        len_curve_perc: 0.5
+        plot:
+          - accuracy
       weighted_accuracy_drop_knn:
-        idx: weighted_metric_drop
+        fn: metric
         metric: accuracy
         eval_model: knn
-        len_curve_perc: 0.5
+        plot:
+          - accuracy
       weighted_accuracy_drop_gradient_boosting_classifier:
-        idx: weighted_metric_drop
+        fn: metric
         metric: accuracy
         eval_model: gradient_boosting_classifier
-        len_curve_perc: 0.5
+        plot:
+          - accuracy
       weighted_accuracy_drop_svm:
-        idx: weighted_metric_drop
+        fn: metric
         metric: accuracy
         eval_model: svm
-        len_curve_perc: 0.5
-      weighted_accuracy_drop_svm_balanced:
-        idx: weighted_metric_drop
-        metric: accuracy
-        eval_model: svm_balanced
-        len_curve_perc: 0.5
+        plot:
+          - accuracy
       weighted_accuracy_drop_mlp:
-        idx: weighted_metric_drop
+        fn: metric
         metric: accuracy
         eval_model: mlp
-        len_curve_perc: 0.5
+        plot:
+          - accuracy
+
+    metrics:
+      geometric_weighted_drop:
+        curve:
+          - weighted_accuracy_drop_logistic_regression
+          - weighted_accuracy_drop_knn
+          - weighted_accuracy_drop_gradient_boosting_classifier
+          - weighted_accuracy_drop_svm
+          - weighted_accuracy_drop_mlp
+        fn: geometric_weighted_drop
+        input_perc: 1.0
+        plot:
+          - table
+          - boxplot
+
+      geometric_weighted_drop_half:
+        curve:
+          - weighted_accuracy_drop_logistic_regression
+          - weighted_accuracy_drop_knn
+          - weighted_accuracy_drop_gradient_boosting_classifier
+          - weighted_accuracy_drop_svm
+          - weighted_accuracy_drop_mlp
+        fn: geometric_weighted_drop
+        input_perc: 0.5
+        plot:
+          - table
+          - boxplot
 
   noise_removal:
     sampler: default
     preprocessors:
       flip_labels:
         perc: 0.2
+    curves:
+      precision_recall:
+        fn: precision_recall
+        flipped_labels: preprocessor.flip_labels.idx
+        plots:
+          - precision_recall
     metrics:
       roc_auc:
-        idx: precision_recall_roc_auc
-        flipped_labels: preprocessor.flip_labels.idx
+        curve:
+          - precision_recall
+        fn: roc_auc
+        plot:
+          - table
+          - boxplot
+
+plots:
+  accuracy:
+    type: line
+    len_curve_perc: 0.5
+    x_label: "n"
+    y_label: "Accuracy"
+
+  precision_recall:
+    type: line
+    x_label: "Recall"
+    y_label: "Precision"
+
 
 samplers:
   default:
@@ -181,11 +209,6 @@ models:
     model: logistic_regression
     solver: liblinear
 
-  logistic_regression_balanced:
-    model: logistic_regression
-    solver: liblinear
-    class_weight: balanced
-
   gradient_boosting_classifier:
     model: gradient_boosting_classifier
     n_estimators: 40
@@ -200,11 +223,6 @@ models:
   svm:
     model: svm
     kernel: rbf
-
-  svm_balanced:
-    model: svm
-    kernel: rbf
-    class_weight: balanced
 
   mlp:
     model: mlp
@@ -228,7 +246,6 @@ valuation_methods:
     progress: true
     use_default_scorer_value: false
 
-
   beta_shapley:
     algorithm: beta_shapley
     alpha: 16.0
@@ -236,7 +253,6 @@ valuation_methods:
     n_updates: 500
     progress: true
     cache_group: acc
-
 
   banzhaf_shapley:
     algorithm: banzhaf_shapley
@@ -251,15 +267,6 @@ valuation_methods:
     n_updates: 500
     progress: true
     cache_group: acc
-
-
-  owen_sampling_shapley:
-    algorithm: owen_sampling_shapley
-    n_updates: 10
-    max_q: 50
-    progress: false
-    cache_group: acc
-
 
   least_core:
     algorithm: least_core

@@ -9,7 +9,7 @@ from matplotlib.axes import Axes
 
 __all__ = [
     "setup_plotting",
-    "plot_utility_over_removal_percentages",
+    "plot_curve",
     "plot_values_histogram",
 ]
 
@@ -60,90 +60,60 @@ def shaded_mean_normal_confidence_interval(
 
 
 def plot_values_histogram(
-    values_df: pd.DataFrame,
-    method_names: list[str],
-    hue_column: str,
-    *,
-    output_dir: Path,
+    values_df: pd.DataFrame, *, ax: Axes, title: str = None
 ) -> None:
-    colors = ["dodgerblue", "darkorange", "limegreen", "indianred", "darkorchid"]
-    palette = {
-        value: color for value, color in zip(values_df[hue_column].unique(), colors)
-    }
+    df = values_df.reset_index(drop=True)
+    df = df.apply(lambda s: s)
 
-    values_df = values_df.groupby(["method", hue_column]).mean(numeric_only=True)
+    data = np.concatenate(tuple(df.to_numpy()))
+    sns.histplot(
+        data=data,
+        multiple="layer",
+        kde=True,
+        ax=ax,
+    )
+    if title is not None:
+        ax.set_title(title, y=-0.3)
 
-    for method_name in method_names:
-        fig, ax = plt.subplots()
-        df = values_df.loc[method_name].reset_index()
-        df = pd.melt(df, id_vars=[hue_column])
-
-        sns.histplot(
-            data=df,
-            x="value",
-            hue=hue_column,
-            multiple="layer",
-            kde=True,
-            palette=palette,
-            ax=ax,
-        )
-        plt.legend()
-        sns.move_legend(
-            ax,
-            "lower center",
-            bbox_to_anchor=(0.5, 1),
-            ncol=5,
-            title=hue_column.replace("_", " ").capitalize(),
-            frameon=False,
-        )
-        ax.set_xlabel("Value")
-        fig.tight_layout()
-        fig.savefig(
-            output_dir / f"values_histogram_{method_name=}.pdf",
-            bbox_inches="tight",
-        )
+    ymin, ymax = ax.get_ylim()
+    ax.vlines(np.mean(data), color="r", ymin=ymin, ymax=ymax)
 
 
-def plot_utility_over_removal_percentages(
+def plot_curve(
     scores_df: pd.DataFrame,
     *,
-    budgets: list[int],
-    method_names: list[str],
-    removal_percentages: list[float],
-    output_dir: Path,
+    title: str = None,
+    ax: Axes = None,
 ) -> None:
     mean_colors = ["dodgerblue", "darkorange", "limegreen", "indianred", "darkorchid"]
     shade_colors = ["lightskyblue", "gold", "seagreen", "firebrick", "plum"]
+    color_pos = [
+        "beta_shapley",
+        "loo",
+        "tmc_shapley",
+        "classwise_shapley",
+        "classwise_shapley_add_idx",
+    ]
+    color_pos = {v: i for i, v in enumerate(color_pos)}
 
-    for budget in budgets:
-        for type in ["best", "worst"]:
-            fig, ax = plt.subplots()
-            for i, method_name in enumerate(method_names):
-                df = scores_df.query(
-                    "(method == @method_name) & (type == @type) & (budget == @budget)"
-                ).drop(columns=["method", "budget", "type"], errors="ignore")
+    for i, method_name in enumerate(scores_df.columns):
+        if method_name not in color_pos:
+            continue
 
-                shaded_mean_normal_confidence_interval(
-                    df,
-                    abscissa=removal_percentages,
-                    mean_color=mean_colors[i],
-                    shade_color=shade_colors[i],
-                    xlabel="Percentage Removal",
-                    ylabel="Accuracy",
-                    label=f"{method_name}",
-                    ax=ax,
-                )
-            plt.legend(loc="lower left")
-            sns.move_legend(
-                ax,
-                "lower center",
-                bbox_to_anchor=(0.5, 1),
-                ncol=3,
-                title="Method",
-                frameon=False,
-            )
-            fig.tight_layout()
-            fig.savefig(
-                output_dir / f"utility_over_removal_percentages_{type=}_{budget=}.pdf",
-                bbox_inches="tight",
-            )
+        mean_color = mean_colors[color_pos[method_name]]
+        shade_color = shade_colors[color_pos[method_name]]
+
+        scores = scores_df.loc[:, method_name].apply(lambda s: pd.Series(s))
+        abscissa = list(scores.columns)
+        abscissa = abscissa[: int(len(abscissa) / 2)]
+        scores = scores.loc[:, abscissa]
+        shaded_mean_normal_confidence_interval(
+            scores,
+            abscissa=abscissa,
+            mean_color=mean_color,
+            shade_color=shade_color,
+            label=method_name,
+            ax=ax,
+        )
+    if title is not None:
+        ax.set_title(title, y=-0.25)

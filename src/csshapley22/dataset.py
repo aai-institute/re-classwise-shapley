@@ -1,9 +1,9 @@
+import random
+from typing import Callable, Tuple
+
 import numpy as np
 from numpy.typing import NDArray
 from pydvl.utils.dataset import Dataset
-from sklearn.model_selection import train_test_split
-
-__all__ = ["create_synthetic_dataset"]
 
 
 def flip_labels(
@@ -17,67 +17,89 @@ def flip_labels(
     return y, indices
 
 
-def create_synthetic_dataset(
-    n_features: int,
-    n_train_samples: int,
-    n_test_samples: int,
-    n_val_samples: int = 0,
-    *,
-    random_state: np.random.RandomState | int | None = None,
-) -> Dataset | tuple[Dataset, Dataset]:
-    if not isinstance(random_state, np.random.RandomState):
-        random_state = np.random.RandomState(random_state)
-    n_total_samples = n_train_samples + n_val_samples + n_test_samples
-    X = random_state.multivariate_normal(
-        mean=np.zeros(n_features),
-        cov=np.eye(n_features),
-        size=n_total_samples,
-    )
-    feature_mask = random_state.random(n_features) > 0.5
-    Xb = X @ feature_mask
-    Xb -= np.mean(X)
-    pr = 1 / (1 + np.exp(-Xb))
-    y = random_state.binomial(n=1, p=pr).astype(int)
+def subsample(
+    features: NDArray[np.float_],
+    labels: NDArray[np.int_],
+    *sizes: int,
+    stratified: bool = True,
+    seed: int = None
+) -> tuple[tuple[NDArray[np.float_], NDArray[np.int_]], ...]:
+    """
+    Sub-samples a dataset into different sets. It supports normal sampling and
+    stratified sampling.
 
-    x_train_val, x_test, y_train_val, y_test = train_test_split(
-        X,
-        y,
-        train_size=n_train_samples + n_val_samples,
-        stratify=y,
-        random_state=random_state,
-    )
+    :param features: Array with the features to be sub-sampled.
+    :param labels: Array containing the label data. Same size as ``features``.
+    :param sizes: List of the test set sizes which shall be achieved.
+    :param stratified: True, if the label distribution shall be reproduced in each
+        subset.
+    :return: A tuple
+    """
+    if seed is not None:
+        np.random.seed(seed)
+        random.seed(seed + 1)
 
-    if n_val_samples == 0:
-        x_train = x_train_val
-        y_train = y_train_val
-        dataset = Dataset(
-            x_train=x_train,
-            y_train=y_train,
-            x_test=x_test,
-            y_test=y_test,
-        )
+    if stratified:
+        p = np.random.permutation(len(features))
+        features = features[p]
+        labels = labels[p]
+        unique_labels, num_labels = np.unique(labels, return_counts=True)
+        label_indices = [np.argwhere(labels == label)[:, 0] for label in unique_labels]
+        relative_set_sizes = num_labels / len(labels)
+
+        data = [list() for _ in sizes]
+        it_idx = [0 for _ in unique_labels]
+
+        for i, size in enumerate(sizes):
+            absolute_set_sizes = (relative_set_sizes * size).astype(np.int_)
+            missing_elements = size - np.sum(absolute_set_sizes)
+            absolute_set_sizes[np.argsort(absolute_set_sizes)[:missing_elements]] += 1
+
+            if np.sum(absolute_set_sizes) != size:
+                raise ValueError("There is an error in sampling.")
+
+            for j in range(len(unique_labels)):
+                label_idx = label_indices[j]
+                window_idx = label_idx[it_idx[j] : it_idx[j] + absolute_set_sizes[j]]
+                it_idx[j] += absolute_set_sizes[j]
+                data[i].append((features[window_idx], labels[window_idx]))
+
+        data = [
+            (np.concatenate([t[0] for t in lst]), np.concatenate([t[1] for t in lst]))
+            for lst in data
+        ]
+
+    else:
+        data = list()
+        p = np.random.permutation(len(features))
+        it_idx = 0
+        for i, size in enumerate(sizes):
+            window_idx = p[it_idx : it_idx + size]
+            it_idx += size
+            data.append((features[window_idx], labels[window_idx]))
+
+    return tuple(data)
+
+
+def pca_feature_transformer(
+    dataset: Tuple[Dataset, Dataset]
+) -> Tuple[Dataset, Dataset]:
+    pass
+
+
+def label_binarization(datasets: Tuple[Dataset, Dataset]) -> Dataset:
+    pass
+
+
+def chain_transformer(
+    dataset_producer: Callable[[...], Dataset],
+    *transformers: Callable[[Tuple[Dataset, Dataset]], Tuple[Dataset, Dataset]]
+) -> Callable[[...], Tuple[Dataset, Dataset]]:
+    def _transformer(*args, **kwargs):
+        dataset = dataset_producer(*args, **kwargs)
+        for transformer in transformers:
+            dataset = transformer(dataset)
+
         return dataset
 
-    x_train, x_val, y_train, y_val = train_test_split(
-        x_train_val,
-        y_train_val,
-        train_size=n_train_samples,
-        stratify=y_train_val,
-        random_state=random_state,
-    )
-
-    train_dataset = Dataset(
-        x_train=x_train,
-        y_train=y_train,
-        x_test=x_val,
-        y_test=y_val,
-    )
-
-    test_dataset = Dataset(
-        x_train=x_train,
-        y_train=y_train,
-        x_test=x_test,
-        y_test=y_test,
-    )
-
-    return train_dataset, test_dataset
+    return _transformer

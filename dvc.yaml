@@ -1,20 +1,85 @@
 stages:
-  data-valuation-experiment:
-    foreach: ${data_valuation.budgets}
+  data-valuation-fetch-data:
+    foreach: ${datasets}
     do:
-      cmd: python -m src.csshapley22.experiments.data_valuation --budget=${item}
-      params:
-      - data_valuation
+      cmd: python -m scripts.fetch_data --dataset-name ${key}
       deps:
-      - src/csshapley22/experiments/data_valuation.py
+        - scripts/fetch_data.py
+      params:
+        - datasets
+        - datasets.${key}
       outs:
-      - output/data_valuation/results/dataset=${data_valuation.dataset}/budget=${item}
-  data-valuation:
-    cmd: python -m src.csshapley22.plots.data_valuation
-    params:
-    - data_valuation
-    deps:
-    - src/csshapley22/plots/data_valuation.py
-    - output/data_valuation/results/dataset=${data_valuation.dataset}
-    outs:
-    - output/data_valuation/plots/dataset=${data_valuation.dataset}
+        - output/raw/${key}  # TODO: Change to openml_id
+
+  data-valuation-preprocess-data:
+    foreach: ${datasets}
+    do:
+      cmd: python -m scripts.preprocess_data --dataset-name ${key}
+      deps:
+        - scripts/preprocess_data.py
+        - output/raw/${key}
+      params:
+        - datasets
+        - datasets.${key}
+      outs:
+        - output/preprocessed/${key}
+
+  data-valuation-wad-drop-run-experiment:
+    foreach: ${datasets}
+    do:
+      cmd: python -m scripts.run_experiment wad_drop --dataset-name ${key}
+      deps:
+        - scripts/run_experiment.py
+        - output/preprocessed/${key}
+      outs:
+        - output/results/wad_drop/${key}
+
+#  data-valuation-wad-drop-generate-plots:
+#    foreach: ${datasets}
+#    do:
+#      cmd: python -m scripts.render_plots wad_drop --dataset-name ${key}
+#      deps:
+#        - scripts/render_plots.py
+#        - output/results/wad_drop/${key}
+#      outs:
+#        - output/plots/wad_drop/${key}
+
+#  data-valuation-noise-removal-run-experiment:
+#    foreach: ${datasets}
+#    do:
+#      cmd: python -m scripts.run_experiment noise_removal --dataset-name ${key}
+#      deps:
+#        - scripts/run_experiment.py
+#        - output/preprocessed/${key}
+#      outs:
+#        - output/results/noise_removal/${key}
+
+#  data-valuation-noise-removal-generate-plots:
+#    foreach: ${datasets}
+#    do:
+#      cmd: python -m scripts.render_plots noise_removal --dataset-name ${key}
+#      deps:
+#        - scripts/render_plots.py
+#        - output/results/noise_removal/${key}
+#      outs:
+#        - output/plots/noise_removal/${key}
+
+#  data-valuation-wad-drop-transfer-run-experiment:
+#    foreach: ${datasets}
+#    do:
+#      cmd: python -m scripts.run_experiment wad_drop_transfer --dataset-name ${key}
+#      deps:
+#        - scripts/run_experiment.py
+#        - output/preprocessed/${key}
+#      outs:
+#        - output/results/wad_drop_transfer/${key}
+#
+#  data-valuation-wad-drop-transfer-generate-plots:
+#    foreach: ${datasets}
+#    do:
+#      cmd: python -m scripts.render_plots wad_drop_transfer --dataset-name ${key}
+#      deps:
+#        - scripts/render_plots.py
+#        - output/results/wad_drop_transfer/${key}
+#      outs:
+#        - output/plots/wad_drop_transfer/${key}

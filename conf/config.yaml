@@ -1,6 +1,8 @@
 defaults:
-- data_valuation: synthetic
+- datasets
+- experiments
+- models
+- valuation_methods
 
-common:
-  n_jobs: 8
-  n_repetitions: 10
+global:
+  n_repetitions: 5

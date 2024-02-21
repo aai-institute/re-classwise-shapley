@@ -1,5 +1,3 @@
-import logging
-
 from csshapley22.log import setup_logger
 
 setup_logger()
@@ -7,20 +5,19 @@ setup_logger()
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Dict, Optional, Tuple, TypeVar
+from typing import Callable, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 from numpy._typing import NDArray
-from pydvl.utils import ClassWiseScorer, Dataset, Scorer, SupervisedModel, Utility
+from pydvl.utils import ClassWiseScorer, Scorer, SupervisedModel, Utility
 from pydvl.value.result import ValuationResult
 
 from csshapley22.metrics.weighted_reciprocal_average import (
     weighted_reciprocal_diff_average,
 )
 from csshapley22.types import ValTestSetFactory, ValuationMethodsFactory
-from csshapley22.utils import setup_logger, timeout
-from csshapley22.valuation_methods import compute_values
+from csshapley22.utils import setup_logger
 
 logger = setup_logger()
 

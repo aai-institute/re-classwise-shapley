@@ -1,6 +1,7 @@
 import os
 import re
 
+import click
 import pandas as pd
 from dvc.api import params_show
 
@@ -19,6 +20,7 @@ setup_plotting()
 set_random_seed(RANDOM_SEED)
 
 
+@click.command()
 def run():
     logger.info("Starting plotting of data valuation experiment")
 
@@ -30,13 +32,9 @@ def run():
     removal_percentages = data_valuation_params["removal_percentages"]
     method_names = data_valuation_params["method_names"]
 
-    experiment_output_dir = (
-        OUTPUT_DIR / "data_valuation" / "results" / f"dataset={dataset_type}"
-    )
+    experiment_output_dir = OUTPUT_DIR / "data_valuation" / "results"
     assert experiment_output_dir.exists()
-    plots_output_dir = (
-        OUTPUT_DIR / "data_valuation" / "plots" / f"dataset={dataset_type}"
-    )
+    plots_output_dir = OUTPUT_DIR / "data_valuation" / "plots"
     plots_output_dir.mkdir(parents=True, exist_ok=True)
 
     budget_regex = re.compile(r"budget=(?P<budget>\d+)/")

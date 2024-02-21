@@ -18,10 +18,13 @@ logger = setup_logger()
 
 @click.command()
 @click.option("--dataset-name", type=str, required=True)
-def preprocess_data(dataset_name: str):
+def preprocess_data(
+    dataset_name: str,
+):
     """
     Preprocesses a dataset and stores it on disk.
-    :param dataset_name: The name of the dataset to preprocess.
+    Args:
+        dataset_name: The name of the dataset to preprocess.
     """
     preprocessed_folder = Config.PREPROCESSED_PATH / dataset_name
     if os.path.exists(preprocessed_folder):
@@ -30,13 +33,14 @@ def preprocess_data(dataset_name: str):
         )
         return
 
+    params = params_show()
+    datasets_settings = params["datasets"]
+
     dataset_folder = Config.RAW_PATH / dataset_name
     logger.info(f"Loading raw dataset '{dataset_name}' from {dataset_folder}.")
     raw_dataset = load_dataset(dataset_folder)
 
     logger.info(f"Preprocessing dataset '{dataset_name}'.")
-    params = params_show()
-    datasets_settings = params["datasets"]
     dataset_kwargs = datasets_settings[dataset_name]
     preprocessed_dataset = preprocess_dataset(raw_dataset, dataset_kwargs)
     store_dataset(preprocessed_dataset, preprocessed_folder)

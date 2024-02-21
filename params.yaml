@@ -1,242 +1,216 @@
 settings:
-  evaluation:
-    n_repetitions: 5
-
-  random:
-    seed: 42  # 42 
-
-  parallel:
-    n_jobs: 94
-    backend: joblib
+  n_jobs: 92
+  backend: joblib
 
 active:
-  models: [ "logistic_regression", "knn", "gradient_boosting_classifier", "svm", "mlp" ]
+  experiments: [
+    point_removal,
+    noise_removal
+  ]
+  models: [
+    logistic_regression,
+    svm
+  ]
   datasets: [
-    "cifar10",
-    "click",
-    "covertype",
-    "cpu",
-    "diabetes",
-    "fmnist_binary",
-    "mnist_binary",
-    "mnist_multi",
-    "phoneme"
+    diabetes,
+    cpu,
+    click,
+    covertype,
+    cifar10,
+    fmnist_binary,
+    mnist_binary,
+    mnist_multi,
+    phoneme,
   ]
   valuation_methods: [
-    "random",
-    "loo",
-    "classwise_shapley",
-    "beta_shapley",
-    "tmc_shapley",
-    "banzhaf_shapley",
-    "owen_sampling_shapley",
-    "least_core",
+    random,
+    loo,
+    classwise_shapley,
+    beta_shapley,
+    tmc_shapley,
+    banzhaf_shapley,
+    owen_sampling_shapley,
+    least_core
   ]
+  repetitions: [ 1, 2, 3, 4, 5 ]
 
 experiments:
-  wad_drop:
-    transfer_models:
-      [ "logistic_regression", "knn", "gradient_boosting_classifier", "svm", "mlp" ]
+  point_removal:
+    sampler: default
+    metrics:
+      weighted_accuracy_drop:
+        idx: "weighted_metric_drop"
+        metric: "accuracy"
+        eval_models: [ "logistic_regression" ]
+    
+    curves:
+      highest_point_removal_accuracy:
+        idx: "highest_point_removal"
+        metric: "accuracy"
+        eval_models: [ "logistic_regression" ]
+      lowest_point_addition_accuracy:
+        idx: "lowest_point_addition"
+        metric: "accuracy"
+        eval_models: [ "logistic_regression" ]
+  
   noise_removal:
-    perc_flip_labels: 0.2
+    sampler: default
+    preprocessors:
+      flip_labels:
+        perc: 0.2
+    metrics:
+      roc_auc:
+        idx: "roc_auc"
+        flipped_labels: preprocessor.flip_labels.idx
+    curves:
+      precision_recall:
+        idx: "precision_recall"
+        flipped_labels: preprocessor.flip_labels.idx
 
-models:
-  logistic_regression: {
-    solver: liblinear,
-  }
-  gradient_boosting_classifier: {
-    n_estimators: 40,
-    min_samples_leaf: 6,
-    max_depth: 2
-  }
-  knn: {
-    n_neighbors: 5,
-    weights: uniform
-  }
-  svm: {
-    kernel: rbf
-  }
-  mlp: {
-  }
-
-valuation_methods:
-  random: {
-    algorithm: "random"
-  }
-  loo: {
-    algorithm: "loo",
-    kwargs: {
-      progress: True
-    }
-  }
-  classwise_shapley: {
-    algorithm: "classwise_shapley",
-    kwargs: {
-      n_updates: 500,
-      normalize_values: True,
-      n_resample_complement_sets: 1,
-      use_default_scorer_value: False,
-      rtol: 1e-4,
-      progress: True
-    }
-  }
-  beta_shapley: {
-    algorithm: "beta_shapley",
-    kwargs: {
-      alpha: 16.0,
-      beta: 1.0,
-      n_updates: 500,
-      progress: True
-    }
-  }
-  banzhaf_shapley: {
-    algorithm: "banzhaf_shapley",
-    kwargs: {
-      n_updates: 500,
-      progress: True
-    }
-  }
-  tmc_shapley: {
-    algorithm: "tmc_shapley",
-    kwargs: {
-      rtol: 1e-4,
-      n_updates: 500,
-      progress: True
-    }
-  }
-  owen_sampling_shapley: {
-    algorithm: "owen_sampling_shapley",
-    kwargs: {
-      n_updates: 10,
-      max_q: 50,
-      progress: False
-    }
-  }
-  least_core: {
-    algorithm: "least_core",
-    kwargs: {
-      n_updates: 5000,
-      progress: False
-    }
-  }
+samplers:
+  default:
+    train: 0.1667
+    val: 0.1667
+    test: 0.6667
+    max_samples: 3000
 
 datasets:
-  diabetes: {
-    openml_id: 37,
-    split: {
-      train_size: 128,
-      val_size: 128,
-      test_size: 512
-    }
-  }
-  cpu: {
+  diabetes:
+    openml_id: 37
+  
+  cpu:
     openml_id: 197,
-    preprocessor: {
-      threshold_y: {
-        threshold: 89,
-      }
-    },
-    split: {
-      train_size: 500,
-      val_size: 500,
-      test_size: 2000,
-    },
-  }
-  click: {
-    openml_id: 1216,
-    split: {
-      train_size: 500,
-      val_size: 500,
-      test_size: 2000,
-    },
-  }
-  covertype: {
-    openml_id: 1596,
-    split: {
-      train_size: 500,
-      val_size: 500,
-      test_size: 2000,
-    },
-  }
-  phoneme: {
-    openml_id: 1489,
-    split: {
-      train_size: 500,
-      val_size: 500,
-      test_size: 2000,
-    },
-  }
-  fmnist_binary: {
-    openml_id: 40996,
-    filters: {
-      binarization: {
-        label_zero: "0",
+    preprocessor:
+      threshold_y:
+        threshold: 89
+  
+  click:
+    openml_id: 1216
+  
+  covertype:
+    openml_id: 1596
+  
+  phoneme:
+    openml_id: 1489
+  
+  fmnist_binary:
+    openml_id: 40996
+    filters:
+      binarization:
+        label_zero: "0"
         label_one: "1"
-      }
-    },
-    preprocessor: {
-      principal_resnet_components: {
-        n_components: 32,
+    preprocessor:
+      principal_resnet_components:
+        n_components: 32
         grayscale: True
-      }
-    },
-    split: {
-      train_size: 500,
-      val_size: 500,
-      test_size: 2000,
-    },
-  }
-  cifar10: {
-    openml_id: 40927,
-    filters: {
-      binarization: {
-        label_zero: "1",
+        seed: 101
+  
+  cifar10:
+    openml_id: 40927
+    filters:
+      binarization:
+        label_zero: "1"
         label_one: "9"
-      }
-    },
-    preprocessor: {
-      principal_resnet_components: {
-        n_components: 32,
+    preprocessor:
+      principal_resnet_components:
+        n_components: 32
         grayscale: False
-      }
-    },
-    split: {
-      train_size: 500,
-      val_size: 500,
-      test_size: 2000,
-    },
-  }
-  mnist_binary: {
-    openml_id: 554,
-    filters: {
-      binarization: {
-        label_zero: "1",
+        seed: 102
+  
+  mnist_binary:
+    openml_id: 554
+    filters:
+      binarization:
+        label_zero: "1"
         label_one: "7"
-      }
-    },
-    preprocessor: {
-      principal_resnet_components: {
-        n_components: 32,
+    preprocessor:
+      principal_resnet_components:
+        n_components: 32
         grayscale: True
-      }
-    },
-    split: {
-      train_size: 500,
-      val_size: 500,
-      test_size: 2000,
-    },
-  }
-  mnist_multi: {
-    openml_id: 554,
-    split: {
-      train_size: 500,
-      val_size: 500,
-      test_size: 2000,
-    },
-    preprocessor: {
-      principal_resnet_components: {
-        n_components: 32,
+        seed: 103
+
+  mnist_multi:
+    openml_id: 554
+    preprocessor:
+      principal_resnet_components:
+        n_components: 32
         grayscale: True
-      }
-    },
-  }
+        seed: 104
+
+models:
+  logistic_regression:
+    solver: liblinear
+  
+  gradient_boosting_classifier:
+    n_estimators: 1
+    min_samples_leaf: 6
+    max_depth: 2
+  
+  knn:
+    n_neighbors: 5
+    weights: uniform
+  
+  svm:
+    kernel: rbf
+  
+  mlp: { }
+
+valuation_methods:
+  random:
+    algorithm: "random"
+  
+  loo:
+    algorithm: "loo"
+    kwargs:
+      progress: True
+  
+  classwise_shapley:
+    algorithm: "classwise_shapley"
+    kwargs:
+      n_updates: 500
+      normalize_values: True
+      n_resample_complement_sets: 1
+      use_default_scorer_value: False
+      rtol: 1e-4
+      progress: True
+  
+  
+  beta_shapley:
+    algorithm: "beta_shapley"
+    kwargs:
+      alpha: 16.0
+      beta: 1.0
+      n_updates: 500
+      progress: True
+  
+  
+  banzhaf_shapley:
+    algorithm: "banzhaf_shapley"
+    kwargs:
+      n_updates: 500
+      progress: True
+  
+  
+  tmc_shapley:
+    algorithm: "tmc_shapley"
+    kwargs:
+      rtol: 1e-4
+      n_updates: 500
+      progress: True
+  
+  
+  owen_sampling_shapley:
+    algorithm: "owen_sampling_shapley"
+    kwargs:
+      n_updates: 10
+      max_q: 50
+      progress: False
+  
+  
+  least_core:
+    algorithm: "least_core"
+    kwargs:
+      n_updates: 5000
+      progress: False
+    
+  

@@ -91,7 +91,6 @@ def _render_plots(experiment_name: str, model_name: str):
             Accessor.datasets(
                 experiment_name,
                 dataset_names,
-                repetitions,
             )
         )
 

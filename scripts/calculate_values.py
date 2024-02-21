@@ -98,7 +98,11 @@ def _calculate_values(
     mc = Client(**asdict(mc_config)["client_config"])
     last_run = mc.get("last_run", None)
     if last_run is None or (
-        experiment_name != last_run["experiment"]
+        "experiment" not in last_run
+        or "dataset" not in last_run
+        or "model" not in last_run
+        or "method" not in last_run
+        or experiment_name != last_run["experiment"]
         or dataset_name != last_run["dataset"]
         or model_name != last_run["model"]
         or (

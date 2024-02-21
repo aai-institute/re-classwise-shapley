@@ -67,7 +67,7 @@ experiments:
         perc: 0.2
     metrics:
       roc_auc:
-        idx: roc_auc
+        idx: precision_recall_roc_auc
         flipped_labels: preprocessor.flip_labels.idx
 
 samplers:

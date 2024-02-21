@@ -164,7 +164,7 @@ def run_experiment(
             Utility(
                 data=val_dataset,
                 model=deepcopy(model),
-                scorer=Scorer("f1_weighted", default=0.0),
+                scorer=Scorer("accuracy", default=0.0),
             ),
             seed=seeds[idx],
         )

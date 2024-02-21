@@ -8,16 +8,16 @@ settings:
     temp_dir: /raid/tmp/ray
 
 active:
-  models: [ "logistic_regression" ]
-  datasets: [ "diabetes" ] #, "cpu", "click", "covertype", "phoneme", "fmnist_binary", "mnist_binary", "mnist_multi", "cifar10" ]
-  valuation_methods: [ "random", "loo" ]
+  models: [ "logistic_regression" ]#, "knn" ]
+  datasets: [ "diabetes" ]#, "cpu", "click", "covertype", "phoneme", "fmnist_binary", "mnist_binary", "mnist_multi", "cifar10" ]
+  valuation_methods: [ "random" ]#, "loo", "classwise_shapley", "classwise_shapley_add_idx", "beta_shapley", "tmc_shapley" ]
 
 experiments:
   wad_drop:
   noise_removal:
   wad_drop_transfer:
     transfer_models:
-      [ "svm" ]
+      [ "logistic_regression", "knn" ]
 
 models:
   logistic_regression: {

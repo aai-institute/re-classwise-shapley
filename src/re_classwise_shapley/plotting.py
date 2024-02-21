@@ -1,4 +1,4 @@
-from typing import Any, Sequence
+from typing import Any, Dict, List, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,8 +31,8 @@ def shaded_mean_normal_confidence_interval(
 ) -> Axes:
     """Modified version of the `shaded_mean_std()` function defined in pyDVL."""
     assert len(data.shape) == 2
-    mean = data.mean(axis=0)
-    std = data.std(axis=0)
+    mean = data.mean(axis=1).sort_index()
+    std = data.std(axis=1).sort_index()
     standard_error = std / np.sqrt(data.shape[0])
     upper_bound = mean + 1.96 * standard_error
     lower_bound = mean - 1.96 * standard_error
@@ -79,40 +79,36 @@ def plot_values_histogram(
 
 
 def plot_curve(
-    scores_df: pd.DataFrame,
+    curves: Dict[str, Tuple[pd.DataFrame, Dict]],
     *,
     title: str = None,
     ax: Axes = None,
 ) -> None:
-    mean_colors = ["dodgerblue", "darkorange", "limegreen", "indianred", "darkorchid"]
-    shade_colors = ["lightskyblue", "gold", "seagreen", "firebrick", "plum"]
-    color_pos = [
-        "beta_shapley",
-        "loo",
-        "tmc_shapley",
-        "classwise_shapley",
-        "classwise_shapley_add_idx",
-    ]
-    color_pos = {v: i for i, v in enumerate(color_pos)}
+    colors = {
+        "black": ("black", "silver"),
+        "blue": ("dodgerblue", "lightskyblue"),
+        "orange": ("darkorange", "gold"),
+        "green": ("limegreen", "seagreen"),
+        "red": ("indianred", "firebrick"),
+        "purple": ("darkorchid", "plum"),
+    }
 
-    for i, method_name in enumerate(scores_df.columns):
-        if method_name not in color_pos:
-            continue
+    for method_name, (results, plot_info) in curves.items():
+        mean_color, shade_color = colors[plot_info["color"]]
+        plot_single = plot_info["plot_single"]
+        if plot_single:
+            for i in range(results.shape[1]):
+                short_result = results.iloc[:, i].dropna()
+                ax.plot(short_result.index, short_result, label=method_name)
 
-        mean_color = mean_colors[color_pos[method_name]]
-        shade_color = shade_colors[color_pos[method_name]]
-
-        scores = scores_df.loc[:, method_name].apply(lambda s: pd.Series(s))
-        abscissa = list(scores.columns)
-        abscissa = abscissa[: int(len(abscissa) / 2)]
-        scores = scores.loc[:, abscissa]
-        shaded_mean_normal_confidence_interval(
-            scores,
-            abscissa=abscissa,
-            mean_color=mean_color,
-            shade_color=shade_color,
-            label=method_name,
-            ax=ax,
-        )
+        else:
+            shaded_mean_normal_confidence_interval(
+                results,
+                abscissa=results.index,
+                mean_color=mean_color,
+                shade_color=shade_color,
+                label=method_name,
+                ax=ax,
+            )
     if title is not None:
         ax.set_title(title, y=-0.25)

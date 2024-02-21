@@ -6,7 +6,7 @@ from dvc.api import params_show
 
 from re_classwise_shapley.config import Config
 from re_classwise_shapley.experiments import run_and_store_experiment
-from re_classwise_shapley.metric import weighted_accuracy_drop
+from re_classwise_shapley.metric import valuation_result_density, weighted_accuracy_drop
 from re_classwise_shapley.model import instantiate_model
 from re_classwise_shapley.types import Seed
 
@@ -32,6 +32,9 @@ def run_experiment_wad_drop(
     experiment_name = "wad_drop"
     if transfer_model_name is not None:
         experiment_name += "_transfer"
+
+    if transfer_model_name == model_name:
+        return
 
     seed = (
         seed

@@ -1,8 +1,9 @@
+import os
 import pickle
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import pandas as pd
 from dvc.api import params_show
@@ -24,36 +25,105 @@ logger = setup_logger(__name__)
 
 @dataclass
 class ExperimentResult:
-    valuation_results: Dict[str, ValuationResult]
     metric: Dict[str, Dict[str, float]]
     curves: Dict[str, Dict[str, pd.Series]]
     val_set: Dataset
     test_set: Dataset
+    result: Dict[str, ValuationResult]
+
+    FILE_NAME_VAL_SET = "val_set.pkl"
+    FILE_NAME_TEST_SET = "test_set.pkl"
+    FILE_NAME_METRICS = "metrics.csv"
+    FILE_NAME_PREFIX_CURVE = "curve"
+    FILE_NAME_VALUATION_RESULT = "valuation_result"
+
+    @property
+    def valuation_method_names(self) -> List[str]:
+        return list(self.metric.keys())
+
+    @property
+    def metric_names(self) -> List[str]:
+        return list(self.metric[self.valuation_method_names[0]].keys())
 
     def store(self, output_dir: Path) -> "ExperimentResult":
         logger.info("Saving results to disk")
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        validation_set_path = str(output_dir / "val_set.pkl")
-        test_set_path = str(output_dir / "test_set.pkl")
-        for set_path, set in [
-            (validation_set_path, self.val_set),
-            (test_set_path, self.test_set),
-        ]:
-            with open(set_path, "wb") as file:
-                pickle.dump(set, file)
+        with open(output_dir / ExperimentResult.FILE_NAME_VAL_SET, "wb") as file:
+            pickle.dump(self.val_set, file)
+
+        with open(output_dir / ExperimentResult.FILE_NAME_TEST_SET, "wb") as file:
+            pickle.dump(self.test_set, file)
+
+        for valuation_method_name, valuation_result in self.result.items():
+            with open(
+                output_dir / f"{ExperimentResult.FILE_NAME_VALUATION_RESULT}"
+                f".{valuation_method_name}.pkl",
+                "wb",
+            ) as file:
+                pickle.dump(self.result, file)
 
         metrics = pd.DataFrame(self.metric)
         metrics.index.name = "metrics"
-        metrics.to_csv(output_dir / "metrics.csv")
+        metrics.to_csv(output_dir / ExperimentResult.FILE_NAME_METRICS)
 
         if self.curves is not None:
             for valuation_method_name, valuation_method_curves in self.curves.items():
                 for metric_name, curve in valuation_method_curves.items():
-                    path_name = f"curve_{valuation_method_name}_{metric_name}.csv"
+                    path_name = (
+                        f"{ExperimentResult.FILE_NAME_PREFIX_CURVE}"
+                        f".{valuation_method_name}.{metric_name}.csv"
+                    )
                     curve.to_csv(output_dir / path_name)
 
         return self
+
+    @classmethod
+    def load(cls, input_dir: Path) -> "ExperimentResult":
+        logger.info(f"Loading results from '{input_dir}'")
+
+        with open(input_dir / ExperimentResult.FILE_NAME_VAL_SET, "rb") as file:
+            val_set = pickle.load(file)
+
+        with open(input_dir / ExperimentResult.FILE_NAME_TEST_SET, "rb") as file:
+            test_set = pickle.load(file)
+
+        metrics = pd.read_csv(input_dir / ExperimentResult.FILE_NAME_METRICS)
+        metrics.index = metrics["metrics"]
+        metrics = metrics.drop(columns=["metrics"]).T
+        metrics = {k: row.to_dict() for k, row in metrics.iterrows()}
+
+        curves = {}
+        result = {}
+
+        for f in os.listdir(input_dir):
+            if f.startswith(ExperimentResult.FILE_NAME_PREFIX_CURVE) and f.endswith(
+                ".csv"
+            ):
+                valuation_method_name, metric_name = tuple(f.split(".")[1:3])
+                if valuation_method_name not in curves:
+                    curves[valuation_method_name] = dict()
+
+                df = pd.read_csv(input_dir / f)
+                df.index = df[df.columns[0]]
+                ser = df.drop(columns=df.columns[:1]).iloc[:, 0]
+                curves[valuation_method_name][metric_name] = ser
+            if f.startswith(ExperimentResult.FILE_NAME_VALUATION_RESULT) and f.endswith(
+                ".pkl"
+            ):
+                valuation_method_name = f.split(".")[1]
+                with open(input_dir / f, "rb") as file:
+                    valuation_result = pickle.load(file)
+
+                result[valuation_method_name] = valuation_result
+
+        return cls(
+            metric=metrics,
+            val_set=val_set,
+            test_set=test_set,
+            curves=curves,
+            result=result,
+        )
 
 
 def run_experiment(
@@ -70,11 +140,11 @@ def run_experiment(
 ) -> ExperimentResult:
     val_dataset, test_dataset = val_test_set
     result = ExperimentResult(
-        valuation_results=dict(),
         metric=dict(),
         curves=dict(),
         val_set=val_dataset,
         test_set=test_dataset,
+        result=dict(),
     )
     logger.debug("Creating utility")  # type: ignore
 
@@ -97,7 +167,7 @@ def run_experiment(
             ),
             seed=seeds[idx],
         )
-        result.valuation_results[valuation_method_name] = values
+        result.result[valuation_method_name] = values
         test_utility = Utility(
             data=test_dataset, model=deepcopy(model), scorer=Scorer(scoring="accuracy")
         )

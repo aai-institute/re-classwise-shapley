@@ -5,6 +5,7 @@ import pandas as pd
 from numpy.typing import NDArray
 from pydvl.utils import Scorer, SupervisedModel, Utility, maybe_progress
 from pydvl.value.result import ValuationResult
+from scipy.stats import gaussian_kde
 from sklearn.metrics import auc
 
 from re_classwise_shapley.log import setup_logger
@@ -80,17 +81,32 @@ def weighted_reciprocal_diff_average(
         )
 
     values.sort(reverse=highest_first)
-    scores = pd.Series(index=np.arange(len(u.data)) + 1, dtype=np.float64)
-    scores.loc[0] = u(u.data.indices)
+    scores = pd.Series(index=np.arange(len(u.data)), dtype=np.float64)
+    scores.iloc[0] = u(u.data.indices)
 
-    for j in maybe_progress(len(u.data), display=progress, desc="Removal Scores"):
-        scores.loc[j + 1] = u(values.indices[j + 1 :])
+    for j in maybe_progress(len(u.data) - 1, display=progress, desc="Removal Scores"):
+        scores.iloc[j + 1] = u(values.indices[j + 1 :])
 
     diff_scores = scores.diff(-1).values[:-1]
     diff_scores = np.nancumsum(diff_scores)
     weighted_diff_scores = diff_scores / (np.arange(1, len(diff_scores) + 1))
     avg = np.sum(weighted_diff_scores)
     return float(avg), scores
+
+
+def valuation_result_density(
+    u: Utility,
+    values: ValuationResult,
+    info: Dict,
+    *,
+    bins: int = 100,
+):
+    min_x = np.min(values.values)
+    max_x = np.max(values.values)
+    x = np.linspace(min_x, max_x, bins)
+    kernel = gaussian_kde(values.values)
+    p = kernel(x)
+    return float(np.mean(x)), pd.Series(p, index=x)
 
 
 def weighted_accuracy_drop(

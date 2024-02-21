@@ -64,6 +64,7 @@ def _sample_data(
     if has_val_test_dataset(dataset_folder):
         return logger.info(f"Sampled data exists in '{dataset_folder}'. Skipping...")
 
+    logger.info(f"Sampling data for '{experiment_name}/{dataset_name}'")
     n_pipeline_step = 3
     seed = pipeline_seed(42, n_pipeline_step)
     seed_sequence = SeedSequence(seed).spawn(2)
@@ -72,17 +73,20 @@ def _sample_data(
     sampler_name = experiment_config["sampler"]
     sampler_kwargs = params["samplers"][sampler_name]
 
+    logger.info(f"Loading raw data. ")
     x, y, _ = load_raw_dataset(input_folder)
     val_set, test_set = sample_val_test_set(
         x, y, **sampler_kwargs, seed=seed_sequence[0]
     )
 
+    logger.info(f"Apply preprocessors.")
     preprocess_info = None
     if "preprocessors" in experiment_config:
         val_set, preprocess_info = apply_sample_preprocessors(
             val_set, experiment_config["preprocessors"], seed_sequence
         )
 
+    logger.info(f"Store results.")
     store_val_test_data(val_set, test_set, preprocess_info, dataset_folder)
 
 

@@ -5,7 +5,7 @@ from typing import Callable, Dict
 import numpy as np
 import pandas as pd
 import yaml
-from numpy._typing import NDArray
+from numpy.typing import NDArray
 from pydvl.utils import Seed, ensure_seed_sequence
 
 from re_classwise_shapley.log import setup_logger
@@ -152,7 +152,7 @@ def calculate_threshold_characteristic_curves(
     max_x = np.max(np.maximum(np.abs(in_cls_mar_acc), np.abs(out_of_cls_mar_acc)))
     x_axis = np.linspace(0, max_x, n_thresholds)
 
-    characteristics = pd.DataFrame(index=x_axis, columns=["<,<", "<,>"])
+    characteristics = pd.DataFrame(index=x_axis, columns=["<,<", "<,>", ">,<", ">,>"])
     n_data = len(in_cls_mar_acc)
 
     for i, threshold in enumerate(characteristics.index):
@@ -168,6 +168,22 @@ def calculate_threshold_characteristic_curves(
             np.sum(
                 np.logical_and(
                     in_cls_mar_acc < -threshold, out_of_cls_mar_acc > threshold
+                )
+            )
+            / n_data
+        )
+        characteristics.iloc[i, 2] = (
+            np.sum(
+                np.logical_and(
+                    in_cls_mar_acc > threshold, out_of_cls_mar_acc < -threshold
+                )
+            )
+            / n_data
+        )
+        characteristics.iloc[i, 3] = (
+            np.sum(
+                np.logical_and(
+                    in_cls_mar_acc > threshold, out_of_cls_mar_acc > threshold
                 )
             )
             / n_data

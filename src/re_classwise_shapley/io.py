@@ -223,7 +223,7 @@ class Accessor:
     OUTPUT_PATH = Path("./output")
     RAW_PATH = OUTPUT_PATH / "raw"
     PREPROCESSED_PATH = OUTPUT_PATH / "preprocessed"
-    INFO_PATH = OUTPUT_PATH / "info"
+    THRESHOLD_CHARACTERISTICS_PATH = OUTPUT_PATH / "threshold_characteristics"
     SAMPLED_PATH = OUTPUT_PATH / "sampled"
     VALUES_PATH = OUTPUT_PATH / "values"
     RESULT_PATH = OUTPUT_PATH / "results"

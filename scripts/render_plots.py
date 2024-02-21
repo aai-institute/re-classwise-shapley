@@ -145,17 +145,7 @@ def _render_plots(experiment_name: str, model_name: str):
                 for method_name, v in row.items():
                     mlflow.log_metric(f"{metric_name}.{dataset_name}.{method_name}", v)
 
-            with plot_metric_table(
-                metric_table[
-                    [
-                        "random",
-                        "classwise_shapley",
-                        "tmc_shapley",
-                        "beta_shapley",
-                        "loo",
-                    ]
-                ]
-            ) as fig:
+            with plot_metric_table(metric_table) as fig:
                 log_figure(fig, output_folder, f"{metric_name}.table.svg", "tables")
 
             logger.info(f"Plotting boxplot for metric {metric_name}.")

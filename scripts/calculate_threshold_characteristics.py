@@ -105,7 +105,7 @@ def _calculate_threshold_characteristics(
     logger.info("Calculating out of class characteristics.")
     global_mar_acc = calculate_subset_score(
         val_set,
-        lambda c: np.argwhere((val_set.y_train == c) | (val_set.y_train != c))[:, 0],
+        lambda c: np.argwhere(np.ones_like(val_set.y_train, dtype=bool))[:, 0],
         model_name,
         model_seed,
         sampler_seed,

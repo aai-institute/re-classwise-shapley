@@ -67,7 +67,7 @@ valuation_methods:
   loo: {
     algorithm: "loo",
     kwargs: {
-      progress: False
+      progress: True
     }
   }
   classwise_shapley: {
@@ -87,14 +87,14 @@ valuation_methods:
       alpha: 16.0,
       beta: 1.0,
       n_updates: 500,
-      progress: False
+      progress: True
     }
   }
   banzhaf_shapley: {
     algorithm: "banzhaf_shapley",
     kwargs: {
       n_updates: 500,
-      progress: False
+      progress: True
     }
   }
   tmc_shapley: {
@@ -102,7 +102,7 @@ valuation_methods:
     kwargs: {
       rtol: 1e-4,
       n_updates: 500,
-      progress: False
+      progress: True
     }
   }
   owen_sampling_shapley: {

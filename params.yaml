@@ -1,7 +1,7 @@
 
 experiment_3:
   test_models: [
-    ""
+    "logistic_regression"
   ]
 
 general:
@@ -31,13 +31,6 @@ general:
       n_updates: 50
     }
 
-    loo:
-
-    tmc_shapley: {
-        n_updates: 50,
-        r_tol: 0.01
-    }
-
   datasets:
 
     diabetes: {
@@ -53,70 +46,3 @@ general:
       dev_size: 500,
       test_size: 2000,
     }
-
-    cpu: {
-      openml_id: 197,
-      train_size: 500,
-      dev_size: 500,
-      test_size: 2000
-    }
-
-    covertype: {
-      openml_id: 1596,
-      train_size: 500,
-      dev_size: 500,
-      test_size: 2000,
-    }
-
-    phoneme: {
-      openml_id: 1489,
-      train_size: 500,
-      dev_size: 500,
-      test_size: 2000,
-    }
-
-    fmnist_binary:
-      openml_id: 40996
-
-      preprocessor:
-        principal_resnet_components:
-          n_components: 32
-          size: 28
-
-      filters:
-        binarization:
-          label_zero: "0"
-          label_one: "6"
-
-      train_size: 500
-      dev_size: 500
-      test_size: 2000
-
-    mnist_binary:
-      openml_id: 554
-
-      preprocessor:
-        principal_resnet_components:
-          n_components: 32
-          size: 28
-
-      filters:
-        binarization:
-          label_zero: "1"
-          label_one: "7"
-
-      train_size: 500
-      dev_size: 500
-      test_size: 2000
-
-    mnist_multi:
-      openml_id: 554
-
-      preprocessor:
-        principal_resnet_components:
-          n_components: 32
-          size: 28
-
-      train_size: 500
-      dev_size: 500
-      test_size: 2000

@@ -150,14 +150,17 @@ def calculate_threshold_characteristic_curves(
     Returns:
         A pd.DataFrame with all four characteristic curves.
     """
-    characteristics = pd.DataFrame(index=x_range, columns=["1:1"])
+    characteristics = pd.DataFrame(index=x_range, columns=["<,>", ">,<"])
     n_data = len(in_cls_mar_acc)
 
     for i, threshold in enumerate(characteristics.index):
-        for k in range(1):
-            characteristics.iloc[i, k] = (
-                np.sum((in_cls_mar_acc < -threshold) & (global_mar_acc > threshold))
-                / n_data
-            )
+        characteristics.iloc[i, 0] = (
+            np.sum((in_cls_mar_acc < -threshold) & (global_mar_acc > threshold))
+            / n_data
+        )
+        characteristics.iloc[i, 1] = (
+            np.sum((in_cls_mar_acc > threshold) & (global_mar_acc < -threshold))
+            / n_data
+        )
 
     return characteristics

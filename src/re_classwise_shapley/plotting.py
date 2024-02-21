@@ -202,7 +202,7 @@ def plot_grid_over_datasets(
                 labels,
                 loc="outside lower center",
                 ncol=5,
-                fontsize=13.5,
+                fontsize=15,
                 fancybox=False,
                 shadow=False,
                 **legend_kwargs,
@@ -210,7 +210,7 @@ def plot_grid_over_datasets(
             fig.subplots_adjust(bottom=0.1)
         else:
             last = ax[-1]
-            last.legend(handles, labels, loc="center", prop={"size": 13.5})
+            last.legend(handles, labels, loc="center", prop={"size": 15})
 
     yield fig
     plt.close(fig)
@@ -462,36 +462,40 @@ def plot_threshold_characteristics(
     def plot_threshold_characteristics_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
         min_threshold = 0
         max_threshold = (data.iloc[:, 1:].applymap(lambda x: np.max(x))).max().max()
-        n_samples = 100
+        n_samples = 1000
         x_range = np.linspace(min_threshold, max_threshold, n_samples)
 
         n_bootstrap_samples = 1000
-        all_fns = [
+        all_fns_unf = [
             calculate_threshold_characteristic_curves(
                 x_range, row["in_cls_mar_acc"], row["global_mar_acc"]
             )
             for _, row in data.iterrows()
         ]
-        data = pd.concat([fn for fn in all_fns], axis=1)
+        for i in range(2):
+            all_fns = [df.iloc[:, i] for df in all_fns_unf]
+            data = pd.concat([fn for fn in all_fns], axis=1)
 
-        assert len(data.shape) == 2
-        mean = data.mean(axis=1)
-        sampled_idx = np.random.choice(range(data.shape[1]), n_bootstrap_samples)
-        sampled_data = data.iloc[:, sampled_idx]
+            assert len(data.shape) == 2
+            mean = data.mean(axis=1)
+            sampled_idx = np.random.choice(range(data.shape[1]), n_bootstrap_samples)
+            sampled_data = data.iloc[:, sampled_idx]
 
-        no_confidence = 1 - confidence
-        upper_bound = np.quantile(sampled_data, q=1 - no_confidence / 2, axis=1)
-        lower_bound = np.quantile(sampled_data, q=no_confidence / 2, axis=1)
+            no_confidence = 1 - confidence
+            upper_bound = np.quantile(sampled_data, q=1 - no_confidence / 2, axis=1)
+            lower_bound = np.quantile(sampled_data, q=no_confidence / 2, axis=1)
 
-        mean_color, shade_color = COLORS["green"]
-        ax.fill_between(
-            x_range,
-            lower_bound.astype(float),
-            upper_bound.astype(float),
-            alpha=0.3,
-            color=shade_color,
-        )
-        ax.plot(x_range, mean.values, color=mean_color)
+            mean_color, shade_color = COLORS[["green", "red"][i]]
+            ax.fill_between(
+                x_range,
+                lower_bound.astype(float),
+                upper_bound.astype(float),
+                alpha=0.3,
+                color=shade_color,
+            )
+            ax.plot(
+                x_range, mean.values, label=all_fns_unf[0].columns[i], color=mean_color
+            )
 
     with plot_grid_over_datasets(
         results,
@@ -522,7 +526,7 @@ def plot_threshold_characteristics(
             labels,
             loc="outside lower center",
             ncol=5,
-            fontsize=13.5,
+            fontsize=15,
             fancybox=False,
             shadow=False,
             **legend_kwargs,

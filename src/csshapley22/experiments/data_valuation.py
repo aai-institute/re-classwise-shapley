@@ -12,7 +12,7 @@ from csshapley22.preprocess import (
     parse_models_config,
     parse_valuation_methods_config,
 )
-from csshapley22.utils import instantiate_model, set_random_seed, setup_logger
+from csshapley22.utils import set_random_seed, setup_logger
 
 logger = setup_logger()
 

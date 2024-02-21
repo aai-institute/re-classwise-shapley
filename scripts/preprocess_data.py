@@ -6,7 +6,7 @@ import pandas as pd
 from dvc.api import params_show
 from sklearn import preprocessing
 
-from re_classwise_shapley.config import Config
+from re_classwise_shapley.accessor import Accessor
 from re_classwise_shapley.filter import FilterRegistry
 from re_classwise_shapley.io import load_dataset, store_dataset
 from re_classwise_shapley.log import setup_logger
@@ -22,11 +22,15 @@ def preprocess_data(
     dataset_name: str,
 ):
     """
-    Preprocesses a dataset and stores it on disk.
+    Preprocesses a dataset and stores it on disk. The preprocessing steps are defined in
+    the `params.datasets` section. The dataset is stored as `x.npy` and `y.npy`.
+    Additional information is stored as `*.json` files. All of them are stored in a
+    folder `Access.PREPROCESSED_PATH / dataset_name`.
+
     Args:
         dataset_name: The name of the dataset to preprocess.
     """
-    preprocessed_folder = Config.PREPROCESSED_PATH / dataset_name
+    preprocessed_folder = Accessor.PREPROCESSED_PATH / dataset_name
     if os.path.exists(preprocessed_folder):
         logger.info(
             f"Preprocessed data '{dataset_name}' exists in '{preprocessed_folder}'."
@@ -36,7 +40,7 @@ def preprocess_data(
     params = params_show()
     datasets_settings = params["datasets"]
 
-    dataset_folder = Config.RAW_PATH / dataset_name
+    dataset_folder = Accessor.RAW_PATH / dataset_name
     logger.info(f"Loading raw dataset '{dataset_name}' from {dataset_folder}.")
     raw_dataset = load_dataset(dataset_folder)
 
@@ -48,10 +52,22 @@ def preprocess_data(
 
 def preprocess_dataset(raw_dataset: RawDataset, dataset_kwargs: Dict) -> RawDataset:
     """
-    Preprocesses a dataset and returns preprocesses data.
-    :param raw_dataset: The raw dataset to preprocess.
-    :param dataset_kwargs: The dataset kwargs for processing.
-    :return: The preprocessed dataset as a tuple of x, y and additional info.
+    Preprocesses a dataset and returns preprocessed data.
+
+    Args:
+        raw_dataset: The raw dataset to preprocess.
+        dataset_kwargs: The dataset kwargs for processing. Contains the keys `filters`
+            and `preprocessor`. The `filters` key contains a dictionary of filters to
+            apply. The `preprocessor` key contains a dictionary of preprocessors to
+            apply.
+
+    Returns:
+        The preprocessed dataset as a tuple of x, y and additional info. Additional
+        information contains a mapping from file_names to dictionaries (to be saved as
+        `*.json`). It contains a file name `info.json` with information `feature_names`,
+        `target_names` and `description`. It also contains a file name `filters.json`
+        with the applied filters and a file name `preprocess.json` with the applied
+        preprocessors.
     """
     x, y, additional_info = raw_dataset
 

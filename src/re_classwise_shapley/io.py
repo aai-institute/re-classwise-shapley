@@ -17,9 +17,12 @@ logger = setup_logger(__name__)
 
 def store_dataset(dataset: RawDataset, output_folder: Path):
     """
-    Stores a dataset on disk.
-    :param dataset: Tuple of x, y and additional info.
-    :param output_folder: Path to the folder where the dataset should be stored.
+    Stores a dataset on disk. The dataset is stored as `x.npy` and `y.npy`. Additional
+    information is stored as `*.json` files.
+
+    Args:
+        dataset: Tuple of x, y and additional info.
+        output_folder: Path to the folder where the dataset should be stored.
     """
 
     try:
@@ -47,8 +50,10 @@ def store_dataset(dataset: RawDataset, output_folder: Path):
 def load_dataset(input_folder: Path) -> RawDataset:
     """
     Loads a dataset from disk.
-    :param input_folder: Path to the folder containing the dataset.
-    :return: Tuple of x, y and additional info.
+
+    Args:
+        input_folder: Path to the folder containing the dataset.
+        Tuple of x, y and additional info.
     """
     x = np.load(str(input_folder / "x.npy"))
     y = np.load(str(input_folder / "y.npy"), allow_pickle=True)
@@ -60,40 +65,3 @@ def load_dataset(input_folder: Path) -> RawDataset:
             additional_info[file_name] = json.load(file)
 
     return x, y, additional_info
-
-
-def parse_valuation_method_dict(
-    valuation_method_configs: Dict[str, Dict],
-    global_kwargs: Dict = None,
-    active_valuation_methods: Optional[List[str]] = None,
-    kwargs_key: str = "kwargs",
-) -> ValuationMethodDict:
-    """
-    Parse the valuation method configs to a dictionary mapping strs to function. A
-    function accepts a utility and returns a valuation result.
-
-    :param valuation_method_configs: Configuration of all available valuation methods.
-    :param global_kwargs: Further arguments to be passed to all methods instantiated.
-    :param active_valuation_methods: A list of valuation methods to be used. If None,
-        all passed valuation methods are used.
-    :param kwargs_key: Key to be used for the valuation methods to define further
-        arguments.
-    :returns: Dictionary mapping valuation method names to functions.
-    """
-
-    if active_valuation_methods is not None:
-        valuation_method_configs = {
-            k: valuation_method_configs[k] for k in active_valuation_methods
-        }
-
-    function = dict()
-    for valuation_method_name, config in valuation_method_configs.items():
-        algorithm_name = config["algorithm"]
-        function[valuation_method_name] = partial(
-            compute_values,
-            valuation_method=algorithm_name,
-            **(config[kwargs_key] if kwargs_key in config else {}),
-            **(global_kwargs if global_kwargs else {}),
-        )
-
-    return function

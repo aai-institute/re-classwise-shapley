@@ -4,7 +4,7 @@ import click
 from dvc.api import params_show
 from sklearn.datasets import fetch_openml
 
-from re_classwise_shapley.config import Config
+from re_classwise_shapley.accessor import Accessor
 from re_classwise_shapley.io import store_dataset
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import RawDataset
@@ -17,7 +17,9 @@ logger = setup_logger()
 def fetch_data(dataset_name: str):
     """
     Fetches a single dataset from openml and stores it on disk. The openml id is taken
-    from the `params.datasets.openml_id` section.
+    from the `params.datasets.openml_id` section. The dataset is stored as `x.npy` and
+    `y.npy`. Additional information is stored as `*.json` files. All of them are
+    stored in a folder `Access.RAW_PATH / dataset_name`.
 
     Args:
         dataset_name: The name of the dataset to fetch.
@@ -26,7 +28,7 @@ def fetch_data(dataset_name: str):
     dataset_config = params["datasets"][dataset_name]
     open_ml_id = dataset_config["openml_id"]
 
-    dataset_folder = Config.RAW_PATH / dataset_name
+    dataset_folder = Accessor.RAW_PATH / dataset_name
     if os.path.exists(dataset_folder):
         logger.info(f"Dataset {dataset_name} exists. Skipping.")
         return

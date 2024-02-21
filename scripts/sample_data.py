@@ -1,7 +1,7 @@
 import json
 import os
 import pickle
-from functools import partial
+from copy import deepcopy
 from typing import Dict, List, Tuple
 
 import click
@@ -9,15 +9,12 @@ import numpy as np
 from dvc.api import params_show
 from numpy.random import SeedSequence
 from numpy.typing import NDArray
-from pydvl.utils import Dataset, ensure_seed_sequence
+from pydvl.utils import Dataset
 
-from re_classwise_shapley.config import Config
+from re_classwise_shapley.accessor import Accessor
 from re_classwise_shapley.io import load_dataset
-from re_classwise_shapley.preprocess import flip_labels
 from re_classwise_shapley.types import Seed
-from re_classwise_shapley.utils import get_pipeline_seed
-
-PreprocessorRegistry = {"flip_labels": flip_labels}
+from re_classwise_shapley.utils import pipeline_seed
 
 
 @click.command()
@@ -32,7 +29,9 @@ def sample_data(
     """
     Samples a dataset from a preprocessed dataset. It accepts `experiment_name` and
     `dataset_name` as arguments. The experiment name is used to determine the sampling
-    method. The dataset name is used to determine the dataset to sample from. First it
+    method. The dataset name is used to determine the dataset to sample from. The
+    repetition id is used as a seed for all randomness. The sampled dataset is stored in
+    the `Accessor.SAMPLED_PATH` directory.
 
     Args:
         experiment_name: Name of the executed experiment. Experiments define the
@@ -42,19 +41,18 @@ def sample_data(
             all randomness.
     """
     params = params_show()
-    output_dir = (
-        Config.SAMPLED_PATH / experiment_name / dataset_name / str(repetition_id)
-    )
-    os.makedirs(output_dir, exist_ok=True)
+    input_folder = Accessor.PREPROCESSED_PATH / dataset_name
+
+    seed = pipeline_seed(repetition_id, 1)
+    seed_sequence = SeedSequence(seed).spawn(2)
 
     experiment_config = params["experiments"][experiment_name]
     sampler_name = experiment_config["sampler"]
     sampler_kwargs = params["samplers"][sampler_name]
 
-    seed = get_pipeline_seed(repetition_id, 1)
-    seed_sequence = SeedSequence(seed).spawn(2)
+    x, y, _ = load_dataset(input_folder)
     val_set, test_set = sample_val_test_set(
-        dataset_name, sampler_kwargs, seed=seed_sequence[0]
+        x, y, **sampler_kwargs, seed=seed_sequence[0]
     )
 
     preprocess_info = None
@@ -62,6 +60,11 @@ def sample_data(
         val_set, preprocess_info = apply_preprocessors(
             val_set, experiment_config["preprocessors"], seed_sequence
         )
+
+    output_dir = (
+        Accessor.SAMPLED_PATH / experiment_name / dataset_name / str(repetition_id)
+    )
+    os.makedirs(output_dir, exist_ok=True)
 
     with open(output_dir / "val_set.pkl", "wb") as file:
         pickle.dump(val_set, file)
@@ -74,49 +77,43 @@ def sample_data(
             json.dump(preprocess_info, file, indent=4, sort_keys=True)
 
 
-def apply_preprocessors(val_set: Dataset, preprocessor_configs: Dict, seed: List[Seed]):
-    preprocess_info = {}
-    for idx, (preprocessor_name, preprocessor_config) in enumerate(
-        preprocessor_configs.items()
-    ):
-        preprocessor_fn = PreprocessorRegistry[preprocessor_name]
-        val_set, info = preprocessor_fn(val_set, **preprocessor_config, seed=seed[idx])
-        preprocess_info.update(
-            {f"preprocessor.{preprocessor_name}.{k}": v for k, v in info.items()}
-        )
-
-    return val_set, preprocess_info
-
-
 def sample_val_test_set(
-    dataset_name: str, sample_info: Dict, max_samples: int = None, seed: Seed = None
+    features: NDArray[np.float_],
+    labels: NDArray[np.int_],
+    val: float,
+    train: float,
+    test: float,
+    max_samples: int,
+    seed: Seed = None,
 ) -> Tuple[Dataset, Dataset]:
     """
     Takes the name of a (pre-processed) dataset and sampling information and samples the
-    validation and test set. The sampling information is expected to be a dictionary
-    with fields `train`, `val` and `test` which contain the relative percentages of the
-    respective set.
+    validation and test set. Both validation and test set share the same training set.
+    All three sets are sampled from the same dataset while preserving the relative label
+    distribution of the original dataset by using stratified sampling.
 
     Args:
-        dataset_name: Name of the dataset.
-        max_samples field: Limit the number of samples taken from the dataset.
+        features: Features of the dataset.
+        labels: Labels of the dataset.
+        val: Relative size of the validation set in percent.
+        train: Relative size of the training set in percent.
+        test: Relative size of the test set in percent.
+        max_samples: Limit the number of samples taken from the dataset.
         seed: Either an instance of a numpy random number generator or a seed for it.
     Returns:
-        Tuple containing the validation and test set.
+        Tuple containing the validation and test set. Both share the same training set.
     """
     rng = np.random.default_rng(seed)
 
-    preprocessed_folder = Config.PREPROCESSED_PATH / dataset_name
-    x, y, _ = load_dataset(preprocessed_folder)
-    p = rng.permutation(len(x))
-    x, y = x[p], y[p]
+    p = rng.permutation(len(features))
+    features, labels = features[p], labels[p]
 
-    n_samples = min(sample_info["max_samples"], len(x))
-    val_size = int(n_samples * sample_info["val"])
-    train_size = int(n_samples * sample_info["train"])
-    test_size = int(n_samples * sample_info["test"])
+    n_samples = min(max_samples, len(features))
+    val_size = int(n_samples * val)
+    train_size = int(n_samples * train)
+    test_size = int(n_samples * test)
     set_train, set_val, set_test = stratified_sampling(
-        x, y, (train_size, val_size, test_size), seed=rng
+        features, labels, (train_size, val_size, test_size), seed=rng
     )
     validation_set = Dataset(*set_train, *set_val)
     test_set = Dataset(*set_train, *set_test)
@@ -126,55 +123,127 @@ def sample_val_test_set(
 def stratified_sampling(
     features: NDArray[np.float_],
     labels: NDArray[np.int_],
-    sizes: Tuple[int, ...],
+    n_samples: Tuple[int, ...],
     *,
     seed: Seed = None,
 ) -> Tuple[Tuple[NDArray[np.float_], NDArray[np.int_]], ...]:
     """
-    Stratified sampler of a dataset containing features and labels.
+    Stratified sampler of a dataset containing features and labels. The sampler ensures
+    that the relative class distribution is preserved in the sampled data. The sampler
+    also ensures that for each value of `n_samples` a dataset with exactly `n_samples`
+    is returned.
 
-    :param features: Features of the dataset.
-    :param labels: Labels of the features.
-    :param sizes: Tuple containing target size of each dataset.
-    :param seed: Seed for the random number generator.
-    :return: A tuple containing tuples of the sub-sampled data.
+    Args:
+        features: Features of the dataset.
+        labels: Labels of the features.
+        n_samples: Tuple containing number of samples for each dataset.
+        seed: Seed for the random number generator.
+
+    Returns:
+        A tuple containing of tuples of features and labels. Each inner tuple contains
+        the features and labels of one dataset as specified by `n_samples`.
     """
-    if len(features) != len(labels):
-        raise ValueError("The number of features and labels must be equal.")
+    n_data_points = len(features)
+    if n_data_points != len(labels):
+        raise ValueError("Labels have to be of same size as features.")
 
-    if np.sum(sizes) > len(features):
-        raise ValueError("The sum of the sizes exceeds the size of the dataset.")
+    if np.sum(n_samples) > n_data_points:
+        raise ValueError(
+            f"The sum of all required samples exceeds `{n_data_points}` available data "
+            f"points."
+        )
 
     rng = np.random.default_rng(seed)
-    p = rng.permutation(len(features))
-    features = features[p]
-    labels = labels[p]
-    unique_labels, num_labels = np.unique(labels, return_counts=True)
-    label_indices = [np.argwhere(labels == label)[:, 0] for label in unique_labels]
-    relative_set_sizes = num_labels / len(labels)
+    p = rng.permutation(n_data_points)
+    features, labels = features[p], labels[p]
 
-    data = [list() for _ in sizes]
-    it_idx = [0 for _ in unique_labels]
+    unique_labels, counts = np.unique(labels, return_counts=True)
+    relative_set_sizes = counts / len(labels)
+    windows = [np.where(labels == label)[0] for label in unique_labels]
+    windows_idx = np.zeros(len(windows))
+    sampled_data = []
 
-    for i, size in enumerate(sizes):
+    for size in n_samples:
+        sampled_features, sampled_labels = [], []
         absolute_set_sizes = (relative_set_sizes * size).astype(np.int_)
         missing_elements = size - np.sum(absolute_set_sizes)
         absolute_set_sizes[np.argsort(absolute_set_sizes)[:missing_elements]] += 1
 
-        if np.sum(absolute_set_sizes) != size:
-            raise ValueError("There is an error in sampling.")
-
         for j in range(len(unique_labels)):
-            label_idx = label_indices[j]
-            window_idx = label_idx[it_idx[j] : it_idx[j] + absolute_set_sizes[j]]
-            it_idx[j] += absolute_set_sizes[j]
-            data[i].append((features[window_idx], labels[window_idx]))
+            label_idx = windows[j]
+            window_idx = label_idx[
+                windows_idx[j] : windows_idx[j] + absolute_set_sizes[j]
+            ]
+            windows_idx[j] += absolute_set_sizes[j]
+            sampled_features.append(features[window_idx])
+            sampled_labels.append(labels[window_idx])
 
-    data = [
-        (np.concatenate([t[0] for t in lst]), np.concatenate([t[1] for t in lst]))
-        for lst in data
-    ]
-    return tuple(data)
+        sampled_features = np.concatenate(sampled_features, axis=0)
+        sampled_labels = np.concatenate(sampled_labels, axis=0)
+        sampled_data.append((sampled_features, sampled_labels))
+
+    return tuple(sampled_data)
+
+
+def apply_preprocessors(
+    dataset: Dataset, preprocessor_configs: Dict, seed: List[Seed]
+) -> Tuple[Dataset, Dict]:
+    """
+    Applies a list of preprocessors (specified by `preprocessor_configs`) to a dataset.
+    `preprocessor_configs` is a dictionary containing the name of the preprocessor as
+    key and the configuration as value. The configuration is passed to the preprocessor
+    generator function obtained from the `PreprocessorRegistry`.
+
+    Args:
+        dataset: Dataset to preprocess.
+        preprocessor_configs: A dictionary containing the configurations of the
+            preprocessors.
+        seed: Either an instance of a numpy random number generator or a seed for it.
+
+    Returns:
+        A tuple containing the preprocessed dataset and a dictionary containing
+    """
+
+    preprocess_info = {}
+    for idx, (preprocessor_name, preprocessor_config) in enumerate(
+        preprocessor_configs.items()
+    ):
+        preprocessor_fn = PreprocessorRegistry[preprocessor_name]
+        dataset, info = preprocessor_fn(dataset, **preprocessor_config, seed=seed[idx])
+        preprocess_info.update(
+            {f"preprocessor.{preprocessor_name}.{k}": v for k, v in info.items()}
+        )
+
+    return dataset, preprocess_info
+
+
+def flip_labels(
+    dataset: Dataset, perc: float = 0.2, seed: Seed = None
+) -> Tuple[Dataset, Dict]:
+    """
+    Flips a percentage of labels in a dataset. The labels are flipped randomly. The
+    number of flipped labels is returned in the `preprocess_info` dictionary.
+
+    Args:
+        dataset: Dataset to flip labels.
+        perc: Number of labels to flip in percent. Must be in the range [0, 1].
+        seed: Either an instance of a numpy random number generator or a seed for it.
+
+    Returns:
+        A tuple containing the dataset with flipped labels and a dictionary containing
+        the number and indices of the flipped labels.
+
+    """
+    labels = dataset.y_train
+    rng = np.random.default_rng(seed)
+    num_data_indices = int(perc * len(labels))
+    p = rng.permutation(len(labels))[:num_data_indices]
+    labels[p] = 1 - labels[p]
+    dataset.y_train = labels
+    return dataset, {"idx": [int(i) for i in p], "n_flipped": num_data_indices}
+
+
+PreprocessorRegistry = {"flip_labels": flip_labels}
 
 
 if __name__ == "__main__":

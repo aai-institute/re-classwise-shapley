@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, TypeVar, Union
+from typing import Callable, Dict, List, Optional, Sequence, Tuple, TypeVar, Union
 
 import numpy as np
 from numpy.typing import NDArray
@@ -15,11 +15,13 @@ OneOrMany = Union[T, Sequence[T]]
 
 def ensure_list(x: OneOrMany[T]) -> List[T]:
     """
-    Ensures that the input is a list.
+    Converts an input to a list. If the input is already a list, it is returned
+    unchanged. Otherwise, the element is wrapped in a list.
+
     Args:
-        x: Input to convert to a list.
+        x: Input to be converted to a list.
 
     Returns:
-        List of the input.
+        Either the input list or a list containing the input.
     """
     return x if not isinstance(input, Sequence) else [x]

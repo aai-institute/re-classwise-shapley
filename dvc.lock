@@ -1,45 +1,46 @@
 schema: '2.0'
 stages:
-  cs-shapley-fetch-data@diabetes:
+  fetch-data@diabetes:
     cmd: python -m scripts.fetch_data --dataset-name diabetes
     deps:
     - path: scripts/fetch_data.py
       hash: md5
-      md5: bc5cdaeb2c6e568072d6764288027037
-      size: 1706
+      md5: 958c7baee7c2948d780dc42b128fda7f
+      size: 2012
+    - path: src/re_classwise_shapley/io.py
+      hash: md5
+      md5: 6c73b1d8d72531daa65c345833e08384
+      size: 3438
+    params:
+      params.yaml:
+        datasets.diabetes.openml_id: 37
     outs:
     - path: output/raw/diabetes
       hash: md5
       md5: 3e23427351eb2041c4ed0cf74f615aa9.dir
       size: 55033
       nfiles: 3
-  cs-shapley-fetch-data@cpu:
-    cmd: python -m scripts.fetch_data --dataset-name cpu
+  fetch-data@phoneme:
+    cmd: python -m scripts.fetch_data --dataset-name phoneme
     deps:
     - path: scripts/fetch_data.py
       hash: md5
-      md5: bc5cdaeb2c6e568072d6764288027037
-      size: 1706
+      md5: 958c7baee7c2948d780dc42b128fda7f
+      size: 2012
+    - path: src/re_classwise_shapley/io.py
+      hash: md5
+      md5: 6c73b1d8d72531daa65c345833e08384
+      size: 3438
+    params:
+      params.yaml:
+        datasets.phoneme.openml_id: 1489
     outs:
-    - path: output/raw/cpu
+    - path: output/raw/phoneme
       hash: md5
-      md5: deb3c5b158517073747fb31406dd962a.dir
-      size: 1445409
+      md5: 9eb05567ed922d7a207d9939ecf36c6d.dir
+      size: 232428
       nfiles: 3
-  cs-shapley-fetch-data@covertype:
-    cmd: python -m scripts.fetch_data --dataset-name covertype
-    deps:
-    - path: scripts/fetch_data.py
-      hash: md5
-      md5: bc5cdaeb2c6e568072d6764288027037
-      size: 1706
-    outs:
-    - path: output/raw/covertype
-      hash: md5
-      md5: 35b4e811a5466fb6eaa2ef9728cbaa37.dir
-      size: 252166642
-      nfiles: 3
-  cs-shapley-preprocess-data@diabetes:
+  preprocess-data@diabetes:
     cmd: python -m scripts.preprocess_data --dataset-name diabetes
     deps:
     - path: output/raw/diabetes
@@ -49,198 +50,3260 @@ stages:
       nfiles: 3
     - path: scripts/preprocess_data.py
       hash: md5
-      md5: 58ee0b8e30b8ef059f83110a37b30614
-      size: 3103
+      md5: 52db888a50d625baeef2d49562611c31
+      size: 3118
+    - path: src/re_classwise_shapley/filter.py
+      hash: md5
+      md5: 3af4fc088f8a5ec896fe7a79773f6727
+      size: 1318
+    - path: src/re_classwise_shapley/io.py
+      hash: md5
+      md5: 6c73b1d8d72531daa65c345833e08384
+      size: 3438
+    params:
+      params.yaml:
+        datasets.diabetes:
+          openml_id: 37
     outs:
     - path: output/preprocessed/diabetes
       hash: md5
       md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
       size: 59554
       nfiles: 5
-  cs-shapley-preprocess-data@cpu:
-    cmd: python -m scripts.preprocess_data --dataset-name cpu
+  preprocess-data@phoneme:
+    cmd: python -m scripts.preprocess_data --dataset-name phoneme
     deps:
-    - path: output/raw/cpu
+    - path: output/raw/phoneme
       hash: md5
-      md5: deb3c5b158517073747fb31406dd962a.dir
-      size: 1445409
+      md5: 9eb05567ed922d7a207d9939ecf36c6d.dir
+      size: 232428
       nfiles: 3
     - path: scripts/preprocess_data.py
       hash: md5
-      md5: 58ee0b8e30b8ef059f83110a37b30614
-      size: 3103
+      md5: 52db888a50d625baeef2d49562611c31
+      size: 3118
+    - path: src/re_classwise_shapley/filter.py
+      hash: md5
+      md5: 3af4fc088f8a5ec896fe7a79773f6727
+      size: 1318
+    - path: src/re_classwise_shapley/io.py
+      hash: md5
+      md5: 6c73b1d8d72531daa65c345833e08384
+      size: 3438
+    params:
+      params.yaml:
+        datasets.phoneme:
+          openml_id: 1489
     outs:
-    - path: output/preprocessed/cpu
+    - path: output/preprocessed/phoneme
       hash: md5
-      md5: 87f82f79e9233d8c4f0745f29d0ccfa2.dir
-      size: 1445557
+      md5: 90e733c8b634aa4902ffeaff3fb3a56d.dir
+      size: 264783
       nfiles: 5
-  cs-shapley-preprocess-data@covertype:
-    cmd: python -m scripts.preprocess_data --dataset-name covertype
-    deps:
-    - path: output/raw/covertype
-      hash: md5
-      md5: 35b4e811a5466fb6eaa2ef9728cbaa37.dir
-      size: 252166642
-      nfiles: 3
-    - path: scripts/preprocess_data.py
-      hash: md5
-      md5: 58ee0b8e30b8ef059f83110a37b30614
-      size: 3103
-    outs:
-    - path: output/preprocessed/covertype
-      hash: md5
-      md5: 86e47a7612235ffac15118ad7bd6bdc8.dir
-      size: 255651635
-      nfiles: 5
-  cs-shapley-wad-drop-experiment@diabetes-logistic_regression:
-    cmd: python -m scripts.run_experiment_wad_drop --dataset-name diabetes --model-name
-      logistic_regression
+  sample-data@point_removal-diabetes-1:
+    cmd: "python -m scripts.sample_data --experiment-name point_removal --dataset-name\
+      \ diabetes --repetition-id 1\n"
     deps:
     - path: output/preprocessed/diabetes
       hash: md5
       md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
       size: 59554
       nfiles: 5
-    - path: scripts/run_experiment_wad_drop.py
+    - path: scripts/sample_data.py
       hash: md5
-      md5: 97e7749850bf87f3cfeb9eecd1c11242
-      size: 2981
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.point_removal.sampler: default
     outs:
-    - path: output/results/wad_drop/logistic_regression/diabetes
+    - path: output/sampled/point_removal/diabetes/1
       hash: md5
-      md5: 4913aecdfd45b3e7b69c1c15824c2ffb.dir
-      size: 348552
-      nfiles: 27
-  cs-shapley-wad-drop-experiment@cpu-logistic_regression:
-    cmd: python -m scripts.run_experiment_wad_drop --dataset-name cpu --model-name
+      md5: c25698b824eb8c80c19084fc5192de94.dir
+      size: 67572
+      nfiles: 2
+  sample-data@point_removal-diabetes-2:
+    cmd: "python -m scripts.sample_data --experiment-name point_removal --dataset-name\
+      \ diabetes --repetition-id 2\n"
+    deps:
+    - path: output/preprocessed/diabetes
+      hash: md5
+      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
+      size: 59554
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.point_removal.sampler: default
+    outs:
+    - path: output/sampled/point_removal/diabetes/2
+      hash: md5
+      md5: 130bc4081c3b94d031e78a07f3977d68.dir
+      size: 67572
+      nfiles: 2
+  sample-data@point_removal-diabetes-3:
+    cmd: "python -m scripts.sample_data --experiment-name point_removal --dataset-name\
+      \ diabetes --repetition-id 3\n"
+    deps:
+    - path: output/preprocessed/diabetes
+      hash: md5
+      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
+      size: 59554
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.point_removal.sampler: default
+    outs:
+    - path: output/sampled/point_removal/diabetes/3
+      hash: md5
+      md5: a7d1ba3b951d11a587a8e2e105e0eeaf.dir
+      size: 67572
+      nfiles: 2
+  sample-data@point_removal-diabetes-4:
+    cmd: "python -m scripts.sample_data --experiment-name point_removal --dataset-name\
+      \ diabetes --repetition-id 4\n"
+    deps:
+    - path: output/preprocessed/diabetes
+      hash: md5
+      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
+      size: 59554
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.point_removal.sampler: default
+    outs:
+    - path: output/sampled/point_removal/diabetes/4
+      hash: md5
+      md5: b78d131652961f57b04943709b373ca0.dir
+      size: 67572
+      nfiles: 2
+  sample-data@point_removal-diabetes-5:
+    cmd: "python -m scripts.sample_data --experiment-name point_removal --dataset-name\
+      \ diabetes --repetition-id 5\n"
+    deps:
+    - path: output/preprocessed/diabetes
+      hash: md5
+      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
+      size: 59554
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.point_removal.sampler: default
+    outs:
+    - path: output/sampled/point_removal/diabetes/5
+      hash: md5
+      md5: ecc03b0dfbe6b58904c5aa7a5bf5ff47.dir
+      size: 67572
+      nfiles: 2
+  sample-data@point_removal-phoneme-1:
+    cmd: "python -m scripts.sample_data --experiment-name point_removal --dataset-name\
+      \ phoneme --repetition-id 1\n"
+    deps:
+    - path: output/preprocessed/phoneme
+      hash: md5
+      md5: 90e733c8b634aa4902ffeaff3fb3a56d.dir
+      size: 264783
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.point_removal.sampler: default
+    outs:
+    - path: output/sampled/point_removal/phoneme/1
+      hash: md5
+      md5: 3b0a4f70d56bbcd665ac702b474f2d6a.dir
+      size: 177071
+      nfiles: 2
+  sample-data@point_removal-phoneme-2:
+    cmd: "python -m scripts.sample_data --experiment-name point_removal --dataset-name\
+      \ phoneme --repetition-id 2\n"
+    deps:
+    - path: output/preprocessed/phoneme
+      hash: md5
+      md5: 90e733c8b634aa4902ffeaff3fb3a56d.dir
+      size: 264783
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.point_removal.sampler: default
+    outs:
+    - path: output/sampled/point_removal/phoneme/2
+      hash: md5
+      md5: d72ce406e05963e61579c390b8b18d80.dir
+      size: 177071
+      nfiles: 2
+  sample-data@point_removal-phoneme-3:
+    cmd: "python -m scripts.sample_data --experiment-name point_removal --dataset-name\
+      \ phoneme --repetition-id 3\n"
+    deps:
+    - path: output/preprocessed/phoneme
+      hash: md5
+      md5: 90e733c8b634aa4902ffeaff3fb3a56d.dir
+      size: 264783
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.point_removal.sampler: default
+    outs:
+    - path: output/sampled/point_removal/phoneme/3
+      hash: md5
+      md5: febf5dede4e3cc59c9fbf37be50a9f7b.dir
+      size: 177071
+      nfiles: 2
+  sample-data@point_removal-phoneme-4:
+    cmd: "python -m scripts.sample_data --experiment-name point_removal --dataset-name\
+      \ phoneme --repetition-id 4\n"
+    deps:
+    - path: output/preprocessed/phoneme
+      hash: md5
+      md5: 90e733c8b634aa4902ffeaff3fb3a56d.dir
+      size: 264783
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.point_removal.sampler: default
+    outs:
+    - path: output/sampled/point_removal/phoneme/4
+      hash: md5
+      md5: b9dde42158792e4d18b96fc370020632.dir
+      size: 177071
+      nfiles: 2
+  sample-data@point_removal-phoneme-5:
+    cmd: "python -m scripts.sample_data --experiment-name point_removal --dataset-name\
+      \ phoneme --repetition-id 5\n"
+    deps:
+    - path: output/preprocessed/phoneme
+      hash: md5
+      md5: 90e733c8b634aa4902ffeaff3fb3a56d.dir
+      size: 264783
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.point_removal.sampler: default
+    outs:
+    - path: output/sampled/point_removal/phoneme/5
+      hash: md5
+      md5: 9070d240e136ee8b34ff908eff6b788e.dir
+      size: 177071
+      nfiles: 2
+  sample-data@noise_removal-diabetes-1:
+    cmd: "python -m scripts.sample_data --experiment-name noise_removal --dataset-name\
+      \ diabetes --repetition-id 1\n"
+    deps:
+    - path: output/preprocessed/diabetes
+      hash: md5
+      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
+      size: 59554
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.noise_removal.sampler: default
+    outs:
+    - path: output/sampled/noise_removal/diabetes/1
+      hash: md5
+      md5: 0af3ed7bae3b650976d1e04dec8f800a.dir
+      size: 67965
+      nfiles: 3
+  sample-data@noise_removal-diabetes-2:
+    cmd: "python -m scripts.sample_data --experiment-name noise_removal --dataset-name\
+      \ diabetes --repetition-id 2\n"
+    deps:
+    - path: output/preprocessed/diabetes
+      hash: md5
+      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
+      size: 59554
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.noise_removal.sampler: default
+    outs:
+    - path: output/sampled/noise_removal/diabetes/2
+      hash: md5
+      md5: 59798568b697c6842e29029cd75a3077.dir
+      size: 67972
+      nfiles: 3
+  sample-data@noise_removal-diabetes-3:
+    cmd: "python -m scripts.sample_data --experiment-name noise_removal --dataset-name\
+      \ diabetes --repetition-id 3\n"
+    deps:
+    - path: output/preprocessed/diabetes
+      hash: md5
+      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
+      size: 59554
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.noise_removal.sampler: default
+    outs:
+    - path: output/sampled/noise_removal/diabetes/3
+      hash: md5
+      md5: c59512c00ce16fb34e9d57c37d2f6d1a.dir
+      size: 67967
+      nfiles: 3
+  sample-data@noise_removal-diabetes-4:
+    cmd: "python -m scripts.sample_data --experiment-name noise_removal --dataset-name\
+      \ diabetes --repetition-id 4\n"
+    deps:
+    - path: output/preprocessed/diabetes
+      hash: md5
+      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
+      size: 59554
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.noise_removal.sampler: default
+    outs:
+    - path: output/sampled/noise_removal/diabetes/4
+      hash: md5
+      md5: 252f14ae2d4bc6a87bc363c7edf3f3b9.dir
+      size: 67969
+      nfiles: 3
+  sample-data@noise_removal-diabetes-5:
+    cmd: "python -m scripts.sample_data --experiment-name noise_removal --dataset-name\
+      \ diabetes --repetition-id 5\n"
+    deps:
+    - path: output/preprocessed/diabetes
+      hash: md5
+      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
+      size: 59554
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.noise_removal.sampler: default
+    outs:
+    - path: output/sampled/noise_removal/diabetes/5
+      hash: md5
+      md5: c4445dcfc727c91fb759bd67be39f4ce.dir
+      size: 67967
+      nfiles: 3
+  sample-data@noise_removal-phoneme-1:
+    cmd: "python -m scripts.sample_data --experiment-name noise_removal --dataset-name\
+      \ phoneme --repetition-id 1\n"
+    deps:
+    - path: output/preprocessed/phoneme
+      hash: md5
+      md5: 90e733c8b634aa4902ffeaff3fb3a56d.dir
+      size: 264783
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.noise_removal.sampler: default
+    outs:
+    - path: output/sampled/noise_removal/phoneme/1
+      hash: md5
+      md5: f9eecd5a8b8d0d5135e386b150ccb33b.dir
+      size: 178442
+      nfiles: 3
+  sample-data@noise_removal-phoneme-2:
+    cmd: "python -m scripts.sample_data --experiment-name noise_removal --dataset-name\
+      \ phoneme --repetition-id 2\n"
+    deps:
+    - path: output/preprocessed/phoneme
+      hash: md5
+      md5: 90e733c8b634aa4902ffeaff3fb3a56d.dir
+      size: 264783
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.noise_removal.sampler: default
+    outs:
+    - path: output/sampled/noise_removal/phoneme/2
+      hash: md5
+      md5: 2a8866f7dfac33026e15ece41e7b39de.dir
+      size: 178440
+      nfiles: 3
+  sample-data@noise_removal-phoneme-3:
+    cmd: "python -m scripts.sample_data --experiment-name noise_removal --dataset-name\
+      \ phoneme --repetition-id 3\n"
+    deps:
+    - path: output/preprocessed/phoneme
+      hash: md5
+      md5: 90e733c8b634aa4902ffeaff3fb3a56d.dir
+      size: 264783
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.noise_removal.sampler: default
+    outs:
+    - path: output/sampled/noise_removal/phoneme/3
+      hash: md5
+      md5: 457f59a5eb209e5e35cb47eb1bd1ae0c.dir
+      size: 178440
+      nfiles: 3
+  sample-data@noise_removal-phoneme-4:
+    cmd: "python -m scripts.sample_data --experiment-name noise_removal --dataset-name\
+      \ phoneme --repetition-id 4\n"
+    deps:
+    - path: output/preprocessed/phoneme
+      hash: md5
+      md5: 90e733c8b634aa4902ffeaff3fb3a56d.dir
+      size: 264783
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.noise_removal.sampler: default
+    outs:
+    - path: output/sampled/noise_removal/phoneme/4
+      hash: md5
+      md5: df99957b07f073b49a1651c53557d2bf.dir
+      size: 178447
+      nfiles: 3
+  sample-data@noise_removal-phoneme-5:
+    cmd: "python -m scripts.sample_data --experiment-name noise_removal --dataset-name\
+      \ phoneme --repetition-id 5\n"
+    deps:
+    - path: output/preprocessed/phoneme
+      hash: md5
+      md5: 90e733c8b634aa4902ffeaff3fb3a56d.dir
+      size: 264783
+      nfiles: 5
+    - path: scripts/sample_data.py
+      hash: md5
+      md5: ea416ef255a417270e5bd803b50f7445
+      size: 6581
+    params:
+      params.yaml:
+        experiments.noise_removal.sampler: default
+    outs:
+    - path: output/sampled/noise_removal/phoneme/5
+      hash: md5
+      md5: 224611ab2f9c82d8796656a64bd10141.dir
+      size: 178441
+      nfiles: 3
+  calculate-values@point_removal-diabetes-logistic_regression-1-random:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 1\n"
+    deps:
+    - path: output/sampled/point_removal/diabetes/1
+      hash: md5
+      md5: c25698b824eb8c80c19084fc5192de94.dir
+      size: 67572
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+  calculate-values@point_removal-diabetes-logistic_regression-1-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 1\n"
+    deps:
+    - path: output/sampled/point_removal/diabetes/1
+      hash: md5
+      md5: c25698b824eb8c80c19084fc5192de94.dir
+      size: 67572
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.loo.pkl
+      hash: md5
+      md5: 82360e49dcce7f59b34b7c132282efed
+      size: 9471
+  calculate-values@point_removal-diabetes-logistic_regression-2-random:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 2\n"
+    deps:
+    - path: output/sampled/point_removal/diabetes/2
+      hash: md5
+      md5: 130bc4081c3b94d031e78a07f3977d68.dir
+      size: 67572
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.random.pkl
+      hash: md5
+      md5: 13870aad07eb7c5a2e718f9a8642e4d6
+      size: 9442
+  calculate-values@point_removal-diabetes-logistic_regression-2-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 2\n"
+    deps:
+    - path: output/sampled/point_removal/diabetes/2
+      hash: md5
+      md5: 130bc4081c3b94d031e78a07f3977d68.dir
+      size: 67572
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.loo.pkl
+      hash: md5
+      md5: 0af3eac796e46551f39f6e5765fb0689
+      size: 9471
+  calculate-values@point_removal-diabetes-logistic_regression-3-random:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 3\n"
+    deps:
+    - path: output/sampled/point_removal/diabetes/3
+      hash: md5
+      md5: a7d1ba3b951d11a587a8e2e105e0eeaf.dir
+      size: 67572
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/point_removal/logistic_regression/diabetes/3/valuation.random.pkl
+      hash: md5
+      md5: d8f8be296ee6701f33e1852af771c8a3
+      size: 9442
+  calculate-values@point_removal-diabetes-logistic_regression-3-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 3\n"
+    deps:
+    - path: output/sampled/point_removal/diabetes/3
+      hash: md5
+      md5: a7d1ba3b951d11a587a8e2e105e0eeaf.dir
+      size: 67572
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/point_removal/logistic_regression/diabetes/3/valuation.loo.pkl
+      hash: md5
+      md5: 7d47ca490ac8e6426baeb0b04081b608
+      size: 9471
+  calculate-values@point_removal-diabetes-logistic_regression-4-random:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 4\n"
+    deps:
+    - path: output/sampled/point_removal/diabetes/4
+      hash: md5
+      md5: b78d131652961f57b04943709b373ca0.dir
+      size: 67572
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/point_removal/logistic_regression/diabetes/4/valuation.random.pkl
+      hash: md5
+      md5: f4e5ddcc714aeb4c810018d321ec440f
+      size: 9442
+  calculate-values@point_removal-diabetes-logistic_regression-4-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 4\n"
+    deps:
+    - path: output/sampled/point_removal/diabetes/4
+      hash: md5
+      md5: b78d131652961f57b04943709b373ca0.dir
+      size: 67572
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/point_removal/logistic_regression/diabetes/4/valuation.loo.pkl
+      hash: md5
+      md5: 484e719180c7700422edf4b7c19b0bba
+      size: 9471
+  calculate-values@point_removal-diabetes-logistic_regression-5-random:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 5\n"
+    deps:
+    - path: output/sampled/point_removal/diabetes/5
+      hash: md5
+      md5: ecc03b0dfbe6b58904c5aa7a5bf5ff47.dir
+      size: 67572
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/point_removal/logistic_regression/diabetes/5/valuation.random.pkl
+      hash: md5
+      md5: 34552c3fa168cc722dc98b1a32fc64ef
+      size: 9442
+  calculate-values@point_removal-diabetes-logistic_regression-5-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 5\n"
+    deps:
+    - path: output/sampled/point_removal/diabetes/5
+      hash: md5
+      md5: ecc03b0dfbe6b58904c5aa7a5bf5ff47.dir
+      size: 67572
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/point_removal/logistic_regression/diabetes/5/valuation.loo.pkl
+      hash: md5
+      md5: cef21a2517497869a5ca9e5c79bc2b8c
+      size: 9471
+  calculate-values@point_removal-phoneme-logistic_regression-1-random:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 1\n"
+    deps:
+    - path: output/sampled/point_removal/phoneme/1
+      hash: md5
+      md5: 3b0a4f70d56bbcd665ac702b474f2d6a.dir
+      size: 177071
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.random.pkl
+      hash: md5
+      md5: 238a2380b711c422f213d5a6113dddad
+      size: 35360
+  calculate-values@point_removal-phoneme-logistic_regression-1-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 1\n"
+    deps:
+    - path: output/sampled/point_removal/phoneme/1
+      hash: md5
+      md5: 3b0a4f70d56bbcd665ac702b474f2d6a.dir
+      size: 177071
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.loo.pkl
+      hash: md5
+      md5: 0d02e7099da49d86b656121db6a658aa
+      size: 35389
+  calculate-values@point_removal-phoneme-logistic_regression-2-random:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 2\n"
+    deps:
+    - path: output/sampled/point_removal/phoneme/2
+      hash: md5
+      md5: d72ce406e05963e61579c390b8b18d80.dir
+      size: 177071
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.random.pkl
+      hash: md5
+      md5: b83dcdb347639a1c6465a86b926fa277
+      size: 35360
+  calculate-values@point_removal-phoneme-logistic_regression-2-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 2\n"
+    deps:
+    - path: output/sampled/point_removal/phoneme/2
+      hash: md5
+      md5: d72ce406e05963e61579c390b8b18d80.dir
+      size: 177071
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.loo.pkl
+      hash: md5
+      md5: 1f6abaf14ffbec6175179689b5c25329
+      size: 35389
+  calculate-values@point_removal-phoneme-logistic_regression-3-random:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 3\n"
+    deps:
+    - path: output/sampled/point_removal/phoneme/3
+      hash: md5
+      md5: febf5dede4e3cc59c9fbf37be50a9f7b.dir
+      size: 177071
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/point_removal/logistic_regression/phoneme/3/valuation.random.pkl
+      hash: md5
+      md5: 85b8fb0239b003d0a277782e76bcfe59
+      size: 35360
+  calculate-values@point_removal-phoneme-logistic_regression-3-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 3\n"
+    deps:
+    - path: output/sampled/point_removal/phoneme/3
+      hash: md5
+      md5: febf5dede4e3cc59c9fbf37be50a9f7b.dir
+      size: 177071
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/point_removal/logistic_regression/phoneme/3/valuation.loo.pkl
+      hash: md5
+      md5: 489dfc7ba3f2e15c14b4d94f7b2498c6
+      size: 35389
+  calculate-values@point_removal-phoneme-logistic_regression-4-random:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 4\n"
+    deps:
+    - path: output/sampled/point_removal/phoneme/4
+      hash: md5
+      md5: b9dde42158792e4d18b96fc370020632.dir
+      size: 177071
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/point_removal/logistic_regression/phoneme/4/valuation.random.pkl
+      hash: md5
+      md5: a56e21939869ea44ca544d1de46cc0b5
+      size: 35360
+  calculate-values@point_removal-phoneme-logistic_regression-4-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 4\n"
+    deps:
+    - path: output/sampled/point_removal/phoneme/4
+      hash: md5
+      md5: b9dde42158792e4d18b96fc370020632.dir
+      size: 177071
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/point_removal/logistic_regression/phoneme/4/valuation.loo.pkl
+      hash: md5
+      md5: 210660aa10978a60079330535bbc5a9c
+      size: 35389
+  calculate-values@point_removal-phoneme-logistic_regression-5-random:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 5\n"
+    deps:
+    - path: output/sampled/point_removal/phoneme/5
+      hash: md5
+      md5: 9070d240e136ee8b34ff908eff6b788e.dir
+      size: 177071
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/point_removal/logistic_regression/phoneme/5/valuation.random.pkl
+      hash: md5
+      md5: 78256612fa23f428026b50894701a6af
+      size: 35360
+  calculate-values@point_removal-phoneme-logistic_regression-5-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name point_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 5\n"
+    deps:
+    - path: output/sampled/point_removal/phoneme/5
+      hash: md5
+      md5: 9070d240e136ee8b34ff908eff6b788e.dir
+      size: 177071
+      nfiles: 2
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/point_removal/logistic_regression/phoneme/5/valuation.loo.pkl
+      hash: md5
+      md5: 07b3cb715d0a75e039a0760e7f0ee343
+      size: 35389
+  calculate-values@noise_removal-diabetes-logistic_regression-1-random:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 1\n"
+    deps:
+    - path: output/sampled/noise_removal/diabetes/1
+      hash: md5
+      md5: 0af3ed7bae3b650976d1e04dec8f800a.dir
+      size: 67965
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/noise_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+  calculate-values@noise_removal-diabetes-logistic_regression-1-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 1\n"
+    deps:
+    - path: output/sampled/noise_removal/diabetes/1
+      hash: md5
+      md5: 0af3ed7bae3b650976d1e04dec8f800a.dir
+      size: 67965
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/noise_removal/logistic_regression/diabetes/1/valuation.loo.pkl
+      hash: md5
+      md5: f1cd847816cc14cd5ffe4d09fb9550d8
+      size: 9471
+  calculate-values@noise_removal-diabetes-logistic_regression-2-random:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 2\n"
+    deps:
+    - path: output/sampled/noise_removal/diabetes/2
+      hash: md5
+      md5: 59798568b697c6842e29029cd75a3077.dir
+      size: 67972
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/noise_removal/logistic_regression/diabetes/2/valuation.random.pkl
+      hash: md5
+      md5: 13870aad07eb7c5a2e718f9a8642e4d6
+      size: 9442
+  calculate-values@noise_removal-diabetes-logistic_regression-2-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 2\n"
+    deps:
+    - path: output/sampled/noise_removal/diabetes/2
+      hash: md5
+      md5: 59798568b697c6842e29029cd75a3077.dir
+      size: 67972
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/noise_removal/logistic_regression/diabetes/2/valuation.loo.pkl
+      hash: md5
+      md5: 7c72b57ca67b178ffe89e1854327cfa1
+      size: 9471
+  calculate-values@noise_removal-diabetes-logistic_regression-3-random:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 3\n"
+    deps:
+    - path: output/sampled/noise_removal/diabetes/3
+      hash: md5
+      md5: c59512c00ce16fb34e9d57c37d2f6d1a.dir
+      size: 67967
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/noise_removal/logistic_regression/diabetes/3/valuation.random.pkl
+      hash: md5
+      md5: d8f8be296ee6701f33e1852af771c8a3
+      size: 9442
+  calculate-values@noise_removal-diabetes-logistic_regression-3-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 3\n"
+    deps:
+    - path: output/sampled/noise_removal/diabetes/3
+      hash: md5
+      md5: c59512c00ce16fb34e9d57c37d2f6d1a.dir
+      size: 67967
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/noise_removal/logistic_regression/diabetes/3/valuation.loo.pkl
+      hash: md5
+      md5: 4a1776d3e9f05ef3da5d93105d1f3050
+      size: 9471
+  calculate-values@noise_removal-diabetes-logistic_regression-4-random:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 4\n"
+    deps:
+    - path: output/sampled/noise_removal/diabetes/4
+      hash: md5
+      md5: 252f14ae2d4bc6a87bc363c7edf3f3b9.dir
+      size: 67969
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/noise_removal/logistic_regression/diabetes/4/valuation.random.pkl
+      hash: md5
+      md5: f4e5ddcc714aeb4c810018d321ec440f
+      size: 9442
+  calculate-values@noise_removal-diabetes-logistic_regression-4-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 4\n"
+    deps:
+    - path: output/sampled/noise_removal/diabetes/4
+      hash: md5
+      md5: 252f14ae2d4bc6a87bc363c7edf3f3b9.dir
+      size: 67969
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/noise_removal/logistic_regression/diabetes/4/valuation.loo.pkl
+      hash: md5
+      md5: 3e8b9097b20f651e1e143d1e1e267674
+      size: 9471
+  calculate-values@noise_removal-diabetes-logistic_regression-5-random:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 5\n"
+    deps:
+    - path: output/sampled/noise_removal/diabetes/5
+      hash: md5
+      md5: c4445dcfc727c91fb759bd67be39f4ce.dir
+      size: 67967
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/noise_removal/logistic_regression/diabetes/5/valuation.random.pkl
+      hash: md5
+      md5: 34552c3fa168cc722dc98b1a32fc64ef
+      size: 9442
+  calculate-values@noise_removal-diabetes-logistic_regression-5-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ diabetes --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 5\n"
+    deps:
+    - path: output/sampled/noise_removal/diabetes/5
+      hash: md5
+      md5: c4445dcfc727c91fb759bd67be39f4ce.dir
+      size: 67967
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/noise_removal/logistic_regression/diabetes/5/valuation.loo.pkl
+      hash: md5
+      md5: 90135b047ca0c44f591a623a2657182a
+      size: 9471
+  calculate-values@noise_removal-phoneme-logistic_regression-1-random:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 1\n"
+    deps:
+    - path: output/sampled/noise_removal/phoneme/1
+      hash: md5
+      md5: f9eecd5a8b8d0d5135e386b150ccb33b.dir
+      size: 178442
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/noise_removal/logistic_regression/phoneme/1/valuation.random.pkl
+      hash: md5
+      md5: 238a2380b711c422f213d5a6113dddad
+      size: 35360
+  calculate-values@noise_removal-phoneme-logistic_regression-1-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 1\n"
+    deps:
+    - path: output/sampled/noise_removal/phoneme/1
+      hash: md5
+      md5: f9eecd5a8b8d0d5135e386b150ccb33b.dir
+      size: 178442
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/noise_removal/logistic_regression/phoneme/1/valuation.loo.pkl
+      hash: md5
+      md5: 219b28e6a45ecaf5f737ac674ead2d47
+      size: 35389
+  calculate-values@noise_removal-phoneme-logistic_regression-2-random:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 2\n"
+    deps:
+    - path: output/sampled/noise_removal/phoneme/2
+      hash: md5
+      md5: 2a8866f7dfac33026e15ece41e7b39de.dir
+      size: 178440
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/noise_removal/logistic_regression/phoneme/2/valuation.random.pkl
+      hash: md5
+      md5: b83dcdb347639a1c6465a86b926fa277
+      size: 35360
+  calculate-values@noise_removal-phoneme-logistic_regression-2-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 2\n"
+    deps:
+    - path: output/sampled/noise_removal/phoneme/2
+      hash: md5
+      md5: 2a8866f7dfac33026e15ece41e7b39de.dir
+      size: 178440
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/noise_removal/logistic_regression/phoneme/2/valuation.loo.pkl
+      hash: md5
+      md5: c8e7461e6bd55825eee16fe01292302d
+      size: 35389
+  calculate-values@noise_removal-phoneme-logistic_regression-3-random:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 3\n"
+    deps:
+    - path: output/sampled/noise_removal/phoneme/3
+      hash: md5
+      md5: 457f59a5eb209e5e35cb47eb1bd1ae0c.dir
+      size: 178440
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/noise_removal/logistic_regression/phoneme/3/valuation.random.pkl
+      hash: md5
+      md5: 85b8fb0239b003d0a277782e76bcfe59
+      size: 35360
+  calculate-values@noise_removal-phoneme-logistic_regression-3-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 3\n"
+    deps:
+    - path: output/sampled/noise_removal/phoneme/3
+      hash: md5
+      md5: 457f59a5eb209e5e35cb47eb1bd1ae0c.dir
+      size: 178440
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/noise_removal/logistic_regression/phoneme/3/valuation.loo.pkl
+      hash: md5
+      md5: 6e063a8f6813017672c5a034e9e2b174
+      size: 35389
+  calculate-values@noise_removal-phoneme-logistic_regression-4-random:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 4\n"
+    deps:
+    - path: output/sampled/noise_removal/phoneme/4
+      hash: md5
+      md5: df99957b07f073b49a1651c53557d2bf.dir
+      size: 178447
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/noise_removal/logistic_regression/phoneme/4/valuation.random.pkl
+      hash: md5
+      md5: a56e21939869ea44ca544d1de46cc0b5
+      size: 35360
+  calculate-values@noise_removal-phoneme-logistic_regression-4-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 4\n"
+    deps:
+    - path: output/sampled/noise_removal/phoneme/4
+      hash: md5
+      md5: df99957b07f073b49a1651c53557d2bf.dir
+      size: 178447
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/noise_removal/logistic_regression/phoneme/4/valuation.loo.pkl
+      hash: md5
+      md5: 01a384805081e925e0643d03deff26c2
+      size: 35389
+  calculate-values@noise_removal-phoneme-logistic_regression-5-random:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method random --repetition-id\
+      \ 5\n"
+    deps:
+    - path: output/sampled/noise_removal/phoneme/5
+      hash: md5
+      md5: 224611ab2f9c82d8796656a64bd10141.dir
+      size: 178441
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.random:
+          algorithm: random
+    outs:
+    - path: output/values/noise_removal/logistic_regression/phoneme/5/valuation.random.pkl
+      hash: md5
+      md5: 78256612fa23f428026b50894701a6af
+      size: 35360
+  calculate-values@noise_removal-phoneme-logistic_regression-5-loo:
+    cmd: "python -m scripts.calculate_values --experiment-name noise_removal  --dataset-name\
+      \ phoneme --model-name logistic_regression  --valuation-method loo --repetition-id\
+      \ 5\n"
+    deps:
+    - path: output/sampled/noise_removal/phoneme/5
+      hash: md5
+      md5: 224611ab2f9c82d8796656a64bd10141.dir
+      size: 178441
+      nfiles: 3
+    - path: scripts/calculate_values.py
+      hash: md5
+      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
+      size: 2689
+    - path: src/re_classwise_shapley/valuation_methods.py
+      hash: md5
+      md5: ccc719f7bb1ad8f45c8b90d181245002
+      size: 4683
+    params:
+      params.yaml:
+        models.logistic_regression:
+          solver: liblinear
+        valuation_methods.loo:
+          algorithm: loo
+          kwargs:
+            progress: true
+    outs:
+    - path: output/values/noise_removal/logistic_regression/phoneme/5/valuation.loo.pkl
+      hash: md5
+      md5: 51febd741cfd6e33f0c23a893a9fe4b2
+      size: 35389
+  evaluate_metrics@point_removal-diabetes-logistic_regression-1-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random
+      hash: md5
+      md5: 9356df04d099bb9b9f3dec6c45cb506a.dir
+      size: 5451
+      nfiles: 3
+  evaluate_metrics@point_removal-diabetes-logistic_regression-1-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      1
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.loo.pkl
+      hash: md5
+      md5: 82360e49dcce7f59b34b7c132282efed
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/loo
+      hash: md5
+      md5: 828a139e2f7c245bff9752f3a692a123.dir
+      size: 5474
+      nfiles: 3
+  evaluate_metrics@point_removal-diabetes-logistic_regression-2-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      2
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.random.pkl
+      hash: md5
+      md5: 13870aad07eb7c5a2e718f9a8642e4d6
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/2/random
+      hash: md5
+      md5: f8f8860bb8969f8146d0835e9b51a306.dir
+      size: 5464
+      nfiles: 3
+  evaluate_metrics@point_removal-diabetes-logistic_regression-2-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      2
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.loo.pkl
+      hash: md5
+      md5: 0af3eac796e46551f39f6e5765fb0689
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/2/loo
+      hash: md5
+      md5: 2eedd39fb7b8e4d22288358bc640dfa8.dir
+      size: 5457
+      nfiles: 3
+  evaluate_metrics@point_removal-diabetes-logistic_regression-3-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      3
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/3/valuation.random.pkl
+      hash: md5
+      md5: d8f8be296ee6701f33e1852af771c8a3
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/3/random
+      hash: md5
+      md5: 9e061983abf515bfb2d6e0cffa403d1b.dir
+      size: 5463
+      nfiles: 3
+  evaluate_metrics@point_removal-diabetes-logistic_regression-3-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      3
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/3/valuation.loo.pkl
+      hash: md5
+      md5: 7d47ca490ac8e6426baeb0b04081b608
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/3/loo
+      hash: md5
+      md5: 24a732028a27ce488caa40b6910f3a55.dir
+      size: 5468
+      nfiles: 3
+  evaluate_metrics@point_removal-diabetes-logistic_regression-4-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      4
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/4/valuation.random.pkl
+      hash: md5
+      md5: f4e5ddcc714aeb4c810018d321ec440f
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/4/random
+      hash: md5
+      md5: a60c3f3b1c95aebdbb2c839605e57d58.dir
+      size: 5480
+      nfiles: 3
+  evaluate_metrics@point_removal-diabetes-logistic_regression-4-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      4
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/4/valuation.loo.pkl
+      hash: md5
+      md5: 484e719180c7700422edf4b7c19b0bba
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/4/loo
+      hash: md5
+      md5: 93a85cc62781958dd8bff4ee4a5fbd70.dir
+      size: 5482
+      nfiles: 3
+  evaluate_metrics@point_removal-diabetes-logistic_regression-5-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      5
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/5/valuation.random.pkl
+      hash: md5
+      md5: 34552c3fa168cc722dc98b1a32fc64ef
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/5/random
+      hash: md5
+      md5: 22b72362edead2a505b02192e93bcc7b.dir
+      size: 5456
+      nfiles: 3
+  evaluate_metrics@point_removal-diabetes-logistic_regression-5-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      5
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/5/valuation.loo.pkl
+      hash: md5
+      md5: cef21a2517497869a5ca9e5c79bc2b8c
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/5/loo
+      hash: md5
+      md5: f7bbc837c0835076feab0e8111516163.dir
+      size: 5480
+      nfiles: 3
+  evaluate_metrics@point_removal-phoneme-logistic_regression-1-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      1
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.random.pkl
+      hash: md5
+      md5: 238a2380b711c422f213d5a6113dddad
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/1/random
+      hash: md5
+      md5: c071f900976fc6796f302a3875d9d7af.dir
+      size: 10183
+      nfiles: 3
+  evaluate_metrics@point_removal-phoneme-logistic_regression-1-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      1
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.loo.pkl
+      hash: md5
+      md5: 0d02e7099da49d86b656121db6a658aa
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/1/loo
+      hash: md5
+      md5: 4a0eb3f2910f14de8fec59dbea07193d.dir
+      size: 10168
+      nfiles: 3
+  evaluate_metrics@point_removal-phoneme-logistic_regression-2-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      2
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.random.pkl
+      hash: md5
+      md5: b83dcdb347639a1c6465a86b926fa277
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/2/random
+      hash: md5
+      md5: 5dfd01cab89896e0b080f9cd100f54a7.dir
+      size: 10248
+      nfiles: 3
+  evaluate_metrics@point_removal-phoneme-logistic_regression-2-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      2
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.loo.pkl
+      hash: md5
+      md5: 1f6abaf14ffbec6175179689b5c25329
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/2/loo
+      hash: md5
+      md5: f334f71986d7a0abb61c773f7ce76885.dir
+      size: 10382
+      nfiles: 3
+  evaluate_metrics@point_removal-phoneme-logistic_regression-3-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      3
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/3/valuation.random.pkl
+      hash: md5
+      md5: 85b8fb0239b003d0a277782e76bcfe59
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/3/random
+      hash: md5
+      md5: ea8d5b30ced7316f48a5c8ed5e7caf28.dir
+      size: 10240
+      nfiles: 3
+  evaluate_metrics@point_removal-phoneme-logistic_regression-3-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      3
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/3/valuation.loo.pkl
+      hash: md5
+      md5: 489dfc7ba3f2e15c14b4d94f7b2498c6
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/3/loo
+      hash: md5
+      md5: d9b897e96e29f5db3b9fc686656598ef.dir
+      size: 10316
+      nfiles: 3
+  evaluate_metrics@point_removal-phoneme-logistic_regression-4-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      4
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/4/valuation.random.pkl
+      hash: md5
+      md5: a56e21939869ea44ca544d1de46cc0b5
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/4/random
+      hash: md5
+      md5: 459fde9dc7de6ba1587245f9e4249bd7.dir
+      size: 10222
+      nfiles: 3
+  evaluate_metrics@point_removal-phoneme-logistic_regression-4-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      4
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/4/valuation.loo.pkl
+      hash: md5
+      md5: 210660aa10978a60079330535bbc5a9c
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/4/loo
+      hash: md5
+      md5: ff86bf3ed8d2f2861813f449e4fd8576.dir
+      size: 10225
+      nfiles: 3
+  evaluate_metrics@point_removal-phoneme-logistic_regression-5-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      5
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/5/valuation.random.pkl
+      hash: md5
+      md5: 78256612fa23f428026b50894701a6af
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/5/random
+      hash: md5
+      md5: 2445d6c59be6aad8555cc3f7c40970e6.dir
+      size: 10174
+      nfiles: 3
+  evaluate_metrics@point_removal-phoneme-logistic_regression-5-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      5
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/5/valuation.loo.pkl
+      hash: md5
+      md5: 07b3cb715d0a75e039a0760e7f0ee343
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/5/loo
+      hash: md5
+      md5: 11e6676b42593b91941d01db8e588a66.dir
+      size: 10242
+      nfiles: 3
+  evaluate_metrics@noise_removal-diabetes-logistic_regression-1-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/1/random
+      hash: md5
+      md5: 741662efbdfd1026c159cf35ecb911c7.dir
+      size: 633
+      nfiles: 2
+  evaluate_metrics@noise_removal-diabetes-logistic_regression-1-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      1
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/1/valuation.loo.pkl
+      hash: md5
+      md5: f1cd847816cc14cd5ffe4d09fb9550d8
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/1/loo
+      hash: md5
+      md5: 217a34de0c7ef4d4c8b2c17f6cadfe5e.dir
+      size: 602
+      nfiles: 2
+  evaluate_metrics@noise_removal-diabetes-logistic_regression-2-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      2
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/2/valuation.random.pkl
+      hash: md5
+      md5: 13870aad07eb7c5a2e718f9a8642e4d6
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/2/random
+      hash: md5
+      md5: c40d4cb8678a29ad1eac0f6ac77abe00.dir
+      size: 641
+      nfiles: 2
+  evaluate_metrics@noise_removal-diabetes-logistic_regression-2-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      2
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/2/valuation.loo.pkl
+      hash: md5
+      md5: 7c72b57ca67b178ffe89e1854327cfa1
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/2/loo
+      hash: md5
+      md5: 842b386ca0a1437a24876b6ad919c47f.dir
+      size: 572
+      nfiles: 2
+  evaluate_metrics@noise_removal-diabetes-logistic_regression-3-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      3
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/3/valuation.random.pkl
+      hash: md5
+      md5: d8f8be296ee6701f33e1852af771c8a3
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/3/random
+      hash: md5
+      md5: 344b091ee6d426286916b3c0e8694d52.dir
+      size: 541
+      nfiles: 2
+  evaluate_metrics@noise_removal-diabetes-logistic_regression-3-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      3
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/3/valuation.loo.pkl
+      hash: md5
+      md5: 4a1776d3e9f05ef3da5d93105d1f3050
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/3/loo
+      hash: md5
+      md5: 10787eb779c705638f71b08154f357a7.dir
+      size: 616
+      nfiles: 2
+  evaluate_metrics@noise_removal-diabetes-logistic_regression-4-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      4
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/4/valuation.random.pkl
+      hash: md5
+      md5: f4e5ddcc714aeb4c810018d321ec440f
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/4/random
+      hash: md5
+      md5: 9d6db9ebf641cad3b77ff81dbb97e5b9.dir
+      size: 620
+      nfiles: 2
+  evaluate_metrics@noise_removal-diabetes-logistic_regression-4-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      4
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/4/valuation.loo.pkl
+      hash: md5
+      md5: 3e8b9097b20f651e1e143d1e1e267674
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/4/loo
+      hash: md5
+      md5: c6d54c7bb9c55182d79f4145c062b2c8.dir
+      size: 613
+      nfiles: 2
+  evaluate_metrics@noise_removal-diabetes-logistic_regression-5-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      5
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/5/valuation.random.pkl
+      hash: md5
+      md5: 34552c3fa168cc722dc98b1a32fc64ef
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/5/random
+      hash: md5
+      md5: 40a6809e91dc74ca5845a7e96913d630.dir
+      size: 612
+      nfiles: 2
+  evaluate_metrics@noise_removal-diabetes-logistic_regression-5-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      5
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/5/valuation.loo.pkl
+      hash: md5
+      md5: 90135b047ca0c44f591a623a2657182a
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/5/loo
+      hash: md5
+      md5: 783829ec74c5c925fea16058237fb0e6.dir
+      size: 580
+      nfiles: 2
+  evaluate_metrics@noise_removal-phoneme-logistic_regression-1-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      1
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/1/valuation.random.pkl
+      hash: md5
+      md5: 238a2380b711c422f213d5a6113dddad
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/1/random
+      hash: md5
+      md5: d06f6f867ed7b64cf130eaf054bfa2e4.dir
+      size: 2420
+      nfiles: 2
+  evaluate_metrics@noise_removal-phoneme-logistic_regression-1-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      1
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/1/valuation.loo.pkl
+      hash: md5
+      md5: 219b28e6a45ecaf5f737ac674ead2d47
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/1/loo
+      hash: md5
+      md5: a9bf1ae5a7c817b896bdcc72ce2db855.dir
+      size: 2314
+      nfiles: 2
+  evaluate_metrics@noise_removal-phoneme-logistic_regression-2-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      2
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/2/valuation.random.pkl
+      hash: md5
+      md5: b83dcdb347639a1c6465a86b926fa277
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/2/random
+      hash: md5
+      md5: f85c05582351089c36e5e8de055969f7.dir
+      size: 2351
+      nfiles: 2
+  evaluate_metrics@noise_removal-phoneme-logistic_regression-2-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      2
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/2/valuation.loo.pkl
+      hash: md5
+      md5: c8e7461e6bd55825eee16fe01292302d
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/2/loo
+      hash: md5
+      md5: 00e94836e712b6bd273f3a0b545d08d0.dir
+      size: 2454
+      nfiles: 2
+  evaluate_metrics@noise_removal-phoneme-logistic_regression-3-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      3
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/3/valuation.random.pkl
+      hash: md5
+      md5: 85b8fb0239b003d0a277782e76bcfe59
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/3/random
+      hash: md5
+      md5: 9de23d790e150c4e47ff00ee067a0350.dir
+      size: 2446
+      nfiles: 2
+  evaluate_metrics@noise_removal-phoneme-logistic_regression-3-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      3
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/3/valuation.loo.pkl
+      hash: md5
+      md5: 6e063a8f6813017672c5a034e9e2b174
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/3/loo
+      hash: md5
+      md5: 1fbd87788c3743011064b7899aaeae99.dir
+      size: 2395
+      nfiles: 2
+  evaluate_metrics@noise_removal-phoneme-logistic_regression-4-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      4
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/4/valuation.random.pkl
+      hash: md5
+      md5: a56e21939869ea44ca544d1de46cc0b5
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/4/random
+      hash: md5
+      md5: 84f797d749b502148afacaee6260f345.dir
+      size: 2393
+      nfiles: 2
+  evaluate_metrics@noise_removal-phoneme-logistic_regression-4-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      4
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/4/valuation.loo.pkl
+      hash: md5
+      md5: 01a384805081e925e0643d03deff26c2
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/4/loo
+      hash: md5
+      md5: 9029d9e8151dcf9ffe7b3e605e04c6ca.dir
+      size: 2381
+      nfiles: 2
+  evaluate_metrics@noise_removal-phoneme-logistic_regression-5-random:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      5
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/5/valuation.random.pkl
+      hash: md5
+      md5: 78256612fa23f428026b50894701a6af
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/5/random
+      hash: md5
+      md5: 25069e592d9039c0d4d1d8719f877447.dir
+      size: 2400
+      nfiles: 2
+  evaluate_metrics@noise_removal-phoneme-logistic_regression-5-loo:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      5
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/5/valuation.loo.pkl
+      hash: md5
+      md5: 51febd741cfd6e33f0c23a893a9fe4b2
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: a280eb5a14ec738dd1568f7c8cc206f7
+      size: 5519
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: de5f81edf352bbe28c41455c76d881f7
+      size: 5196
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/5/loo
+      hash: md5
+      md5: 175b5d626f498996a1ca10bdf8b90e6c.dir
+      size: 2433
+      nfiles: 2
+  render_plots@point_removal-logistic_regression:
+    cmd: python -m scripts.render_plots --experiment-name point_removal --model-name
       logistic_regression
     deps:
-    - path: output/preprocessed/cpu
+    - path: output/results/point_removal/logistic_regression
       hash: md5
-      md5: 87f82f79e9233d8c4f0745f29d0ccfa2.dir
-      size: 1445557
-      nfiles: 5
-    - path: scripts/run_experiment_wad_drop.py
-      hash: md5
-      md5: 97e7749850bf87f3cfeb9eecd1c11242
-      size: 2981
-    outs:
-    - path: output/results/wad_drop/logistic_regression/cpu
-      hash: md5
-      md5: 83215e2c3feef6ab7a85fd2dc8048a35.dir
-      size: 2360276
-      nfiles: 27
-  cs-shapley-wad-drop-experiment@covertype-logistic_regression:
-    cmd: python -m scripts.run_experiment_wad_drop --dataset-name covertype --model-name
-      logistic_regression
-    deps:
-    - path: output/preprocessed/covertype
-      hash: md5
-      md5: 86e47a7612235ffac15118ad7bd6bdc8.dir
-      size: 255651635
-      nfiles: 5
-    - path: scripts/run_experiment_wad_drop.py
-      hash: md5
-      md5: 97e7749850bf87f3cfeb9eecd1c11242
-      size: 2981
-    outs:
-    - path: output/results/wad_drop/logistic_regression/covertype
-      hash: md5
-      md5: 89ff68c3079844a1ff8d01fab140c087.dir
-      size: 5133459
-      nfiles: 27
-  cs-shapley-wad-drop-plots@logistic_regression:
-    cmd: python -m scripts.render_plots --experiment-name wad_drop --model-name logistic_regression
-    deps:
-    - path: output/results/wad_drop/logistic_regression
-      hash: md5
-      md5: 8945d973332077431f5e7cf1beef5d71.dir
-      size: 7842287
-      nfiles: 81
+      md5: f99e7db3c9a2cf08074dce392c21e2ba.dir
+      size: 157075
+      nfiles: 60
     - path: scripts/render_plots.py
       hash: md5
-      md5: 2131d02ee8163669a6a938c34a60b783
-      size: 4397
+      md5: a8f03a209f77d8a135fa30bcf7ceca5c
+      size: 10043
+    params:
+      params.yaml:
+        experiments.point_removal.curves:
+          highest_point_removal_accuracy:
+            idx: highest_point_removal
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+          lowest_point_addition_accuracy:
+            idx: lowest_point_addition
+            metric: accuracy
+            eval_models:
+            - logistic_regression
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop:
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_models:
+            - logistic_regression
     outs:
-    - path: output/plots/wad_drop/logistic_regression
+    - path: output/plots/point_removal/logistic_regression
       hash: md5
-      md5: f309e669ee9ca57238e9f8a9cb37adce.dir
-      size: 235134
+      md5: c9b262073e4a2a121662f874be0bbc7b.dir
+      size: 161552
       nfiles: 4
-  cs-shapley-noise-removal-experiment@diabetes-logistic_regression:
-    cmd: python -m scripts.run_experiment_noise_removal --dataset-name diabetes --model-name
-      logistic_regression
-    deps:
-    - path: output/preprocessed/diabetes
-      hash: md5
-      md5: 8d01c5fc5dd6ae4cdd0f9f5cae25a3e6.dir
-      size: 59554
-      nfiles: 5
-    - path: scripts/run_experiment_noise_removal.py
-      hash: md5
-      md5: 0942927b5ee87aa100d1fff1fd839c3f
-      size: 1370
-    outs:
-    - path: output/results/noise_removal/logistic_regression/diabetes
-      hash: md5
-      md5: 2ef4c59b0c6a29dfc446c82112932c4e.dir
-      size: 317578
-      nfiles: 21
-  cs-shapley-noise-removal-experiment@cpu-logistic_regression:
-    cmd: python -m scripts.run_experiment_noise_removal --dataset-name cpu --model-name
-      logistic_regression
-    deps:
-    - path: output/preprocessed/cpu
-      hash: md5
-      md5: 87f82f79e9233d8c4f0745f29d0ccfa2.dir
-      size: 1445557
-      nfiles: 5
-    - path: scripts/run_experiment_noise_removal.py
-      hash: md5
-      md5: 0942927b5ee87aa100d1fff1fd839c3f
-      size: 1370
-    outs:
-    - path: output/results/noise_removal/logistic_regression/cpu
-      hash: md5
-      md5: 8e0ff2bff68c266bfd946e8c3178dd66.dir
-      size: 2312557
-      nfiles: 21
-  cs-shapley-noise-removal-experiment@covertype-logistic_regression:
-    cmd: python -m scripts.run_experiment_noise_removal --dataset-name covertype --model-name
-      logistic_regression
-    deps:
-    - path: output/preprocessed/covertype
-      hash: md5
-      md5: 86e47a7612235ffac15118ad7bd6bdc8.dir
-      size: 255651635
-      nfiles: 5
-    - path: scripts/run_experiment_noise_removal.py
-      hash: md5
-      md5: 0942927b5ee87aa100d1fff1fd839c3f
-      size: 1370
-    outs:
-    - path: output/results/noise_removal/logistic_regression/covertype
-      hash: md5
-      md5: cde9876c3900cf471eee7de3287c3214.dir
-      size: 5085662
-      nfiles: 21
-  cs-shapley-noise-removal-plots@logistic_regression:
+  render_plots@noise_removal-logistic_regression:
     cmd: python -m scripts.render_plots --experiment-name noise_removal --model-name
       logistic_regression
     deps:
     - path: output/results/noise_removal/logistic_regression
       hash: md5
-      md5: 6e475ec23361b684daff2720a87ed6ad.dir
-      size: 7715797
-      nfiles: 63
+      md5: 1159d70dad4ac7b49a5f72ab9eb0752d.dir
+      size: 30017
+      nfiles: 40
     - path: scripts/render_plots.py
       hash: md5
-      md5: 2131d02ee8163669a6a938c34a60b783
-      size: 4397
+      md5: a8f03a209f77d8a135fa30bcf7ceca5c
+      size: 10043
+    params:
+      params.yaml:
+        experiments.noise_removal.curves:
+          precision_recall:
+            idx: precision_recall
+            flipped_labels: preprocessor.flip_labels.idx
+        experiments.noise_removal.metrics:
+          roc_auc:
+            idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
     outs:
     - path: output/plots/noise_removal/logistic_regression
       hash: md5
-      md5: 09e36f67dc4ca309f20ada4fb54abcfc.dir
-      size: 102530
-      nfiles: 2
+      md5: eb367fc3f85afd4cc2717f1569f62daa.dir
+      size: 84412
+      nfiles: 3

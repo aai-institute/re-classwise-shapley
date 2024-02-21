@@ -1,16 +1,22 @@
-import json
 import pickle
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict
 
 import numpy as np
 from numpy.typing import NDArray
-from pydvl.value import ValuationResult
 
 from re_classwise_shapley.types import OneOrMany, ensure_list
 
 
 class Accessor:
+    """
+    Accessor class to load data from the output directory.
+
+    Args:
+        experiment_name: Name of the executed experiment.
+        model_name: Name of the model.
+    """
+
     OUTPUT_PATH = Path("./output")
     RAW_PATH = OUTPUT_PATH / "raw"
     PREPROCESSED_PATH = OUTPUT_PATH / "preprocessed"

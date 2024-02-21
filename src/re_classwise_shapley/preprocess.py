@@ -1,16 +1,18 @@
 import os
 import time
 from functools import partial
-from typing import Dict
+from typing import Dict, Tuple
 
 import numpy as np
 from pydvl.utils import Dataset
 
-from re_classwise_shapley.data.util import stratified_sampling
+from re_classwise_shapley.config import Config
+from re_classwise_shapley.data.util import load_dataset, stratified_sampling
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.model import instantiate_model
 from re_classwise_shapley.types import (
     ModelGeneratorFactory,
+    Seed,
     ValTestSetFactory,
     ValuationMethodsFactory,
 )
@@ -36,49 +38,26 @@ def parse_valuation_methods_config(
     return res
 
 
-def parse_datasets_config(dataset_settings: Dict[str, Dict]) -> ValTestSetFactory:
-    logger.info("Parsing datasets...")
-    collected_datasets = {}
-    for dataset_name, dataset_kwargs in dataset_settings.items():
-        collected_datasets[dataset_name] = partial(
-            load_single_dataset, dataset_name, dataset_kwargs
-        )
-
-    return collected_datasets
-
-
-def load_single_dataset(dataset_name: str, dataset_kwargs: Dict):
-    stratified = dataset_kwargs.get("stratified", True)
+def fetch_and_sample_val_test_dataset(
+    dataset_name: str, dataset_kwargs: Dict, seed: Seed = None
+) -> Tuple[Dataset, Dataset]:
     val_size = dataset_kwargs["dev_size"]
     train_size = dataset_kwargs["train_size"]
     test_size = dataset_kwargs["test_size"]
 
     preprocessed_folder = Config.PREPROCESSED_PATH / dataset_name
-
-    x = np.load(preprocessed_folder / "x.npy")
-    y = np.load(preprocessed_folder / "y.npy", allow_pickle=True)
-
+    x, y, _ = load_dataset(preprocessed_folder)
     validation_set, test_set = _encode_and_pack_into_datasets(
-        x, y, train_size, val_size, test_size, stratified
+        x, y, (train_size, val_size, test_size), seed=seed
     )
     return validation_set, test_set
 
 
-def parse_models_config(models_config: Dict[str, Dict]) -> ModelGeneratorFactory:
-    logger.info("Parsing models...")
-    collected_generators = {}
-    for model_name, model_kwargs in models_config.items():
-        collected_generators[model_name] = partial(
-            instantiate_model, model_name=model_name, **model_kwargs
-        )
-
-    return collected_generators
-
-
-def _encode_and_pack_into_datasets(x, y, train_size, val_size, test_size, stratified):
-    seed = int(os.getpid() + time.time()) % (2**31 - 1)
+def _encode_and_pack_into_datasets(
+    x, y, sizes: Tuple[int, int, int], *, seed: Seed = None
+):
     (x_train, y_train), (x_dev, y_dev), (x_test, y_test) = stratified_sampling(
-        x, y, train_size, val_size, test_size, stratified=stratified, seed=seed
+        x, y, sizes, seed=seed
     )
     perm_train = np.random.permutation(len(x_train))
     perm_dev = np.random.permutation(len(x_dev))

@@ -1,70 +1,64 @@
-global:
+settings:
   n_repetitions: 3
   n_jobs: 40
   backend: joblib
   temp_dir: /raid/tmp/ray
 
+active:
+  models: [ "logistic_regression" ]
+  datasets: [ "diabetes" ]
+
 experiments:
   wad_drop:
   noise_removal:
   wad_drop_transfer:
-    transfer_models:
-      logistic_regression: {
-        solver: liblinear,
-      }
-      gradient_boosting_classifier: {
-        n_estimators: 40,
-        min_samples_leaf: 6,
-        max_depth: 2
-      }
-#      knn: {
-#        n_neighbors: 5,
-#        weights: uniform
-#      }
-#      svm: {
-#        kernel: rbf
-#      }
-#      mlp: {
-#
-#      }
+    test_models:
+      [ "svm" ]
 
 models:
   logistic_regression: {
     solver: liblinear,
   }
-#  knn: {
-#    n_neighbors: 5,
-#    weights: uniform
-#  }
-#  svm: {
-#    kernel: rbf
-#  }
+  gradient_boosting_classifier: {
+    n_estimators: 40,
+    min_samples_leaf: 6,
+    max_depth: 2
+  }
+  knn: {
+    n_neighbors: 5,
+    weights: uniform
+  }
+  svm: {
+    kernel: rbf
+  }
+  mlp: {
+  }
 
 valuation_methods:
-#  random: {
-#    valuation_method: "random",
-#  }
-#  loo: {
-#    valuation_method: "loo",
-#    progress: False
-#  }
-  classwise_shapley: {
-    valuation_method: "classwise_shapley",
-    n_updates: 500,
-    normalize_values: True,
-    n_resample_complement_sets: 10,
-    rtol: 1e-4,
-    progress: True
+  random: {
+    valuation_method: "random",
   }
-  classwise_shapley_add_idx: {
-    valuation_method: "classwise_shapley",
-    n_updates: 500,
-    normalize_values: True,
-    n_resample_complement_sets: 10,
-    use_default_scorer_value: False,
-    rtol: 1e-4,
-    progress: True
+  loo: {
+    valuation_method: "loo",
+    progress: False
   }
+#  classwise_shapley: {
+#    valuation_method: "classwise_shapley",
+#    n_updates: 500,
+#    normalize_values: True,
+#    n_resample_complement_sets: 10,
+#    rtol: 1e-4,
+#    progress: True
+#  }
+#  classwise_shapley_add_idx: {
+#    valuation_method: "classwise_shapley",
+#    n_updates: 500,
+#    normalize_values: True,
+#    n_resample_complement_sets: 10,
+#    use_default_scorer_value: False,
+#    rtol: 1e-4,
+#    progress: True
+#  }
 #  beta_shapley: {
 #    valuation_method: "beta_shapley",
 #    alpha: 16.0,

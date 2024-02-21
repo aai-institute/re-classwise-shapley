@@ -17,7 +17,8 @@ logger = setup_logger(__name__)
 def stratified_sampling(
     features: NDArray[np.float_],
     labels: NDArray[np.int_],
-    sizes: Tuple[int],
+    sizes: Tuple[int, ...],
+    *,
     seed: Seed = None,
 ) -> Tuple[Tuple[NDArray[np.float_], NDArray[np.int_]], ...]:
     """

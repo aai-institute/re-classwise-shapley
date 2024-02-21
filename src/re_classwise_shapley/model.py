@@ -1,3 +1,5 @@
+from typing import Dict
+
 import numpy as np
 from numpy.typing import NDArray
 from pydvl.utils import SupervisedModel
@@ -10,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
 
-def instantiate_model(model_name: str, **model_kwargs) -> SupervisedModel:
+def instantiate_model(model_name: str, model_kwargs: Dict) -> SupervisedModel:
     if model_name == "gradient_boosting_classifier":
         model = make_pipeline(GradientBoostingClassifier(**model_kwargs))
     elif model_name == "logistic_regression":

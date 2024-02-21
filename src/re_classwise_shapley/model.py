@@ -3,6 +3,7 @@ from typing import Dict, Optional
 import numpy as np
 from numpy.typing import NDArray
 from pydvl.utils import SupervisedModel
+from pydvl.utils.functional import maybe_add_argument
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
@@ -33,34 +34,20 @@ def instantiate_model(
         The instantiated model.
     """
     random_state = np.random.RandomState(seed)
-    model = model_kwargs.pop("model")
-
-    if model == "gradient_boosting_classifier":
-        model = make_pipeline(
-            GradientBoostingClassifier(**model_kwargs, random_state=random_state)
-        )
-    elif model == "logistic_regression":
-        model = make_pipeline(
-            StandardScaler(),
-            LogisticRegression(**model_kwargs, random_state=random_state),
-        )
-    elif model == "knn":
-        model = make_pipeline(
-            StandardScaler(),
-            KNeighborsClassifier(**model_kwargs),
-        )
-    elif model == "svm":
-        model = make_pipeline(
-            StandardScaler(), SVC(**model_kwargs, random_state=random_state)
-        )
-    elif model == "mlp":
-        model = make_pipeline(
-            StandardScaler(), MLPClassifier(**model_kwargs, random_state=random_state)
-        )
-    else:
-        raise ValueError(f"Unknown model '{model_name}'")
-
-    return SingleClassProxySupervisedModel(model)
+    model_idx = model_kwargs.pop("model")
+    model_dict = {
+        "gradient_boosting_classifier": GradientBoostingClassifier,
+        "logistic_regression": LogisticRegression,
+        "knn": KNeighborsClassifier,
+        "svm": SVC,
+        "mlp_classifier": MLPClassifier,
+    }
+    model_class = model_dict[model_idx]
+    model = maybe_add_argument(model_class, random_state)(
+        **model_kwargs, random_state=random_state
+    )
+    pipeline = make_pipeline(StandardScaler(), model)
+    return SingleClassProxySupervisedModel(pipeline)
 
 
 class SingleClassProxySupervisedModel(SupervisedModel):

@@ -18,12 +18,11 @@ import json
 import os
 import pickle
 import time
-from dataclasses import asdict
+from pathlib import Path
 
 import click
 import numpy as np
-from pydvl.utils import MemcachedConfig, Scorer, Utility
-from pymemcache.client import Client
+from pydvl.utils import DiskCacheBackend, Scorer, Utility
 
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
@@ -94,42 +93,17 @@ def _calculate_values(
             f"Values for {valuation_method_name} exist in '{output_dir}'. Skipping..."
         )
 
-    mc_config = MemcachedConfig()
-    mc = Client(**asdict(mc_config)["client_config"])
-    last_run = mc.get("last_run", None)
-    if last_run is None or (
-        "calculate_values" != last_run.get("stage", "")
-        or experiment_name != last_run["experiment"]
-        or dataset_name != last_run["dataset"]
-        or model_name != last_run["model"]
-        or (
-            valuation_method_name != last_run["method"]
-            and (
-                valuation_method_name == "classwise_shapley"
-                or last_run["method"] == "classwise_shapley"
-            )
-        )
-    ):
-        logger.info("Flushing cache")
-        mc.flush_all()
-        mc.set(
-            "last_run",
-            {
-                "stage": "calculate_values",
-                "experiment": experiment_name,
-                "dataset": dataset_name,
-                "model": model_name,
-                "method": valuation_method_name,
-            },
-        )
-
+    params = load_params_fast()
+    cache_group = params["valuation_methods"][valuation_method_name]["cache_group"]
+    cache_backend = DiskCacheBackend(
+        Path(".cache") / experiment_name / dataset_name / model_name / cache_group
+    )
     val_set = Accessor.datasets(experiment_name, dataset_name).loc[0, "val_set"]
 
     n_pipeline_step = 4
     seed = pipeline_seed(repetition_id, n_pipeline_step)
     sub_seeds = np.random.SeedSequence(seed).generate_state(2)
 
-    params = load_params_fast()
     valuation_method_config = params["valuation_methods"][valuation_method_name]
     backend = params["settings"]["backend"]
     n_jobs = params["settings"]["n_jobs"]
@@ -137,19 +111,16 @@ def _calculate_values(
     model_kwargs = params["models"][model_name]
     model = instantiate_model(model_name, model_kwargs, seed=int(sub_seeds[0]))
 
-    u = Utility(
-        data=val_set,
-        model=model,
-        scorer=Scorer("accuracy", default=0.0),
-        catch_errors=True,
-        enable_cache=True,
-        cache_options=mc_config,
-    )
-
     start_time = time.time()
     algorithm_name = valuation_method_config.pop("algorithm")
     values = compute_values(
-        u,
+        Utility(
+            data=val_set,
+            model=model,
+            scorer=Scorer("accuracy", default=0.0),
+            catch_errors=True,
+            cache_backend=cache_backend,
+        ),
         valuation_method=algorithm_name,
         n_jobs=n_jobs,
         backend=backend,

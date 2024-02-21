@@ -16,15 +16,14 @@ a single value and a curve. The curve is stored as `*.curve.csv` file.
 
 import logging
 import os
-from dataclasses import asdict
 from functools import partial, reduce
+from pathlib import Path
 
 import click
 import pandas as pd
 from pydvl.parallel import ParallelConfig
-from pydvl.utils import MemcachedConfig
+from pydvl.utils import DiskCacheBackend
 from pydvl.utils.functional import maybe_add_argument
-from pymemcache.client import Client
 
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
@@ -121,42 +120,22 @@ def _evaluate_metrics(
     metric_fn = partial(MetricRegistry[metric_idx], **metric_kwargs)
     metric_fn = reduce(
         maybe_add_argument,
-        ["data", "values", "info", "n_jobs", "config", "progress", "seed"],
+        ["data", "values", "info", "n_jobs", "config", "progress", "seed", "cache"],
         metric_fn,
     )
 
     n_pipeline_step = 5
     seed = pipeline_seed(repetition_id, n_pipeline_step)
 
-    mc_config = MemcachedConfig()
-    mc = Client(**asdict(mc_config)["client_config"])
-    last_run = mc.get("last_run", None)
-    if last_run is None or (
-        "evaluate_metrics" != last_run.get("stage", "")
-        or experiment_name != last_run["experiment"]
-        or dataset_name != last_run["dataset"]
-        or model_name != last_run["model"]
-        or metric_name != last_run["metric"]
-        or (
-            valuation_method_name != last_run["method"]
-            and (
-                valuation_method_name == "classwise_shapley"
-                or last_run["method"] == "classwise_shapley"
-            )
-        )
-    ):
-        logger.info("Flushing cache")
-        mc.flush_all()
-        mc.set(
-            "last_run",
-            {
-                "stage": "evaluate_metrics",
-                "experiment": experiment_name,
-                "dataset": dataset_name,
-                "model": model_name,
-                "method": valuation_method_name,
-                "metric": metric_name,
-            },
+    cache = None
+    if "eval_model" in metric_kwargs:
+        cache_group = params["valuation_methods"][valuation_method_name]["cache_group"]
+        cache = DiskCacheBackend(
+            Path(".cache")
+            / experiment_name
+            / dataset_name
+            / metric_kwargs["eval_model"]
+            / cache_group
         )
 
     logger.info("Evaluating metric...")
@@ -169,6 +148,7 @@ def _evaluate_metrics(
             config=parallel_config,
             progress=True,
             seed=seed,
+            cache=cache,
         )
 
     evaluated_metrics = pd.Series([metric_values])

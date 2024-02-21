@@ -14,14 +14,15 @@ are defined per experiment. For example one can randomly flip a percentage of th
 in the dataset.
 """
 
-import json
-import os
-import pickle
-
 import click
 from numpy.random import SeedSequence
 
-from re_classwise_shapley.io import Accessor, load_raw_dataset
+from re_classwise_shapley.io import (
+    Accessor,
+    has_val_test_dataset,
+    load_raw_dataset,
+    store_val_test_data,
+)
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.preprocess import apply_sample_preprocessors
 from re_classwise_shapley.rand import sample_val_test_set
@@ -59,11 +60,9 @@ def _sample_data(
 ):
     params = load_params_fast()
     input_folder = Accessor.PREPROCESSED_PATH / dataset_name
-    output_dir = Accessor.SAMPLED_PATH / experiment_name / dataset_name
-    if os.path.exists(output_dir / "val_set.pkl") and os.path.exists(
-        output_dir / "test_set.pkl"
-    ):
-        return logger.info(f"Sampled data exists in '{output_dir}'. Skipping...")
+    dataset_folder = Accessor.SAMPLED_PATH / experiment_name / dataset_name
+    if has_val_test_dataset(dataset_folder):
+        return logger.info(f"Sampled data exists in '{dataset_folder}'. Skipping...")
 
     n_pipeline_step = 3
     seed = pipeline_seed(42, n_pipeline_step)
@@ -84,17 +83,7 @@ def _sample_data(
             val_set, experiment_config["preprocessors"], seed_sequence
         )
 
-    os.makedirs(output_dir, exist_ok=True)
-
-    with open(output_dir / "val_set.pkl", "wb") as file:
-        pickle.dump(val_set, file)
-
-    with open(output_dir / "test_set.pkl", "wb") as file:
-        pickle.dump(test_set, file)
-
-    if preprocess_info and len(preprocess_info) > 0:
-        with open(output_dir / "preprocess_info.json", "w") as file:
-            json.dump(preprocess_info, file, indent=4, sort_keys=True)
+    store_val_test_data(val_set, test_set, preprocess_info, dataset_folder)
 
 
 if __name__ == "__main__":

@@ -5,10 +5,11 @@ import numpy as np
 import pandas as pd
 import torch
 from numpy.typing import NDArray
-from pydvl.utils import Dataset, ensure_seed_sequence, maybe_progress
+from pydvl.utils import Dataset, ensure_seed_sequence
 from sklearn import preprocessing
 from sklearn.decomposition import PCA
 from torchvision.models import ResNet18_Weights, resnet18
+from tqdm import tqdm
 
 from re_classwise_shapley.filter import FilterRegistry
 from re_classwise_shapley.log import setup_logger
@@ -81,7 +82,7 @@ def _calculate_resnet18_features(
 
     collected_features = []
     num_batches = int(m.ceil(len(x) / batch_size))
-    for batch_num in maybe_progress(
+    for batch_num in tqdm(
         range(num_batches), display=progress, desc="Processing batches"
     ):
         win_x = x[batch_num * batch_size : (batch_num + 1) * batch_size]

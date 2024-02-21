@@ -13,11 +13,14 @@ All files are stored in `Accessor.PREPROCESSED_PATH / dataset_name` as`x.npy` an
 `y.npy`. Additional information is stored in `*.json` files.
 """
 
-import os
-
 import click
 
-from re_classwise_shapley.io import Accessor, load_raw_dataset, store_raw_dataset
+from re_classwise_shapley.io import (
+    Accessor,
+    has_raw_dataset,
+    load_raw_dataset,
+    store_raw_dataset,
+)
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.preprocess import preprocess_dataset
 from re_classwise_shapley.utils import load_params_fast
@@ -47,9 +50,7 @@ def _preprocess_data(
     dataset_name: str,
 ):
     preprocessed_folder = Accessor.PREPROCESSED_PATH / dataset_name
-    if os.path.exists(preprocessed_folder / "x.npy") and os.path.exists(
-        preprocessed_folder / "y.npy"
-    ):
+    if has_raw_dataset(preprocessed_folder):
         return logger.info(
             f"Preprocessed data exists in '{preprocessed_folder}'. Skipping..."
         )
@@ -58,10 +59,8 @@ def _preprocess_data(
     datasets_settings = params["datasets"]
 
     dataset_folder = Accessor.RAW_PATH / dataset_name
-    logger.info(f"Loading raw dataset '{dataset_name}' from {dataset_folder}.")
     raw_dataset = load_raw_dataset(dataset_folder)
 
-    logger.info(f"Preprocessing dataset '{dataset_name}'.")
     dataset_kwargs = datasets_settings[dataset_name]
     preprocessed_dataset = preprocess_dataset(raw_dataset, dataset_kwargs)
     store_raw_dataset(preprocessed_dataset, preprocessed_folder)

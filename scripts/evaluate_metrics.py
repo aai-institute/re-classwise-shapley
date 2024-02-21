@@ -108,8 +108,8 @@ def _evaluate_metrics(
         ).iterrows()
     )
     for i, (_, curve) in enumerate(curves):
-        logger.info(f"Processing curve {i+1}/{len(curves)}")
         curve_name = curve["curve_name"]
+        logger.info(f"Processing curve {i+1}/{len(curves)} with name '{curve_name}'.")
         curve = curve["curve"]
         if os.path.exists(output_dir / f"{metric_name}.{curve_name}.csv"):
             continue

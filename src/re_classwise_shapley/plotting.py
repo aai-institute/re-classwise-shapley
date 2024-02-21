@@ -502,34 +502,21 @@ def plot_threshold_characteristics(
         plot_threshold_characteristics_func,
         patch_size=patch_size,
         n_cols=n_cols,
-        legend=False,
+        legend=True,
         format_x_ticks="%.5f",
         xlabel="Threshold",
         ylabel="Fraction",
         grid=True,
         x_lims=[
-            0.0002,
-            0.000020,
-            0.003,
+            0.001,
+            0.00002,
+            0.0025,
+            0.0005,
             0.00025,
             0.0005,
-            0.0002,
-            0.0002,
-            0.001,
-            0.0008,
+            0.0005,
+            0.00175,
+            0.00150,
         ],
     ) as fig:
-        legend_kwargs = {"framealpha": 0}
-        handles, labels = fig.get_axes()[0].get_legend_handles_labels()
-        fig.legend(
-            handles,
-            labels,
-            loc="outside lower center",
-            ncol=5,
-            fontsize=15,
-            fancybox=False,
-            shadow=False,
-            **legend_kwargs,
-        )
-        fig.subplots_adjust(bottom=0.08)
         yield fig

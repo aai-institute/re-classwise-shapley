@@ -71,7 +71,7 @@ def determine_in_cls_out_of_cls_marginal_accuracies(
 def _determine_in_cls_out_of_cls_marginal_accuracies(
     experiment_name: str,
     dataset_name: str,
-    model_name: str,
+    model_name: str = "logistic_regression",
 ):
     val_set = Accessor.datasets(experiment_name, dataset_name).loc[0, "val_set"]
     seed = pipeline_seed(42, 8)

@@ -1,9 +1,0 @@
-defaults:
-- datasets:
-  - click
-  - diabetes
-  - phoneme
-  - fmnist_binary
-  - cifar10
-  - mnist_binary
-  - mnist_multi

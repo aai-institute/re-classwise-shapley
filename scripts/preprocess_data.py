@@ -1,97 +1,85 @@
-import json
 import os
 from typing import Dict
 
 import click
-import numpy as np
 import pandas as pd
 from dvc.api import params_show
 from sklearn import preprocessing
 
-from csshapley22.constants import RANDOM_SEED
-from csshapley22.data.config import Config
-from csshapley22.data.preprocess import FilterRegistry, PreprocessorRegistry
-from csshapley22.log import setup_logger
-from csshapley22.utils import set_random_seed
+from re_classwise_shapley.config import Config
+from re_classwise_shapley.filter import FilterRegistry
+from re_classwise_shapley.io import load_dataset, store_dataset
+from re_classwise_shapley.log import setup_logger
+from re_classwise_shapley.preprocess import PreprocessorRegistry
+from re_classwise_shapley.types import RawDataset
 
 logger = setup_logger()
-set_random_seed(RANDOM_SEED)
 
 
 @click.command()
 @click.option("--dataset-name", type=str, required=True)
 def preprocess_data(dataset_name: str):
-    logger.info(f"Start preprocessing of '{dataset_name}'.")
+    """
+    Preprocesses a dataset and stores it on disk.
+    :param dataset_name: The name of the dataset to preprocess.
+    """
+    preprocessed_folder = Config.PREPROCESSED_PATH / dataset_name
+    if os.path.exists(preprocessed_folder):
+        logger.info(
+            f"Preprocessed data '{dataset_name}' exists in '{preprocessed_folder}'."
+        )
+        return
+
+    dataset_folder = Config.RAW_PATH / dataset_name
+    logger.info(f"Loading raw dataset '{dataset_name}' from {dataset_folder}.")
+    raw_dataset = load_dataset(dataset_folder)
+
+    logger.info(f"Preprocessing dataset '{dataset_name}'.")
     params = params_show()
     datasets_settings = params["datasets"]
     dataset_kwargs = datasets_settings[dataset_name]
-    preprocess_dataset(dataset_name, dataset_kwargs)
-    logger.info(f"Preprocessed '{dataset_name}' with configuration \n{dataset_kwargs}.")
+    preprocessed_dataset = preprocess_dataset(raw_dataset, dataset_kwargs)
+    store_dataset(preprocessed_dataset, preprocessed_folder)
 
 
-def preprocess_dataset(dataset_name: str, dataset_kwargs: Dict):
-    dataset_folder = Config.RAW_PATH / dataset_name
-    preprocessed_folder = Config.PREPROCESSED_PATH / dataset_name
-    if os.path.exists(preprocessed_folder):
-        logger.info(f"Preprocessed data exists in '{preprocessed_folder}'.")
-        return
-
-    x = np.load(dataset_folder / "x.npy")
-    y = np.load(dataset_folder / "y.npy", allow_pickle=True)
-
-    with open(str(dataset_folder / "info.json"), "r") as file:
-        info = json.load(file)
+def preprocess_dataset(raw_dataset: RawDataset, dataset_kwargs: Dict) -> RawDataset:
+    """
+    Preprocesses a dataset and returns preprocesses data.
+    :param raw_dataset: The raw dataset to preprocess.
+    :param dataset_kwargs: The dataset kwargs for processing.
+    :return: The preprocessed dataset as a tuple of x, y and additional info.
+    """
+    x, y, additional_info = raw_dataset
 
     filters = dataset_kwargs.get("filters", None)
     if filters is not None:
         for filter_name, filter_kwargs in filters.items():
+            logger.info(f"Applying filter '{filter_name}'.")
             data_filter = FilterRegistry[filter_name]
             x, y = data_filter(x, y, **filter_kwargs)
 
+    logger.info(f"Applying preprocessors.")
     preprocessor_definitions = dataset_kwargs.pop("preprocessor", None)
     if preprocessor_definitions is not None:
         for (
             preprocessor_name,
             preprocessor_kwargs,
         ) in preprocessor_definitions.items():
+            logger.info(f"Applying preprocessor '{preprocessor_name}'.")
             preprocessor = PreprocessorRegistry[preprocessor_name]
             x, y = preprocessor(x, y, **preprocessor_kwargs)
 
-    os.makedirs(preprocessed_folder, exist_ok=True)
+    logger.info(f"Encoding labels to integers.")
     le = preprocessing.LabelEncoder()
     le.fit(y)
     y = le.transform(y)
-    info["label_distribution"] = (pd.value_counts(y) / len(y)).to_dict()
 
-    np.save(preprocessed_folder / "x.npy", x)
-    np.save(preprocessed_folder / "y.npy", y)
-    logger.info(
-        f"Stored preprocessed dataset '{dataset_name}' on disk in folder '{preprocessed_folder}."
-    )
-
-    with open(str(preprocessed_folder / "info.json"), "w") as file:
-        json.dump(
-            info,
-            file,
-            sort_keys=True,
-            indent=4,
-        )
-
-    with open(str(preprocessed_folder / "filters.json"), "w") as file:
-        json.dump(
-            filters,
-            file,
-            sort_keys=True,
-            indent=4,
-        )
-
-    with open(str(preprocessed_folder / "preprocess.json"), "w") as file:
-        json.dump(
-            preprocessor_definitions,
-            file,
-            sort_keys=True,
-            indent=4,
-        )
+    additional_info["info.json"]["label_distribution"] = (
+        pd.value_counts(y) / len(y)
+    ).to_dict()
+    additional_info["filters.json"] = filters
+    additional_info["preprocess.json"] = preprocessor_definitions
+    return x, y, additional_info
 
 
 if __name__ == "__main__":

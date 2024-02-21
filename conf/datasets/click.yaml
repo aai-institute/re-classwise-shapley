@@ -1,6 +1,0 @@
-click: {
-  openml_id: 1216,
-  train_size: 500,
-  dev_size: 500,
-  test_size: 2000,
-}

@@ -134,3 +134,9 @@ dmypy.json
 # Jetbrains
 .idea
 /outbut_bak.zip
+
+output/raw
+output/preprocessed
+output/*.zip
+
+mlruns

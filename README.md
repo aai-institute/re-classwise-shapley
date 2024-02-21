@@ -6,9 +6,11 @@ Code for the submission to the ML Reproducibility Challenge 2023.
 
 We use Python version 3.10 for this repository.
 
-We use [Poetry](https://python-poetry.org/) for dependency management. More specifically version `1.2.0`.
+We use [Poetry](https://python-poetry.org/) for dependency management. More specifically
+version `1.2.0`.
 
-After installing Poetry, run the following command to create a virtual environment and install
+After installing Poetry, run the following command to create a virtual environment and
+install
 all dependencies:
 
 ```shell
@@ -50,10 +52,11 @@ Make sure to install the pre-commit hooks:
 pre-commit install
 ```
 
-
 ## Fetching datasets
 
-To fetch a dataset simply call `csshapley22/data/fetch.py`, which uses the `datasets` section
-of `params.yaml` to download and caches the corresponding data files. The string-based kwargs 
+To fetch a dataset simply call `re_classwise_shapley/data/fetch.py`, which uses
+the `datasets` section
+of `params.yaml` to download and caches the corresponding data files. The string-based
+kwargs
 configuration is used as an identifier, to verify later that a configuration has
 changed.

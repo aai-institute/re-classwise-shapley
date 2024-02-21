@@ -1,5 +1,0 @@
-beta_shapley: {
-  n_updates: 500,
-  alpha: 16.0,
-  beta: 1.0,
-}

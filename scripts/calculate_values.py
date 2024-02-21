@@ -94,10 +94,14 @@ def _calculate_values(
         )
 
     params = load_params_fast()
-    cache_group = params["valuation_methods"][valuation_method_name]["cache_group"]
-    cache_backend = DiskCacheBackend(
-        Path(".cache") / experiment_name / dataset_name / model_name / cache_group
-    )
+
+    cache = None
+    if "cache_group" in params["valuation_methods"][valuation_method_name]:
+        cache_group = params["valuation_methods"][valuation_method_name]["cache_group"]
+        cache = DiskCacheBackend(
+            Path(".cache") / experiment_name / dataset_name / model_name / cache_group
+        )
+
     val_set = Accessor.datasets(experiment_name, dataset_name).loc[0, "val_set"]
 
     n_pipeline_step = 4
@@ -119,7 +123,7 @@ def _calculate_values(
             model=model,
             scorer=Scorer("accuracy", default=0.0),
             catch_errors=True,
-            cache_backend=cache_backend,
+            cache_backend=cache,
         ),
         valuation_method=algorithm_name,
         n_jobs=n_jobs,

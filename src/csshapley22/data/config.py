@@ -2,4 +2,5 @@ from pathlib import Path
 
 
 class Config:
-    DATASET_PATH = Path("./output/data")
+    RAW_PATH = Path("./output/raw")
+    PREPROCESSED_PATH = Path("./output/preprocessed")

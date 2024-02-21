@@ -2,14 +2,14 @@ settings:
   evaluation:
     n_repetitions: 20
   random:
-    seed: 42
+    seed: 42  # 42 
 
   parallel:
-    n_jobs: 4
+    n_jobs: 92
     backend: joblib
 
 active:
-  models: [ "logistic_regression" ]
+  models: [ "logistic_regression", "knn", "gradient_boosting_classifier", "svm" ]
   datasets: [
     "cifar10",
     "click",
@@ -21,7 +21,12 @@ active:
     "phoneme"
   ]
   valuation_methods: [
+    "random",
+    "loo",
     "classwise_shapley",
+    "classwise_shapley_add_idx",
+    "beta_shapley",
+    "tmc_shapley"
   ]
 
 experiments:
@@ -29,7 +34,7 @@ experiments:
   noise_removal:
   wad_drop_transfer:
     transfer_models:
-      [ "gradient_boosting_classifier" ]
+      [ "logistic_regression", "knn", "gradient_boosting_classifier", "svm", "mlp" ]
 
 models:
   logistic_regression: {

@@ -1,0 +1,20 @@
+stages:
+  data-valuation-experiment:
+    foreach: ${data_valuation.budgets}
+    do:
+      cmd: python -m src.csshapley22.experiments.data_valuation --budget=${item}
+      params:
+      - data_valuation
+      deps:
+      - src/csshapley22/experiments/data_valuation.py
+      outs:
+      - output/data_valuation/results/dataset=${data_valuation.dataset}/budget=${item}
+  data-valuation:
+    cmd: python -m src.csshapley22.plots.data_valuation
+    params:
+    - data_valuation
+    deps:
+    - src/csshapley22/plots/data_valuation.py
+    - output/data_valuation/results/dataset=${data_valuation.dataset}
+    outs:
+    - output/data_valuation/plots/dataset=${data_valuation.dataset}

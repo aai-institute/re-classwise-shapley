@@ -1,0 +1,4 @@
+[core]
+    analytics = false
+[hydra]
+    enabled = True

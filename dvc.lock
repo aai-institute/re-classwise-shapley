@@ -1,0 +1,69 @@
+schema: '2.0'
+stages:
+  data-valuation-experiment@500:
+    cmd: python -m src.csshapley22.experiments.data_valuation --budget=500
+    deps:
+    - path: src/csshapley22/experiments/data_valuation.py
+      md5: bed4b34f04912663cc380cff509c1621
+      size: 4191
+    params:
+      params.yaml:
+        data_valuation:
+          budgets:
+          - 500
+          removal_percentages:
+          - 0.0
+          - 0.05
+          - 0.1
+          - 0.2
+          - 0.3
+          - 0.4
+          method_names:
+          - Random
+          - Class Wise
+          dataset: synthetic
+          n_features: 50
+          n_train_samples: 200
+          n_test_samples: 1000
+    outs:
+    - path: output/data_valuation/results/dataset=synthetic/budget=500
+      md5: 00d89428f074f51e2cd3295b0031062e.dir
+      size: 171775
+      nfiles: 20
+  data-valuation:
+    cmd: python -m src.csshapley22.plots.data_valuation
+    deps:
+    - path: output/data_valuation/results/dataset=synthetic
+      md5: 2e40b1a00a54baa0a5d319ccac428a35.dir
+      size: 171775
+      nfiles: 20
+    - path: src/csshapley22/plots/data_valuation.py
+      md5: f3ba882fe3e9cf8cf86da8628d4c26c3
+      size: 2209
+    params:
+      params.yaml:
+        data_valuation:
+          budgets:
+          - 500
+          removal_percentages:
+          - 0.0
+          - 0.05
+          - 0.1
+          - 0.2
+          - 0.3
+          - 0.4
+          method_names:
+          - Random
+          - Leave One Out
+          - Least Core
+          - TMC Shapley
+          - Group Testing Shapley
+          dataset: synthetic
+          n_features: 50
+          n_train_samples: 200
+          n_test_samples: 1000
+    outs:
+    - path: output/data_valuation/plots/dataset=synthetic
+      md5: 0b661a879cece6218dd73735e7eff96d.dir
+      size: 86159
+      nfiles: 7

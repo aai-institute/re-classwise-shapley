@@ -1,5 +1,7 @@
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict, Optional, Tuple, Union
 
+import numpy as np
+from numpy.typing import NDArray
 from pydvl.utils import Dataset, SupervisedModel, Utility
 from pydvl.value import ValuationResult
 
@@ -22,3 +24,7 @@ V: A callable which throws a super vised model out of it.
 """
 ModelGenerator = Callable[[], SupervisedModel]
 ModelGeneratorFactory = Dict[str, ModelGenerator]
+
+FloatIntStringArray = Union[NDArray[np.float_], NDArray[np.int_]]
+RawDataset = Tuple[NDArray[np.float_], FloatIntStringArray, Dict[str, Dict]]
+Seed = Optional[Union[int, np.random.SeedSequence]]

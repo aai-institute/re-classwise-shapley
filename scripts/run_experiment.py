@@ -4,16 +4,16 @@ import click
 from dvc.api import params_show
 from dvc.repo import Repo
 
-from csshapley22.constants import RANDOM_SEED
-from csshapley22.data.config import Config
-from csshapley22.experiments import experiment_noise_removal, experiment_wad
-from csshapley22.log import setup_logger
-from csshapley22.preprocess import (
+from re_classwise_shapley.constants import RANDOM_SEED
+from re_classwise_shapley.data.config import Config
+from re_classwise_shapley.experiments import experiment_noise_removal, experiment_wad
+from re_classwise_shapley.log import setup_logger
+from re_classwise_shapley.preprocess import (
     parse_datasets_config,
     parse_models_config,
     parse_valuation_methods_config,
 )
-from csshapley22.utils import set_random_seed
+from re_classwise_shapley.utils import set_random_seed
 
 logger = setup_logger()
 
@@ -26,6 +26,7 @@ SINGLE_BREAK = 120 * "-"
 @click.command()
 @click.argument("experiment-name", type=str, nargs=1)
 @click.option("--dataset-name", type=str, required=True)
+@click.option("--model-name", type=str, required=True)
 def run_experiment(experiment_name: str, dataset_name: str):
     logger.info("Starting data valuation experiment")
 

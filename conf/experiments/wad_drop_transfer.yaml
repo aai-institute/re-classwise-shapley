@@ -1,5 +1,0 @@
-wad_drop_transfer: {
-  transfer_models:
-    logistic_regression:
-    gradient_boosting_classifier:
-}

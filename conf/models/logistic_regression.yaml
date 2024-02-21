@@ -1,4 +1,0 @@
-logistic_regression: {
-  solver: liblinear,
-  n_jobs: 1
-}

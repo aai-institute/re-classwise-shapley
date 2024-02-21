@@ -28,7 +28,7 @@ from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.metric import CurvesRegistry
 from re_classwise_shapley.utils import load_params_fast, n_threaded, pipeline_seed
 
-logger = setup_logger("evaluate_metrics")
+logger = setup_logger("evaluate_curves")
 
 
 @click.command()

@@ -14,10 +14,10 @@ stages:
     outs:
     - output/preprocessed
 
-  data-valuation-experiment:
-    cmd: python -m src.csshapley22.stages.data_valuation
+  data-valuation-run-experiments:
+    cmd: python -m src.csshapley22.stages.run_experiments
     deps:
-    - src/csshapley22/stages/data_valuation.py
+    - src/csshapley22/stages/run_experiments.py
     - output/preprocessed
     outs:
     - output/results

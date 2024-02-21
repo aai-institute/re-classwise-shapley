@@ -16,7 +16,7 @@ from csshapley22.data.preprocess import FilterRegistry, PreprocessorRegistry
 from csshapley22.data.utils import make_hash_sha256
 from csshapley22.dataset import subsample
 from csshapley22.log import setup_logger
-from csshapley22.utils import set_random_seed
+from csshapley22.utils import order_dict, set_random_seed
 
 logger = setup_logger()
 set_random_seed(RANDOM_SEED)
@@ -32,7 +32,9 @@ def preprocess_data():
     # fetch datasets
     datasets_settings = general_settings["datasets"]
     for dataset_name, dataset_kwargs in datasets_settings.items():
-        logger.info(f"Fetching dataset {dataset_name} with kwargs {dataset_kwargs}.")
+        logger.info(
+            f"Preprocessing dataset {dataset_name} with kwargs {dataset_kwargs}."
+        )
         preprocess_dataset(dataset_name, dataset_kwargs)
 
 
@@ -40,8 +42,11 @@ def preprocess_dataset(dataset_name: str, dataset_kwargs: Dict):
     openml_id = dataset_kwargs["openml_id"]
     dataset_folder = Config.RAW_PATH / str(openml_id)
 
+    dataset_idx = str(order_dict(dataset_kwargs))
+    preprocessed_folder = Config.PREPROCESSED_PATH / dataset_idx
+
     x = np.load(dataset_folder / "x.npy")
-    y = np.load(dataset_folder / "y.npy")
+    y = np.load(dataset_folder / "y.npy", allow_pickle=True)
 
     with open(str(dataset_folder / "info.json"), "r") as file:
         info = json.load(file)
@@ -59,7 +64,7 @@ def preprocess_dataset(dataset_name: str, dataset_kwargs: Dict):
             preprocessor_kwargs,
         ) in preprocessor_definitions.items():
             preprocessor = PreprocessorRegistry[preprocessor_name]
-            x, y = preprocessor(x, y, **preprocessor_kwargs)
+            x = preprocessor(x, **preprocessor_kwargs)
 
     stratified = dataset_kwargs.get("stratified", False)
     val_size = dataset_kwargs["dev_size"]
@@ -70,7 +75,9 @@ def preprocess_dataset(dataset_name: str, dataset_kwargs: Dict):
         x, y, info, train_size, val_size, test_size, stratified
     )
 
-    _store_data(validation_set, test_set, dataset_name, dataset_kwargs)
+    _store_data(
+        validation_set, test_set, dataset_name, dataset_kwargs, preprocessed_folder
+    )
 
 
 def _encode_and_pack_into_datasets(
@@ -80,7 +87,7 @@ def _encode_and_pack_into_datasets(
         x, y, train_size, val_size, test_size, stratified=stratified
     )
     le = preprocessing.LabelEncoder()
-    le.fit(np.concatenate((y_train, y_test, y_dev)))
+    le.fit(y)
     y_train = le.transform(y_train)
     y_test = le.transform(y_test)
     y_dev = le.transform(y_dev)
@@ -94,21 +101,19 @@ def _encode_and_pack_into_datasets(
         y_train[perm_train],
         x_dev[perm_dev],
         y_dev[perm_dev],
-        **info,
     )
     test_set = Dataset(
         x_train,
         y_train,
         x_test[perm_test],
         y_test[perm_test],
-        **info,
     )
     return test_set, validation_set
 
 
-def _store_data(validation_set, test_set, dataset_name, dataset_kwargs):
-    dataset_idx = make_hash_sha256(dataset_kwargs)
-    preprocessed_folder = Config.PREPROCESSED_PATH / dataset_idx
+def _store_data(
+    validation_set, test_set, dataset_name, dataset_kwargs, preprocessed_folder
+):
     os.makedirs(preprocessed_folder, exist_ok=True)
     with open(str(preprocessed_folder / "dataset_kwargs.json"), "w") as file:
         json.dump(dataset_kwargs, file, sort_keys=True, indent=4)
@@ -121,10 +126,6 @@ def _store_data(validation_set, test_set, dataset_name, dataset_kwargs):
         with open(set_path, "wb") as file:
             pickle.dump(set, file)
     logger.info(f"Stored dataset '{dataset_name}' on disk.")
-
-
-def process(x: NDArray[np.float_], y: NDArray[Union[np.float_, np.int_]]):
-    return val_dataset, test_dataset
 
 
 if __name__ == "__main__":

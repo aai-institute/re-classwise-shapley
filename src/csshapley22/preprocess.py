@@ -10,7 +10,7 @@ from csshapley22.types import (
     ValTestSetFactory,
     ValuationMethodsFactory,
 )
-from csshapley22.utils import instantiate_model
+from csshapley22.utils import instantiate_model, order_dict
 from csshapley22.valuation_methods import compute_values
 
 logger = setup_logger()
@@ -43,7 +43,7 @@ def parse_datasets_config(dataset_settings: Dict[str, Dict]) -> ValTestSetFactor
 
 
 def load_single_dataset(dataset_name: str, dataset_kwargs: Dict):
-    dataset_idx = make_hash_sha256(dataset_kwargs)
+    dataset_idx = str(order_dict(dataset_kwargs))
     raw_folder = Config.PREPROCESSED_PATH / dataset_idx
     validation_set_path = str(raw_folder / "validation_set.pkl")
     test_set_path = str(raw_folder / "test_set.pkl")

@@ -72,7 +72,8 @@ def _sample_data(
     ):
         return logger.info(f"Sampled data exists in '{output_dir}'. Skipping...")
 
-    seed = pipeline_seed(repetition_id, 1)
+    n_pipeline_step = 3
+    seed = pipeline_seed(repetition_id, n_pipeline_step)
     seed_sequence = SeedSequence(seed).spawn(2)
 
     experiment_config = params["experiments"][experiment_name]

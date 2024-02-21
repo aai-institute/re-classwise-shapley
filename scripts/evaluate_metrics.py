@@ -20,6 +20,7 @@ import os
 from functools import partial, reduce
 
 import click
+import numpy as np
 import pandas as pd
 from pydvl.parallel import ParallelConfig
 from pydvl.utils.functional import maybe_add_argument
@@ -27,7 +28,7 @@ from pydvl.utils.functional import maybe_add_argument
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.metric import metric_roc_auc, metric_weighted_metric_drop
-from re_classwise_shapley.utils import load_params_fast, n_threaded
+from re_classwise_shapley.utils import load_params_fast, n_threaded, pipeline_seed
 
 logger = setup_logger("evaluate_metrics")
 
@@ -107,9 +108,12 @@ def evaluate_metrics(
     metric_fn = partial(MetricRegistry[metric_idx], **metric_kwargs)
     metric_fn = reduce(
         maybe_add_argument,
-        ["data", "values", "info", "n_jobs", "config", "progress"],
+        ["data", "values", "info", "n_jobs", "config", "progress", "seed"],
         metric_fn,
     )
+
+    n_pipeline_step = 5
+    seed = pipeline_seed(repetition_id, n_pipeline_step)
 
     logger.info("Evaluating metric...")
     with n_threaded(n_threads=1):
@@ -120,6 +124,7 @@ def evaluate_metrics(
             n_jobs=n_jobs,
             config=parallel_config,
             progress=True,
+            seed=seed,
         )
 
     if len_curve_perc is not None:

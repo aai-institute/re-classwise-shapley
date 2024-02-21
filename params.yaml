@@ -283,7 +283,7 @@ valuation_methods:
 
   least_core:
     algorithm: least_core
-    n_updates: 25000
+    n_updates: 5000
     progress: false
     cache_group: acc
 

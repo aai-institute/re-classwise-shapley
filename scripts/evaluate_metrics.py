@@ -16,12 +16,15 @@ a single value and a curve. The curve is stored as `*.curve.csv` file.
 
 import logging
 import os
+from dataclasses import asdict
 from functools import partial, reduce
 
 import click
 import pandas as pd
 from pydvl.parallel import ParallelConfig
+from pydvl.utils import MemcachedConfig
 from pydvl.utils.functional import maybe_add_argument
+from pymemcache.client import Client
 
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger

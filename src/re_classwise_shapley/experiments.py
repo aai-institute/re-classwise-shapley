@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import pandas as pd
+import psutil
 from dvc.api import params_show
 from numpy.random import SeedSequence
 from numpy.typing import NDArray
@@ -186,6 +187,11 @@ def run_experiment(
     return result
 
 
+def set_affinity(cpus):
+    p = psutil.Process(os.getpid())
+    p.cpu_affinity(cpus)
+
+
 def run_and_store_experiment(
     experiment_name: str,
     output_dir: Path,
@@ -195,6 +201,8 @@ def run_and_store_experiment(
     n_repetitions: int = 1,
     seed: int = None,
 ):
+    params = params_show()
+    set_affinity(list(range(int(params["settings"]["parallel"]["n_jobs"]))))
     logger.info(Config.DOUBLE_BREAK)
     logger.info(f"Start {experiment_name=} with '{model_name=}' on '{dataset_name=}.")
     logger.info(f"Args: \t{seed=}, \n\t\t{output_dir=}.")
@@ -202,7 +210,6 @@ def run_and_store_experiment(
     seed_sequence = init_random_seed(seed)
     seeds = seed_sequence.spawn(n_repetitions)
 
-    params = params_show()
     valuation_methods = parse_valuation_method_dict(
         params["valuation_methods"],
         active_valuation_methods=params["active"]["valuation_methods"],

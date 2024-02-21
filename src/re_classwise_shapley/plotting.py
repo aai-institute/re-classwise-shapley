@@ -9,10 +9,10 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.ticker import FormatStrFormatter
-from render_plots import COLOR_ENCODING, COLORS, logger
 
 from re_classwise_shapley.accessor import Accessor
 from re_classwise_shapley.io import save_df_as_table
+from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.utils import load_params_fast
 
 __all__ = [
@@ -21,6 +21,33 @@ __all__ = [
     "plot_metric_table",
     "plot_curves",
 ]
+
+logger = setup_logger(__name__)
+
+
+# Mapping from method names to single colors
+COLOR_ENCODING = {
+    "random": "black",
+    "beta_shapley": "blue",
+    "loo": "orange",
+    "tmc_shapley": "green",
+    "classwise_shapley": "red",
+    "owen_sampling_shapley": "purple",
+    "banzhaf_shapley": "turquoise",
+    "least_core": "gray",
+}
+
+# Mapping from colors to mean and shade color.
+COLORS = {
+    "black": ("black", "silver"),
+    "blue": ("dodgerblue", "lightskyblue"),
+    "orange": ("darkorange", "gold"),
+    "green": ("limegreen", "seagreen"),
+    "red": ("indianred", "firebrick"),
+    "purple": ("darkorchid", "plum"),
+    "gray": ("gray", "lightgray"),
+    "turquoise": ("turquoise", "lightcyan"),
+}
 
 
 def shaded_mean_normal_confidence_interval(
@@ -75,6 +102,7 @@ def plot_histogram(
     model_name: str,
     output_folder: Path,
     patch_size: Tuple[float, float] = (4, 4),
+    ref_method: str = "tmc_shapley",
 ):
     """
     Plot the histogram of the data values for each dataset and valuation method.
@@ -84,6 +112,7 @@ def plot_histogram(
         model_name: Model name to obtain histograms of.
         output_folder: Folder to store the plots in.
         patch_size: Size of one image patch of the multi plot.
+        ref_method: Reference method to plot the histogram against.
     """
     params = load_params_fast()
     params_active = params["active"]
@@ -116,12 +145,22 @@ def plot_histogram(
 
             fig, ax = fig_ax_d[method_name]
             sns.histplot(
-                method_values.reshape(-1),
+                method_values[0],
                 kde=True,
                 ax=ax[idx],
                 bins="sturges",
                 alpha=0.4,
                 color=COLORS[COLOR_ENCODING[method_name]][0],
+                label=method_name,
+            )
+            sns.histplot(
+                dataset_config[ref_method][0],
+                kde=True,
+                ax=ax[idx],
+                bins="sturges",
+                alpha=0.4,
+                color=COLORS[COLOR_ENCODING[ref_method]][0],
+                label=ref_method,
             )
             if idx % h != 0:
                 ax[idx].set_ylabel("")
@@ -134,6 +173,19 @@ def plot_histogram(
         idx += 1
 
     for key, (fig, ax) in fig_ax_d.items():
+        legend_kwargs = {"framealpha": 0}
+        handles, labels = ax[-1].get_legend_handles_labels()
+        leg = fig.legend(
+            handles,
+            labels,
+            loc="outside lower center",
+            ncol=5,
+            fontsize=12,
+            fancybox=False,
+            shadow=False,
+            **legend_kwargs,
+        )
+
         for i in range(len(ax)):
             ax[i].xaxis.set_ticks(np.linspace(*ax[i].get_xlim(), 5))
             ax[i].xaxis.set_major_formatter(FormatStrFormatter("%.3f"))
@@ -209,8 +261,6 @@ def plot_curves(
                     f"({chr(97 + idx)}) {dataset_name}",
                     color="black",
                 )
-
-        handles, labels = ax[num_datasets - 1].get_legend_handles_labels()
         for i in range(num_datasets, len(ax)):
             ax[i].grid(False)
             ax[i].axis("off")
@@ -218,7 +268,7 @@ def plot_curves(
             ax[i].patch.set_alpha(0.0)
 
         legend_kwargs = {"framealpha": 0}
-
+        handles, labels = ax[num_datasets - 1].get_legend_handles_labels()
         leg = fig.legend(
             handles,
             labels,

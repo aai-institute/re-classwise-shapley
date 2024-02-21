@@ -132,6 +132,7 @@ def linear_dataframe_to_table(
 
 
 def calculate_threshold_characteristic_curves(
+    x_range,
     in_cls_mar_acc: NDArray[np.float_],
     global_mar_acc: NDArray[np.float_],
     n_thresholds: int = 100,
@@ -149,18 +150,13 @@ def calculate_threshold_characteristic_curves(
     Returns:
         A pd.DataFrame with all four characteristic curves.
     """
-    max_x = np.max(np.maximum(np.abs(in_cls_mar_acc), np.abs(global_mar_acc)))
-    x_axis = np.linspace(0, max_x, n_thresholds)
-
-    characteristics = pd.DataFrame(index=x_axis, columns=["1:1", "1:2", "1:3", "1:4"])
+    characteristics = pd.DataFrame(index=x_range, columns=["1:1"])
     n_data = len(in_cls_mar_acc)
 
     for i, threshold in enumerate(characteristics.index):
-        for k in range(4):
+        for k in range(1):
             characteristics.iloc[i, k] = (
-                np.sum(
-                    in_cls_mar_acc < -threshold & global_mar_acc > (k + 1) * threshold
-                )
+                np.sum((in_cls_mar_acc < -threshold) & (global_mar_acc > threshold))
                 / n_data
             )
 

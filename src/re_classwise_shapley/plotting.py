@@ -1,5 +1,6 @@
 import math as m
 from contextlib import contextmanager
+from functools import partial
 from typing import Any, Callable, Dict, List, Sequence, Tuple
 
 import matplotlib.pyplot as plt
@@ -20,6 +21,8 @@ __all__ = [
     "plot_metric_table",
     "plot_threshold_characteristics",
 ]
+
+from re_classwise_shapley.utils import calculate_threshold_characteristic_curves
 
 logger = setup_logger(__name__)
 
@@ -173,11 +176,6 @@ def plot_grid_over_datasets(
         else:
             ax[dataset_idx].set_xlabel(xlabel)
 
-        if format_x_ticks is not None:
-            ax[dataset_idx].xaxis.set_ticks(np.linspace(*ax[dataset_idx].get_xlim(), 5))
-            ax[dataset_idx].xaxis.set_major_formatter(
-                FormatStrFormatter(format_x_ticks)
-            )
         ax[dataset_idx].set_title(f"({chr(97 + dataset_idx)}) {dataset_name}")
         if grid:
             ax[dataset_idx].grid(True)
@@ -185,6 +183,11 @@ def plot_grid_over_datasets(
         if x_lims is not None:
             ax[dataset_idx].set_xlim([0, x_lims[dataset_idx]])
 
+        if format_x_ticks is not None:
+            ax[dataset_idx].xaxis.set_ticks(np.linspace(*ax[dataset_idx].get_xlim(), 5))
+            ax[dataset_idx].xaxis.set_major_formatter(
+                FormatStrFormatter(format_x_ticks)
+            )
     plt.tight_layout()
     if n_plots % 2 == 1:
         last = ax[-1]
@@ -443,6 +446,7 @@ def plot_threshold_characteristics(
     results: pd.DataFrame,
     patch_size: Tuple[float, float] = (5, 5),
     n_cols: int = 5,
+    confidence: float = 0.95,
 ) -> plt.Figure:
     """
     Plots threshold characteristics for various datasets. This function takes results
@@ -456,16 +460,38 @@ def plot_threshold_characteristics(
     """
 
     def plot_threshold_characteristics_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
-        cols = data.loc[data.index[0], "characteristics"].columns
-        unfolded = {col: [] for col in cols}
-        for i in data.index:
-            for col in cols:
-                unfolded[col].append(data.loc[i, "characteristics"][col])
+        min_threshold = 0
+        max_threshold = (data.iloc[:, 1:].applymap(lambda x: np.max(x))).max().max()
+        n_samples = 100
+        x_range = np.linspace(min_threshold, max_threshold, n_samples)
 
-        colors = ["green", "red", "blue", "orange"]
-        for (c_id, lst), color in zip(unfolded.items(), colors):
-            for g in lst:
-                g.plot(ax=ax, alpha=0.5, color=color)
+        n_bootstrap_samples = 1000
+        all_fns = [
+            calculate_threshold_characteristic_curves(
+                x_range, row["in_cls_mar_acc"], row["global_mar_acc"]
+            )
+            for _, row in data.iterrows()
+        ]
+        data = pd.concat([fn for fn in all_fns], axis=1)
+
+        assert len(data.shape) == 2
+        mean = data.mean(axis=1)
+        sampled_idx = np.random.choice(range(data.shape[1]), n_bootstrap_samples)
+        sampled_data = data.iloc[:, sampled_idx]
+
+        no_confidence = 1 - confidence
+        upper_bound = np.quantile(sampled_data, q=1 - no_confidence / 2, axis=1)
+        lower_bound = np.quantile(sampled_data, q=no_confidence / 2, axis=1)
+
+        mean_color, shade_color = COLORS["green"]
+        ax.fill_between(
+            x_range,
+            lower_bound.astype(float),
+            upper_bound.astype(float),
+            alpha=0.3,
+            color=shade_color,
+        )
+        ax.plot(x_range, mean.values, color=mean_color)
 
     with plot_grid_over_datasets(
         results,
@@ -473,16 +499,24 @@ def plot_threshold_characteristics(
         patch_size=patch_size,
         n_cols=n_cols,
         legend=False,
+        format_x_ticks="%.5f",
         xlabel="Threshold",
         ylabel="Fraction",
         grid=True,
-        x_lims=[0.007, 0.000020, 0.01, 0.0055, 0.035, 0.0055, 0.003, 0.0055, 0.005],
+        x_lims=[
+            0.0002,
+            0.000020,
+            0.003,
+            0.00025,
+            0.0005,
+            0.0002,
+            0.0002,
+            0.001,
+            0.0008,
+        ],
     ) as fig:
         legend_kwargs = {"framealpha": 0}
         handles, labels = fig.get_axes()[0].get_legend_handles_labels()
-        n = int(len(handles) / 4)
-        handles = [handles[n * i] for i in range(4)]
-        labels = [labels[n * i] for i in range(4)]
         fig.legend(
             handles,
             labels,

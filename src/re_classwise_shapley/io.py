@@ -257,13 +257,10 @@ class Accessor:
 
         in_cls_mar_acc = np.loadtxt(folder / "in_cls_mar_acc.txt")
         global_mar_acc = np.loadtxt(folder / "global_mar_acc.txt")
-        characteristics = calculate_threshold_characteristic_curves(
-            in_cls_mar_acc, global_mar_acc
-        )
-        characteristics = characteristics.set_index(characteristics.columns[0])
         return {
             "dataset_name": dataset_name,
-            "characteristics": characteristics,
+            "in_cls_mar_acc": in_cls_mar_acc,
+            "global_mar_acc": global_mar_acc,
         }
 
     @staticmethod

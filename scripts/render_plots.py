@@ -101,6 +101,30 @@ def _render_plots(experiment_name: str, model_name: str):
 
         plt.switch_backend("agg")
 
+        params = load_params_fast()
+        threshold_characteristics_settings = params["settings"][
+            "threshold_characteristics"
+        ]
+        if threshold_characteristics_settings.get("active", False):
+            logger.info(f"Load threshold characteristics.")
+            plot_threshold_characteristics_results = (
+                Accessor.threshold_characteristics_results(
+                    experiment_name,
+                    dataset_names,
+                    repetitions,
+                )
+            )
+
+            logger.info(f"Plot threshold characteristics.")
+            with plot_threshold_characteristics(
+                plot_threshold_characteristics_results
+            ) as fig:
+                log_figure(
+                    fig,
+                    output_folder,
+                    f"threshold_characteristics.svg",
+                    "threshold_characteristics",
+                )
         logger.info(f"Load valuations results.")
         valuation_results = Accessor.valuation_results(
             experiment_name,
@@ -222,31 +246,6 @@ def _render_plots(experiment_name: str, model_name: str):
 
                         case _:
                             raise NotImplementedError
-
-        params = load_params_fast()
-        threshold_characteristics_settings = params["settings"][
-            "threshold_characteristics"
-        ]
-        if threshold_characteristics_settings.get("active", False):
-            logger.info(f"Load threshold characteristics.")
-            plot_threshold_characteristics_results = (
-                Accessor.threshold_characteristics_results(
-                    experiment_name,
-                    dataset_names,
-                    repetitions,
-                )
-            )
-
-            logger.info(f"Plot threshold characteristics.")
-            with plot_threshold_characteristics(
-                plot_threshold_characteristics_results
-            ) as fig:
-                log_figure(
-                    fig,
-                    output_folder,
-                    f"threshold_characteristics.svg",
-                    "threshold_characteristics",
-                )
 
     logger.info(f"Finished rendering plots and metrics.")
 

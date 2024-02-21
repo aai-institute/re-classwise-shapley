@@ -117,7 +117,7 @@ def _evaluate_metrics(
     metrics = params["experiments"][experiment_name]["metrics"]
     metric_kwargs = metrics[metric_name]
     metric_idx = metric_kwargs.pop("idx")
-    metric_kwargs.pop("len_curve_perc")
+    metric_kwargs.pop("len_curve_perc", None)
     metric_fn = partial(MetricRegistry[metric_idx], **metric_kwargs)
     metric_fn = reduce(
         maybe_add_argument,

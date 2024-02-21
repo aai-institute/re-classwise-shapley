@@ -443,7 +443,9 @@ def plot_threshold_characteristics(
     ax = ax.flatten()
     for dataset_idx, dataset_name in enumerate(dataset_names):
         dataset_df = results[dataset_name]["threshold_characteristics"]
-        idx = np.argwhere(np.max(dataset_df, axis=1) >= max_plotting_percentage)[-1, 0]
+        idx = np.argwhere(np.max(dataset_df.values, axis=1) >= max_plotting_percentage)[
+            -1, 0
+        ]
         dataset_df.iloc[:idx].plot_threshold_characteristics(ax=ax[dataset_idx])
         ax[dataset_idx].set_xlim(0, dataset_df.index[idx])
         ax[dataset_idx].set_title(f"({chr(97 + dataset_idx)}) {dataset_name}")

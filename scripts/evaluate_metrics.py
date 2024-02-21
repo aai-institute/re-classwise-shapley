@@ -70,7 +70,24 @@ def evaluate_metrics(
         metric_name: Name of the metric to use. As specified in the `metrics` section of
             the current experiment in `params.experiment` section.
     """
+    _evaluate_metrics(
+        experiment_name,
+        dataset_name,
+        model_name,
+        valuation_method_name,
+        repetition_id,
+        metric_name,
+    )
 
+
+def _evaluate_metrics(
+    experiment_name: str,
+    dataset_name: str,
+    model_name: str,
+    valuation_method_name: str,
+    repetition_id: int,
+    metric_name: str,
+):
     logger.info("Loading values, test set and preprocess info.")
     output_dir = (
         Accessor.RESULT_PATH

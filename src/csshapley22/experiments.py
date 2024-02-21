@@ -1,4 +1,5 @@
 import pickle
+from functools import partial
 
 from sklearn.metrics import auc
 
@@ -62,8 +63,9 @@ def _dispatch_experiment(
     valuation_methods: ValuationMethodsFactory,
     *,
     data_pre_process_fn: Callable[[NDArray[int]], Tuple[NDArray[int], Dict]] = None,
-    metric_fn: Callable[
-        [Utility, ValuationResult, Dict], Tuple[float, Optional[pd.Series]]
+    metric_functions: Dict[
+        str,
+        Callable[[Utility, ValuationResult, Dict], Tuple[float, Optional[pd.Series]]],
     ],
 ) -> ExperimentResult:
     base_frame = pd.DataFrame(
@@ -106,17 +108,25 @@ def _dispatch_experiment(
         test_utility = Utility(
             data=test_dataset, model=model, scorer=Scorer(scoring="accuracy")
         )
-        metric, graph = metric_fn(test_utility, values, info)
-        result.metric.loc[dataset_idx, valuation_method_name] = metric
 
-        if graph is not None:
+        metrics = {}
+        curves = {}
+        for metric_name, metric_fn in metric_functions.items():
+            metric, graph = metric_fn(test_utility, values, info)
+            metrics[metric_name] = metric
+            curves[metric_name] = graph
+
+        result.metric.loc[dataset_idx, valuation_method_name] = [metrics]
+        if result.metric is not None:
+            result.metric = result.metric.applymap(lambda x: x[0])
+
+        if len(curves) > 0 and any([v is not None for v in curves]):
             if result.curves is None:
                 result.curves = copy(base_frame)
 
-            result.curves.loc[dataset_idx, valuation_method_name] = [graph]
-
-    if result.curves is not None:
-        result.curves = result.curves.applymap(lambda x: x[0])
+            result.curves.loc[dataset_idx, valuation_method_name] = [curves]
+            if result.curves is not None:
+                result.curves = result.curves.applymap(lambda x: x[0])
 
     return result
 
@@ -141,7 +151,10 @@ def experiment_wad(
     """
 
     def _weighted_accuracy_drop(
-        test_utility: Utility, values: ValuationResult, info: Dict
+        test_utility: Utility,
+        values: ValuationResult,
+        info: Dict,
+        highest_first: bool = True,
     ) -> Tuple[float, pd.Series]:
         eval_utility = Utility(
             data=test_utility.data,
@@ -149,7 +162,10 @@ def experiment_wad(
             scorer=Scorer("accuracy", default=0),
         )
         weighted_accuracy_drop, graph = weighted_reciprocal_diff_average(
-            u=eval_utility, values=values, progress=progress
+            u=eval_utility,
+            values=values,
+            progress=progress,
+            highest_first=highest_first,
         )
         return float(weighted_accuracy_drop), graph
 
@@ -158,7 +174,10 @@ def experiment_wad(
         datasets,
         valuation_methods_factory,
         data_pre_process_fn=None,
-        metric_fn=_weighted_accuracy_drop,
+        metric_functions={  # type: ignore
+            "highest_wad_drop": partial(_weighted_accuracy_drop, highest_first=True),
+            "lowest_wad_drop": partial(_weighted_accuracy_drop, highest_first=False),
+        },
     )
     result.metric_name = "wad"
     return result
@@ -204,7 +223,7 @@ def experiment_noise_removal(
         datasets,
         valuation_methods_factory,
         data_pre_process_fn=_flip_labels,
-        metric_fn=_roc_auc,
+        metric_functions={"roc_precision_recall": _roc_auc},
     )
     result.metric_name = "roc_auc"
     return result

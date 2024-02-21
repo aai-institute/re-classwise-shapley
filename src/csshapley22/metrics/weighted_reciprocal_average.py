@@ -13,14 +13,15 @@ def weighted_reciprocal_diff_average(
     values: ValuationResult,
     *,
     progress: bool = False,
+    highest_first: bool = True,
 ) -> Tuple[float, pd.Series]:
     if len(values) != len(u.data.indices):
         raise ValueError(
-            f"The number of values, {len(values) }, should be equal to the number of data indices, {len(u.data.indices)}"
+            f"The number of values, {len(values)}, should be equal to the number of"
+            f" data indices, {len(u.data.indices)}"
         )
 
-    # We sort in descending order if we want to remove the best values
-    values.sort(reverse=True)
+    values.sort(reverse=highest_first)
     full_accuracy = u(u.data.indices)
     avg = 0
     line = pd.Series(index=np.arange(len(u.data)), dtype=np.float64)

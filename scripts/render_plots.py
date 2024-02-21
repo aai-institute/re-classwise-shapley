@@ -38,13 +38,19 @@ def render_plots(experiment_name: str, dataset_name: str):
                 model_input_dir,
                 load_scores=True,
             )
-            plot_curve(
-                curves,
-                output_dir=model_plots_output_dir,
-                label_x="Number of removed instances",
-                label_y="Accuracy",
-                title=f"Experiment 1: Weighted-Accuracy Drop for model '{model_name}'",
-            )
+            if not isinstance(curves.iloc[0, 0], dict):
+                curves = curves.applymap(lambda s: {"highest_wad_drop": s})
+
+            for key in curves.iloc[0, 0].keys():
+                plot_curve(
+                    curves.applymap(lambda s: [s[key]]).applymap(lambda x: x[0]),
+                    output_dir=model_plots_output_dir,
+                    label_x="Number of removed instances",
+                    label_y="Accuracy",
+                    title=f"Experiment 1: Weighted-Accuracy Drop {key} for model '{model_name}'",
+                    plot_name=f"wad_{key}",
+                )
+
             plot_values_histogram(
                 valuation_results,
                 output_dir=model_plots_output_dir,
@@ -55,13 +61,20 @@ def render_plots(experiment_name: str, dataset_name: str):
                 model_input_dir,
                 load_scores=True,
             )
-            plot_curve(
-                curves,
-                output_dir=model_plots_output_dir,
-                label_x="Recall",
-                label_y="Precision",
-                title=f"Experiment 2: Precision-Recall curve for model '{model_name}'",
-            )
+
+            if not isinstance(curves.iloc[0, 0], dict):
+                curves = curves.applymap(lambda s: {"highest_wad_drop": s})
+
+            for key in curves.iloc[0, 0].keys():
+                plot_curve(
+                    curves,
+                    output_dir=model_plots_output_dir,
+                    label_x="Recall",
+                    label_y="Precision",
+                    title=f"Experiment 2: Precision-Recall curve for model '{model_name}'",
+                    plot_name=f"flipping_{key}",
+                )
+
             plot_values_histogram(
                 valuation_results,
                 output_dir=model_plots_output_dir,
@@ -77,14 +90,21 @@ def render_plots(experiment_name: str, dataset_name: str):
                 )
                 sub_plots_output_dir = model_plots_output_dir / sub_folder
                 os.makedirs(sub_plots_output_dir, exist_ok=True)
-                plot_curve(
-                    curves,
-                    output_dir=sub_plots_output_dir,
-                    label_x="Number of removed instances",
-                    label_y="Accuracy",
-                    title=f"Experiment 3: Weighted-Accuracy Drop of model '{sub_folder}' \\ "
-                    f"used by values from model '{model_name}'",
-                )
+
+                if not isinstance(curves.iloc[0, 0], dict):
+                    curves = curves.applymap(lambda s: {"highest_wad_drop": s})
+
+                for key in curves.iloc[0, 0].keys():
+                    plot_curve(
+                        curves.applymap(lambda s: [s[key]]).applymap(lambda x: x[0]),
+                        output_dir=sub_plots_output_dir,
+                        label_x="Number of removed instances",
+                        label_y="Accuracy",
+                        title=f"Experiment 3: Weighted-Accuracy Drop {key} of"
+                        f" model '{sub_folder}' \\ "
+                        f"used by values from model '{model_name}'",
+                        plot_name=f"wad_transfer_{key}",
+                    )
                 plot_values_histogram(
                     valuation_results,
                     output_dir=sub_plots_output_dir,

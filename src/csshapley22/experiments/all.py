@@ -1,3 +1,9 @@
+import logging
+
+from csshapley22.log import setup_logger
+
+setup_logger()
+
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
@@ -6,15 +12,14 @@ from typing import Callable, Dict, Tuple, TypeVar
 import numpy as np
 import pandas as pd
 from numpy._typing import NDArray
-from pydvl.utils import Dataset, Scorer, SupervisedModel, Utility
-from pydvl.value import ValuationResult
-from pydvl.value.shapley.classwise import CSScorer
+from pydvl.utils import ClassWiseScorer, Dataset, Scorer, SupervisedModel, Utility
+from pydvl.value.result import ValuationResult
 
 from csshapley22.metrics.weighted_reciprocal_average import (
     weighted_reciprocal_diff_average,
 )
 from csshapley22.types import ValTestSetFactory, ValuationMethodsFactory
-from csshapley22.utils import setup_logger
+from csshapley22.utils import setup_logger, timeout
 from csshapley22.valuation_methods import compute_values
 
 logger = setup_logger()
@@ -50,10 +55,10 @@ def _dispatch_experiment(
     )
 
     for dataset_idx, (val_dataset, test_dataset) in datasets.items():
-        # Create a mock scorer
-        scorer = CSScorer()
+        logger.info(f"Loading dataset '{dataset_idx}'.")
+        scorer = ClassWiseScorer("accuracy")
 
-        logger.info("Creating utility")
+        logger.debug("Creating utility")
         utility = Utility(data=val_dataset, model=model, scorer=scorer)  # type: ignore
 
         if data_pre_process_fn is not None:
@@ -61,11 +66,15 @@ def _dispatch_experiment(
             test_dataset.y_train = val_dataset.y_train
 
         for valuation_method_name, valuation_method in valuation_methods.items():
-            logger.info(f"{valuation_method_name=}")
             logger.info(f"Computing values using '{valuation_method_name}'.")
 
+            # valuation_method = timeout(1800)(valuation_method)
             values = valuation_method(utility)
             result.valuation_results.loc[dataset_idx, valuation_method_name] = values
+
+            if values is None:
+                result.metric.loc[dataset_idx, valuation_method_name] = values
+                continue
 
             logger.info(
                 "Computing best data points removal score on separate test set."
@@ -85,6 +94,7 @@ def experiment_wad(
     datasets: ValTestSetFactory,
     valuation_methods_factory: ValuationMethodsFactory,
     test_model: SupervisedModel = None,
+    progress: bool = False,
 ) -> ExperimentResult:
     """
     Runs an experiment using the weighted accuracy drop (WAD) introduced in [1]. This function can be reused for the
@@ -94,6 +104,7 @@ def experiment_wad(
     :param datasets: A dictionary containing validation and test set tuples
     :param valuation_methods_factory: All valuation methods to be used.
     :param test_model: The current test model which shall be used.
+    :param progress: Whether to display a progress bar.
     :return: An ExperimentResult object with the gathered data.
     """
 
@@ -103,10 +114,10 @@ def experiment_wad(
         eval_utility = Utility(
             data=test_utility.data,
             model=test_model if test_model is not None else model,
-            scorer=Scorer(scoring="accuracy"),
+            scorer=Scorer("accuracy"),
         )
         weighted_accuracy_drop = weighted_reciprocal_diff_average(
-            u=eval_utility, values=values, progress=True
+            u=eval_utility, values=values, progress=progress
         )
         return float(weighted_accuracy_drop)
 

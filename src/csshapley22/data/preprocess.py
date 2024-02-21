@@ -7,7 +7,7 @@ from pydvl.utils import Dataset
 from sklearn.decomposition import PCA
 from torchvision.models import ResNet18_Weights, resnet18
 
-from csshapley22.utils import setup_logger
+from csshapley22.log import setup_logger
 
 logger = setup_logger()
 

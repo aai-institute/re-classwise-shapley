@@ -5,7 +5,7 @@ experiment_3:
 
 general:
 
-  n_repetitions: 3
+  n_repetitions: 10
 
   models:
 
@@ -21,21 +21,14 @@ general:
   valuation_methods:
 
     cs_shapley: {
-      n_updates: 50
-    }
-
-    beta_shapley: {
-      alpha: 1,
-      beta: 16,
-      n_updates: 50
-    }
-
-    loo:
-
-    tmc_shapley: {
       n_updates: 50,
-      rtol: 0.01
+      progress: True
     }
+
+    loo: {
+      progress: True
+    }
+
   datasets:
 
     diabetes: {
@@ -57,6 +50,13 @@ general:
       train_size: 500,
       dev_size: 500,
       test_size: 2000
+
+      filters: {
+        binarization: {
+          label_zero: "0",
+          label_one: "1"
+        }
+      },
     }
 
     covertype: {
@@ -73,48 +73,61 @@ general:
       test_size: 2000,
     }
 
-    fmnist_binary:
-      openml_id: 40996
+    fmnist_binary: {
+      openml_id: 40996,
 
-      preprocessor:
-        principal_resnet_components:
-          n_components: 32
+      preprocessor: {
+        principal_resnet_components: {
+          n_components: 32,
           size: 28
+        }
+      },
 
-      filters:
-        binarization:
-          label_zero: "0"
-          label_one: "6"
+      filters: {
+        binarization: {
+          label_zero: "0",
+          label_one: "1"
+        }
+      },
 
-      train_size: 500
-      dev_size: 500
-      test_size: 2000
+      train_size: 500,
+      dev_size: 500,
+      test_size: 2000,
+    }
 
-    mnist_binary:
-      openml_id: 554
+    mnist_binary: {
+      openml_id: 554,
 
-      preprocessor:
-        principal_resnet_components:
-          n_components: 32
+      preprocessor: {
+        principal_resnet_components: {
+          n_components: 32,
           size: 28
+        }
+      },
 
-      filters:
-        binarization:
-          label_zero: "1"
+      filters: {
+        binarization: {
+          label_zero: "1",
           label_one: "7"
-
-      train_size: 500
-      dev_size: 500
+        }
+      },
+      train_size: 500,
+      dev_size: 500,
       test_size: 2000
+    }
 
-    mnist_multi:
-      openml_id: 554
+    mnist_multi: {
+      openml_id: 554,
 
-      preprocessor:
-        principal_resnet_components:
-          n_components: 32
+      preprocessor: {
+        principal_resnet_components: {
+          n_components: 32,
           size: 28
+        }
+      },
 
-      train_size: 500
-      dev_size: 500
+      train_size: 500,
+      dev_size: 500,
       test_size: 2000
+    }
+

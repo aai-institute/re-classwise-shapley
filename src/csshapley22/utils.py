@@ -1,8 +1,6 @@
-import io
 import logging
 import os
 import random
-from contextlib import redirect_stderr
 
 import numpy as np
 import pandas as pd
@@ -16,13 +14,9 @@ __all__ = [
 ]
 
 from pydvl.utils import Utility
-from pydvl.value import (
-    ValuationResult,
-    compute_shapley_values,
-    montecarlo_least_core,
-    naive_loo,
-)
-from pydvl.value.shapley import ShapleyMode
+from pydvl.value import ValuationResult
+
+from csshapley22.algo.class_wise import class_wise_shapley
 
 
 def set_random_seed(seed: int) -> None:
@@ -55,7 +49,7 @@ def compute_values(
     if method_name == "Random":
         values = ValuationResult.from_random(size=len(utility.data))
     elif method_name == "Class Wise":
-        values = ValuationResult.from_random(size=len(utility.data))
+        values = class_wise_shapley(utility)
     else:
         raise NotImplementedError
 

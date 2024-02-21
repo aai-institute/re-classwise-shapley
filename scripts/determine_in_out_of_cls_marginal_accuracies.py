@@ -18,6 +18,8 @@ from typing import Tuple
 
 import click
 import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
 from numpy._typing import NDArray
 from pydvl.utils import Scorer, SupervisedModel, Utility
 from pydvl.value import compute_loo
@@ -26,6 +28,7 @@ from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.model import instantiate_model
 from re_classwise_shapley.utils import load_params_fast, pipeline_seed
+from re_classwise_shapley.valuation_methods import compute_values
 
 logger = setup_logger("preprocess_data")
 
@@ -77,9 +80,13 @@ def _determine_in_cls_out_of_cls_marginal_accuracies(
     seed = pipeline_seed(42, 8)
     sub_seeds = np.random.SeedSequence(seed).generate_state(2)
 
+    valuation_method_name = "tmc_shapley"
     params = load_params_fast()
-
+    valuation_method_config = params["valuation_methods"][valuation_method_name]
+    backend = params["settings"]["backend"]
+    n_jobs = params["settings"]["n_jobs"]
     marginal_accuracies = []
+
     for c in [0, 1]:
         params = load_params_fast()
         model_kwargs = params["models"][model_name]
@@ -90,27 +97,82 @@ def _determine_in_cls_out_of_cls_marginal_accuracies(
             scorer=InOutOfClassScorer("accuracy", c_class=c, default=np.nan),
             catch_errors=False,
         )
-        marginal_accuracies.append(compute_loo(u, n_jobs=4, progress=True).values)
+        values = compute_values(
+            u,
+            valuation_method_name,
+            **valuation_method_config,
+            backend=backend,
+            n_jobs=n_jobs,
+        )
+        marginal_accuracies.append(values.values)
 
     (
-        in_class_marginal_accuracies,
-        out_of_class_marginal_accuracies,
+        in_cls_mar_acc,
+        out_of_cls_mar_acc,
     ) = mix_first_and_second_class_marginals(val_set.y_train, *marginal_accuracies)
+
+    key_in_cls_acc = "in_cls_acc"
+    key_out_of_cls_acc = "out_of_cls_acc"
+    result = {
+        key_in_cls_acc: {
+            "mean": np.mean(in_cls_mar_acc),
+            "std": np.std(in_cls_mar_acc),
+        },
+        key_out_of_cls_acc: {
+            "mean": np.mean(out_of_cls_mar_acc),
+            "std": np.std(out_of_cls_mar_acc),
+        },
+    }
+
+    n_thresholds = 100
+    max_x = np.max(np.maximum(np.abs(in_cls_mar_acc), np.abs(out_of_cls_mar_acc)))
+    x = np.linspace(0, max_x, n_thresholds)
+    s = pd.DataFrame(index=x, columns=["<,<", "<,>", ">,<", ">,>"])
+    n = len(in_cls_mar_acc)
+    for i, threshold in enumerate(s.index):
+        s.iloc[i, 0] = (
+            np.sum(
+                np.logical_and(
+                    in_cls_mar_acc < -threshold, out_of_cls_mar_acc < -threshold
+                )
+            )
+            / n
+        )
+        s.iloc[i, 1] = (
+            np.sum(
+                np.logical_and(
+                    in_cls_mar_acc < -threshold, out_of_cls_mar_acc > threshold
+                )
+            )
+            / n
+        )
+        s.iloc[i, 2] = (
+            np.sum(
+                np.logical_and(
+                    in_cls_mar_acc > threshold, out_of_cls_mar_acc < -threshold
+                )
+            )
+            / n
+        )
+        s.iloc[i, 3] = (
+            np.sum(
+                np.logical_and(
+                    in_cls_mar_acc > threshold, out_of_cls_mar_acc > threshold
+                )
+            )
+            / n
+        )
 
     output_dir = Accessor.INFO_PATH / experiment_name / dataset_name
     os.makedirs(output_dir, exist_ok=True)
+
+    fig, ax = plt.subplots()
+    s.plot(ax=ax, title=f"Threshold characteristics for '{dataset_name}'.")
+    fig.savefig(output_dir / "threshold_characteristics.svg")
+
     with open(output_dir / "in_out_of_cls_marginals.json", "w") as f:
         json.dump(
-            {
-                "in_cls_accuracy": {
-                    "mean": np.mean(in_class_marginal_accuracies),
-                    "std": np.std(in_class_marginal_accuracies),
-                },
-                "out_of_cls_accuracy": {
-                    "mean": np.mean(out_of_class_marginal_accuracies),
-                    "std": np.std(out_of_class_marginal_accuracies),
-                },
-            },
+            result,
             f,
             sort_keys=True,
             indent=4,

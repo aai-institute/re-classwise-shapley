@@ -42,10 +42,12 @@ def compute_values(
         utility.scorer = ClasswiseScorer("accuracy", default=0.0)
         values = compute_classwise_shapley_values(
             utility,
-            done=MaxUpdates(n_updates=int(m.ceil(int(kwargs["n_updates"]) / n_jobs))),
+            done=MaxUpdates(n_updates=int(kwargs["n_updates"])),
             truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),
             normalize_score=kwargs["normalize_values"],
             n_resample_complement_sets=kwargs["n_resample_complement_sets"],
+            use_default_scorer_value=kwargs.get("use_default_scorer_value", True),
+            min_elements_per_label=kwargs.get("min_elements_per_label", 1),
             n_jobs=n_jobs,
             config=parallel_config,
             progress=progress,
@@ -55,7 +57,7 @@ def compute_values(
         values = compute_semivalues(
             u=utility,
             mode=SemiValueMode.BetaShapley,
-            done=MaxUpdates(n_updates=int(m.ceil(int(kwargs["n_updates"]) / n_jobs))),
+            done=MaxUpdates(n_updates=int(kwargs["n_updates"])),
             alpha=kwargs["alpha"],
             beta=kwargs["beta"],
             n_jobs=n_jobs,
@@ -68,7 +70,7 @@ def compute_values(
             utility,
             mode=ShapleyMode.PermutationMontecarlo,
             truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),
-            done=MaxUpdates(n_updates=int(m.ceil(int(kwargs["n_updates"]) / n_jobs))),
+            done=MaxUpdates(n_updates=int(kwargs["n_updates"])),
             n_jobs=n_jobs,
             config=parallel_config,
             progress=progress,

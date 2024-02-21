@@ -426,15 +426,15 @@ def plot_threshold_characteristics(
     n_columns: int = 3,
 ) -> plt.Figure:
     """
-    Plots threshold characteristics for various datasets. This function takes results from multiple datasets and plots
-    the threshold characteristics for each. It arranges the plots in a grid layout and saves the resulting figure to a
-    specified directory.
+    Plots threshold characteristics for various datasets. This function takes results
+    from multiple datasets and plots the threshold characteristics for each. It arranges
+    the plots in a grid layout and saves the resulting figure to a specified directory.
 
     Args:
-        results: A dictionary where each key is a dataset name and the value is another dictionary containing a DataFrame
-            of threshold characteristics.
-        max_plotting_percentage: The maximum percentage for plotting, used to determine the range of data to be plotted.
-            Defaults to 1e-4.
+        results: A dictionary where each key is a dataset name and the value is another
+            dictionary containing a DataFrame of threshold characteristics.
+        max_plotting_percentage: The maximum percentage for plotting, used to determine
+            the range of data to be plotted. Defaults to 1e-4.
         n_columns: The number of columns in the subplot grid. Defaults to 3.
     """
     dataset_names = list(results.keys())

@@ -1,5 +1,7 @@
 import io
 import logging
+import os
+import shutil
 from contextlib import redirect_stderr
 
 from pydvl.utils import ClasswiseScorer, ParallelConfig, Utility
@@ -23,9 +25,13 @@ def compute_values(
     utility: Utility, valuation_method: str, **kwargs
 ) -> ValuationResult:
     progress = kwargs.get("progress", False)
-    n_jobs = 1
+    tmp_dir = "/tmp/ray"
+    n_jobs = 2
     parallel_config = ParallelConfig(
-        backend="sequential", n_cpus_local=n_jobs, logging_level=logging.WARNING
+        backend="ray",
+        n_cpus_local=n_jobs,
+        logging_level=logging.WARNING,
+        _temp_dir=tmp_dir,
     )
     if valuation_method == "random":
         values = ValuationResult.from_random(size=len(utility.data))
@@ -75,5 +81,14 @@ def compute_values(
         raise NotImplementedError(
             f"The method {valuation_method} is not registered within."
         )
+
     logger.info(f"Values: {values.values}")
     return values
+
+
+def clear_folder(path: str):
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            os.unlink(os.path.join(root, f))
+        for d in dirs:
+            shutil.rmtree(os.path.join(root, d))

@@ -1,5 +1,6 @@
 import os
 import re
+from pathlib import Path
 
 import click
 import pandas as pd
@@ -8,7 +9,7 @@ from dvc.api import params_show
 from csshapley22.constants import OUTPUT_DIR, RANDOM_SEED
 from csshapley22.log import setup_logger
 from csshapley22.plotting import (
-    plot_utility_over_removal_percentages,
+    plot_utility_over_num_removals,
     plot_values_histogram,
     setup_plotting,
 )
@@ -29,49 +30,99 @@ def render_plots(experiment_name: str, dataset_name: str):
     params = params_show()
     logger.info(f"Using parameters:\n{params}")
 
-    data_valuation_params = params["data_valuation"]
-    removal_percentages = data_valuation_params["removal_percentages"]
-    method_names = data_valuation_params["method_names"]
+    experiment_input_dir = OUTPUT_DIR / "results" / experiment_name / dataset_name
+    plots_output_dir = OUTPUT_DIR / "plots" / experiment_name / dataset_name
+    for model_name in os.listdir(experiment_input_dir):
+        model_input_dir = experiment_input_dir / model_name
+        model_plots_output_dir = plots_output_dir / model_name
+        os.makedirs(model_plots_output_dir, exist_ok=True)
 
-    experiment_output_dir = OUTPUT_DIR / "data_valuation" / "results"
-    assert experiment_output_dir.exists()
-    plots_output_dir = OUTPUT_DIR / "data_valuation" / "plots"
-    plots_output_dir.mkdir(parents=True, exist_ok=True)
+        if experiment_name == "wad_drop":
+            metrics, valuation_results, scores = load_results(
+                model_input_dir,
+                load_scores=True,
+            )
+            plot_utility_over_num_removals(
+                scores,
+                output_dir=model_plots_output_dir,
+            )
+            plot_values_histogram(
+                valuation_results,
+                output_dir=model_plots_output_dir,
+            )
+        elif experiment_name == "noise_removal":
+            metrics, valuation_results = load_results(
+                model_input_dir,
+            )
+            plot_values_histogram(
+                valuation_results,
+                output_dir=model_plots_output_dir,
+            )
 
-    budget_regex = re.compile(r"budget=(?P<budget>\d+)/")
+        elif experiment_name == "wad_drop_transfer":
+            for sub_folder in os.listdir(model_input_dir / "repetition=0"):
+                metrics, valuation_results, scores = load_results(
+                    model_input_dir,
+                    load_scores=True,
+                    sub_folder=sub_folder,
+                )
+                sub_plots_output_dir = model_plots_output_dir / sub_folder
+                os.makedirs(sub_plots_output_dir, exist_ok=True)
+                plot_utility_over_num_removals(
+                    scores,
+                    output_dir=sub_plots_output_dir,
+                )
+                plot_values_histogram(
+                    valuation_results,
+                    output_dir=sub_plots_output_dir,
+                )
 
-    all_values = []
-    for file in experiment_output_dir.rglob("values*.csv"):
-        df = pd.read_csv(file)
-        budget = re.search(budget_regex, os.fspath(file)).group("budget")
-        df["budget"] = budget
-        all_values.append(df)
-    values_df = pd.concat(all_values)
+        logger.info("Finished data valuation experiment")
 
-    all_scores = []
-    for file in experiment_output_dir.rglob("scores*.csv"):
-        df = pd.read_csv(file)
-        budget = re.search(budget_regex, os.fspath(file)).group("budget")
-        df["budget"] = budget
-        all_scores.append(df)
-    scores_df = pd.concat(all_scores)
 
-    plot_utility_over_removal_percentages(
-        scores_df,
-        budgets=scores_df["budget"].unique(),
-        method_names=method_names,
-        removal_percentages=removal_percentages,
-        output_dir=plots_output_dir,
+def load_results(
+    model_input_dir: Path, *, sub_folder: str = None, load_scores: bool = False
+):
+    metrics = None
+    valuation_results = None
+    scores = None
+
+    for repetition in os.listdir(model_input_dir):
+        repetition_input_dir = model_input_dir / repetition
+        if sub_folder is not None:
+            repetition_input_dir = repetition_input_dir / sub_folder
+
+        it_metrics = pd.read_csv(repetition_input_dir / "metric.csv").iloc[:, 1:]
+        it_valuation_results = pd.read_pickle(
+            repetition_input_dir / "valuation_results.pkl"
+        )
+
+        metrics = (
+            it_metrics if metrics is None else pd.concat((metrics, it_metrics), axis=0)
+        )
+        valuation_results = (
+            it_valuation_results
+            if valuation_results is None
+            else pd.concat((valuation_results, it_valuation_results), axis=0)
+        )
+
+        if load_scores:
+            it_scores = pd.read_pickle(repetition_input_dir / "scores.pkl")
+            scores = (
+                it_metrics
+                if metrics is None
+                else pd.concat((scores, it_scores), axis=0)
+            )
+    metrics = metrics.reset_index(drop=True)
+    valuation_results = valuation_results.reset_index(drop=True).applymap(
+        lambda x: x.values
     )
 
-    plot_values_histogram(
-        values_df,
-        hue_column="budget",
-        method_names=method_names,
-        output_dir=plots_output_dir,
-    )
-
-    logger.info("Finished data valuation experiment")
+    if load_scores:
+        scores = scores.reset_index(drop=True)
+        return metrics, valuation_results, scores
+    else:
+        return metrics, valuation_results
 
 
 if __name__ == "__main__":

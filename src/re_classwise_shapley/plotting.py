@@ -1,13 +1,13 @@
 import math as m
 from contextlib import contextmanager
-from functools import partial
-from typing import Any, Callable, Dict, List, Sequence, Tuple
-
+from typing import Any, Callable, List, Sequence, Tuple, Union
 import matplotlib.pyplot as plt
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.axes import Axes
+from matplotlib.patches import Patch
 from matplotlib.ticker import FormatStrFormatter
 
 from re_classwise_shapley.log import setup_logger
@@ -31,12 +31,12 @@ logger = setup_logger(__name__)
 COLOR_ENCODING = {
     "Random": "black",
     "Beta Shapley": "blue",
-    "Leave-One-Out": "orange",
+    "Leave-One-Out": "yellow",
     "Truncated Monte-Carlo Shapley": "green",
     "Classwise Shapley": "red",
     "Owen Sampling": "purple",
     "Banzhaf Shapley": "orange",
-    "Least Core": "orange",
+    "Least Core": "pink",
 }
 
 # Mapping from colors to mean and shade color.
@@ -49,6 +49,8 @@ COLORS = {
     "purple": ("darkorchid", "plum"),
     "gray": ("gray", "lightgray"),
     "turquoise": ("turquoise", "lightcyan"),
+    "yellow": ("gold", "lightyellow"),
+    "pink": ("pink", "lightpink"),
 }
 
 
@@ -115,9 +117,9 @@ def shaded_mean_normal_confidence_interval(
 def plot_grid_over_datasets(
     data: pd.DataFrame,
     plot_func: Callable,
-    patch_size: Tuple[float, float] = (4, 4),
+    patch_size: Tuple[float, float] = (3, 2.5),
     n_cols: int = 5,
-    legend: bool = False,
+    legend: Union[bool, list[Patch]] = False,
     format_x_ticks: str = None,
     tick_params_left_only: bool = False,
     tick_params_below_only: bool = False,
@@ -137,7 +139,7 @@ def plot_grid_over_datasets(
         patch_size: Size of one image patch of the multi plot.
         n_cols: Number of columns for subplot layout.
         legend: True, if a legend should be plotted below and outside the grid of
-            subplots.
+            subplots. Pass a list of legend handles to use a custom legend.
         format_x_ticks: If not None, it defines the format of the x ticks.
         tick_params_below_only: If True, only the x ticks below the plot are shown.
         tick_params_left_only: If True, only the y ticks left of the plot are shown.
@@ -152,6 +154,9 @@ def plot_grid_over_datasets(
     n_rows = int((n_plots + n_cols - 1) / n_cols)
     fig, ax = plt.subplots(
         n_rows, n_cols, figsize=(n_cols * patch_size[0], n_rows * patch_size[1])
+    )
+    plt.subplots_adjust(
+        left=0.05, right=0.95, top=0.9, bottom=0.05, wspace=0.2, hspace=0.3
     )
     ax = ax.flatten()
 
@@ -176,7 +181,7 @@ def plot_grid_over_datasets(
         else:
             ax[dataset_idx].set_xlabel(xlabel)
 
-        ax[dataset_idx].set_title(f"({chr(97 + dataset_idx)}) {dataset_name}")
+        ax[dataset_idx].set_title(dataset_name)
         if grid:
             ax[dataset_idx].grid(True)
 
@@ -188,12 +193,15 @@ def plot_grid_over_datasets(
             ax[dataset_idx].xaxis.set_major_formatter(
                 FormatStrFormatter(format_x_ticks)
             )
-    plt.tight_layout()
+
     if n_plots % 2 == 1:
         last = ax[-1]
         last.set_axis_off()
 
-    if legend:
+    if isinstance(legend, list):
+        last = ax[-1]
+        last.legend(handles=legend, loc="center", prop={"size": 9})
+    elif legend:
         handles, labels = ax[0].get_legend_handles_labels()
         if n_plots % 2 == 0:
             legend_kwargs = {"framealpha": 0}
@@ -202,7 +210,7 @@ def plot_grid_over_datasets(
                 labels,
                 loc="outside lower center",
                 ncol=5,
-                fontsize=15,
+                fontsize=9,
                 fancybox=False,
                 shadow=False,
                 **legend_kwargs,
@@ -210,7 +218,7 @@ def plot_grid_over_datasets(
             fig.subplots_adjust(bottom=0.1)
         else:
             last = ax[-1]
-            last.legend(handles, labels, loc="center", prop={"size": 15})
+            last.legend(handles, labels, loc="center", prop={"size": 9})
 
     yield fig
     plt.close(fig)
@@ -220,7 +228,7 @@ def plot_grid_over_datasets(
 def plot_histogram(
     data: pd.DataFrame,
     method_names: OneOrMany[str],
-    patch_size: Tuple[float, float] = (5, 5),
+    patch_size: Tuple[float, float] = (3, 2.5),
     n_cols: int = 5,
 ) -> plt.Figure:
     """
@@ -286,7 +294,7 @@ def plot_histogram(
 @contextmanager
 def plot_time(
     data: pd.DataFrame,
-    patch_size: Tuple[float, float] = (5, 4),
+    patch_size: Tuple[float, float] = (3, 2.5),
     n_cols: int = 5,
 ) -> plt.Figure:
     """
@@ -332,7 +340,7 @@ def plot_time(
 @contextmanager
 def plot_curves(
     data: pd.DataFrame,
-    patch_size: Tuple[float, float] = (6, 5),
+    patch_size: Tuple[float, float] = (3, 2.5),
     n_cols: int = 5,
     plot_perc: float = None,
     x_label: str = None,
@@ -401,7 +409,7 @@ def plot_metric_table(
 @contextmanager
 def plot_metric_boxplot(
     data: pd.DataFrame,
-    patch_size: Tuple[float, float] = (5, 4),
+    patch_size: Tuple[float, float] = (3, 2.5),
     n_cols: int = 5,
     x_label: str = None,
 ) -> plt.Figure:
@@ -415,6 +423,8 @@ def plot_metric_boxplot(
         n_cols: Number of columns for subplot layout.
     """
 
+    data = data.loc[data["method_name"] != "random"]
+
     def plot_metric_boxplot_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
         data.loc[:, "method_name"] = data["method_name"].apply(lambda m: LABELS[m])
         sns.boxplot(
@@ -422,19 +432,28 @@ def plot_metric_boxplot(
             x="metric",
             y="method_name",
             hue="method_name",
-            palette=COLOR_ENCODING,
+            palette={label: COLORS[COLOR_ENCODING[label]][0] for label in LABELS.values()},
             legend=False,
             bootstrap=10000,
             width=0.5,
             ax=ax,
         )
+        ax.set_yticklabels([])
+        ax.tick_params(axis="y", length=0)
+
+    legend_patches = [
+            Patch(color=COLORS[COLOR_ENCODING[LABELS[method]]][0],
+                  label=LABELS[method],
+                  )
+            for method in data["method_name"].unique()
+            ]
 
     with plot_grid_over_datasets(
         data,
         plot_metric_boxplot_func,
         patch_size=patch_size,
         n_cols=n_cols,
-        legend=False,
+        legend=legend_patches,
         xlabel=x_label,
         ylabel="",
         tick_params_left_only=True,
@@ -446,7 +465,7 @@ def plot_metric_boxplot(
 @contextmanager
 def plot_threshold_characteristics(
     results: pd.DataFrame,
-    patch_size: Tuple[float, float] = (5, 5),
+    patch_size: Tuple[float, float] = (3, 2.5),
     n_cols: int = 5,
     confidence: float = 0.95,
 ) -> plt.Figure:

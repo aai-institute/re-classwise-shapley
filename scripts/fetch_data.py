@@ -18,8 +18,7 @@ import os
 import click
 from sklearn.datasets import fetch_openml
 
-from re_classwise_shapley.accessor import Accessor
-from re_classwise_shapley.io import store_dataset
+from re_classwise_shapley.io import Accessor, store_raw_dataset
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import RawDataset
 from re_classwise_shapley.utils import load_params_fast
@@ -52,7 +51,7 @@ def fetch_data(dataset_name: str):
 
     logger.info(f"Download dataset {dataset_name} with openml_id {open_ml_id}.")
     dataset = fetch_single_dataset(open_ml_id)
-    store_dataset(dataset, dataset_folder)
+    store_raw_dataset(dataset, dataset_folder)
 
 
 def fetch_single_dataset(

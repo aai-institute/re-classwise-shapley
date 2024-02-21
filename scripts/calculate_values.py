@@ -23,7 +23,7 @@ import click
 import numpy as np
 from pydvl.utils import Scorer, Utility
 
-from re_classwise_shapley.accessor import Accessor
+from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.model import instantiate_model
 from re_classwise_shapley.utils import load_params_fast, pipeline_seed
@@ -80,8 +80,9 @@ def calculate_values(
             f"Values for {valuation_method_name} exist in '{output_dir}'. Skipping..."
         )
 
-    with open(input_dir / "val_set.pkl", "rb") as file:
-        val_set = pickle.load(file)
+    val_set = Accessor.datasets(experiment_name, dataset_name, repetition_id).loc[
+        0, "val_set"
+    ]
 
     n_pipeline_step = 2
     seed = pipeline_seed(repetition_id, n_pipeline_step)

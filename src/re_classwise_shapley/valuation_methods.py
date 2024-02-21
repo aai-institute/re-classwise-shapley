@@ -44,6 +44,8 @@ def compute_values(
     specified by the `valuation_method` argument. The `kwargs` are passed to the
     valuation method.
 
+    TODO Remove this method by integrating function calls in to the params.yaml file.
+
     Args:
         utility: Utility object to compute the valuation values for.
         valuation_method: A method to compute the valuation values.

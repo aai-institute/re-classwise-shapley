@@ -1,10 +1,8 @@
 from concurrent.futures import FIRST_COMPLETED, Future, wait
-from copy import deepcopy
-from typing import Dict, Set, Tuple
+from typing import Dict, Optional, Set, Tuple
 
 import numpy as np
 import pandas as pd
-from dvc.api import params_show
 from numpy.typing import NDArray
 from pydvl.parallel import (
     ParallelConfig,
@@ -12,7 +10,7 @@ from pydvl.parallel import (
     init_executor,
     init_parallel_backend,
 )
-from pydvl.utils import Dataset, Scorer, SupervisedModel, Utility, maybe_progress
+from pydvl.utils import Dataset, Scorer, Seed, Utility
 from pydvl.value.result import ValuationResult
 from sklearn.metrics import auc
 from tqdm import tqdm
@@ -31,26 +29,18 @@ logger = setup_logger(__name__)
 
 
 def metric_roc_auc(
-    data: Dataset,
     values: ValuationResult,
     info: Dict,
     flipped_labels: str,
-    n_jobs: int = 1,
-    config: ParallelConfig = ParallelConfig(),
-    progress: bool = False,
 ) -> Tuple[float, pd.Series]:
     """
     Computes the area under the ROC curve for a given valuation result on a dataset.
 
     Args:
-        data: Dataset to compute the area under the ROC curve on.
         values: Valuation result to compute the area under the ROC curve for.
         info: Dictionary containing information about the dataset.
         flipped_labels: Name of the key in the info dictionary containing the indices of
             the flipped labels.
-        n_jobs: Number of parallel jobs to run.
-        config: Parallel configuration.
-        progress: Whether to display a progress bar.
 
     Returns:
         The area under the ROC curve.
@@ -66,12 +56,12 @@ def metric_roc_auc(
 def metric_weighted_metric_drop(
     data: Dataset,
     values: ValuationResult,
-    info: Dict,
     eval_model: str,
     metric: str = "accuracy",
     n_jobs: int = 1,
     config: ParallelConfig = ParallelConfig(),
     progress: bool = False,
+    seed: Optional[Seed] = None,
 ) -> Tuple[float, pd.Series]:
     r"""
     Calculates the weighted reciprocal difference average of a valuation function. The
@@ -92,12 +82,13 @@ def metric_weighted_metric_drop(
         n_jobs: Number of parallel jobs to run.
         config: Parallel configuration.
         progress: Whether to display a progress bar.
+        seed: Either a seed or a seed generator to use for the evaluation.
 
     Returns:
         The weighted reciprocal difference average in the given metric.
     """
     model_kwargs = load_params_fast()["models"][eval_model]
-    model = instantiate_model(eval_model, model_kwargs, seed=0)
+    model = instantiate_model(eval_model, model_kwargs, seed=seed)
     u_eval = Utility(
         data=data,
         model=model,
@@ -200,19 +191,39 @@ def _curve_score_over_point_removal_or_addition(
     values.sort(reverse=highest_point_removal)
     scores = pd.Series(index=np.arange(n_evals), dtype=np.float64)
 
-    def _evaluate_at_point(
+    def evaluate_at_point(
         u: Utility,
         values: ValuationResult,
         j: int,
         highest_point_removal: bool,
         min_points: int,
     ) -> Tuple[int, float]:
-        val = (
-            u(values.indices[j:])
+        """
+        Evaluates the utility score at a given point. The points are ordered by
+        their valuation value and a minimum number of points is kept in the set. If
+        the passed `j` exceeds that an exception is thrown.
+
+        Args:
+            u: Utility to compute the utility score with.
+            values: Valuation result to rank the data points.
+            j: Index to query.
+            highest_point_removal: True, if first the highest point should be removed.
+            min_points: Minimum number of points or throw an exception.
+
+        Returns:
+
+        """
+        rel_values = (
+            values.indices[j:]
             if highest_point_removal
-            else u(values.indices[: min_points + j])
+            else values.indices[: min_points + j]
         )
-        return j, val
+        if len(rel_values) < min_points:
+            raise ValueError(
+                f"Please assure there are at least {min_points} in the set. Adjust"
+                f" parameter j"
+            )
+        return j, u(rel_values)
 
     with init_executor(max_workers=n_jobs, config=config) as executor:
         pending: Set[Future] = set()
@@ -234,7 +245,7 @@ def _curve_score_over_point_removal_or_addition(
                 n_remaining_slots = min(rem_jobs, max_jobs) - len(pending)
                 for i in range(n_remaining_slots):
                     future = executor.submit(
-                        _evaluate_at_point,
+                        evaluate_at_point,
                         u_ref,
                         values_ref,
                         j=n_submitted_jobs,

@@ -128,3 +128,61 @@ def linear_dataframe_to_table(
                 ].values
             )
     return df
+
+
+def calculate_threshold_characteristic_curves(
+    in_cls_mar_acc: NDArray[np.float_],
+    out_of_cls_mar_acc: NDArray[np.float_],
+    n_thresholds: int = 100,
+) -> pd.DataFrame:
+    """
+    Varies threshold and runs through both arrays and identifies how much percent of the data exceed the threshold value
+    of that specific iteration. Each threshold has four values and thus four curves are present in the final data frame.
+    Args:
+        in_cls_mar_acc: In-class marginal accuracies.
+        out_of_cls_mar_acc: Out-of-class marginal accuracies.
+        n_thresholds: Number of thresholds to use for calculating the curve.
+
+    Returns:
+        A pd.DataFrame with all four characteristic curves.
+    """
+    max_x = np.max(np.maximum(np.abs(in_cls_mar_acc), np.abs(out_of_cls_mar_acc)))
+    x_axis = np.linspace(0, max_x, n_thresholds)
+
+    characteristics = pd.DataFrame(index=x_axis, columns=["<,<", "<,>", ">,<", ">,>"])
+    n_data = len(in_cls_mar_acc)
+
+    for i, threshold in enumerate(characteristics.index):
+        characteristics.iloc[i, 0] = (
+            np.sum(
+                np.logical_and(
+                    in_cls_mar_acc < -threshold, out_of_cls_mar_acc < -threshold
+                )
+            )
+            / n_data
+        )
+        characteristics.iloc[i, 1] = (
+            np.sum(
+                np.logical_and(
+                    in_cls_mar_acc < -threshold, out_of_cls_mar_acc > threshold
+                )
+            )
+            / n_data
+        )
+        characteristics.iloc[i, 2] = (
+            np.sum(
+                np.logical_and(
+                    in_cls_mar_acc > threshold, out_of_cls_mar_acc < -threshold
+                )
+            )
+            / n_data
+        )
+        characteristics.iloc[i, 3] = (
+            np.sum(
+                np.logical_and(
+                    in_cls_mar_acc > threshold, out_of_cls_mar_acc > threshold
+                )
+            )
+            / n_data
+        )
+    return characteristics

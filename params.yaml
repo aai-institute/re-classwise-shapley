@@ -156,29 +156,36 @@ datasets:
 
 models:
   logistic_regression:
+    model: logistic_regression
     solver: liblinear
 
   logistic_regression_balanced:
+    model: logistic_regression
     solver: liblinear
     class_weight: balanced
     
   gradient_boosting_classifier:
+    model: gradient_boosting_classifier
     n_estimators: 40
     min_samples_split: 6
     max_depth: 2
 
   knn:
+    model: knn
     n_neighbors: 5
     weights: uniform
 
   svm:
+    model: svm
     kernel: rbf
   
   svm_balanced:
+    model: svm
     kernel: rbf
     class_weight: balanced
 
-  mlp: {}
+  mlp:
+    model: mlp
 
 valuation_methods:
   random:

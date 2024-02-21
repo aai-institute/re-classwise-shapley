@@ -33,26 +33,27 @@ def instantiate_model(
         The instantiated model.
     """
     random_state = np.random.RandomState(seed)
+    model = model_kwargs.pop("model")
 
-    if model_name == "gradient_boosting_classifier":
+    if model == "gradient_boosting_classifier":
         model = make_pipeline(
             GradientBoostingClassifier(**model_kwargs, random_state=random_state)
         )
-    elif model_name == "logistic_regression":
+    elif model == "logistic_regression":
         model = make_pipeline(
             StandardScaler(),
             LogisticRegression(**model_kwargs, random_state=random_state),
         )
-    elif model_name == "knn":
+    elif model == "knn":
         model = make_pipeline(
             StandardScaler(),
             KNeighborsClassifier(**model_kwargs),
         )
-    elif model_name == "svm":
+    elif model == "svm":
         model = make_pipeline(
             StandardScaler(), SVC(**model_kwargs, random_state=random_state)
         )
-    elif model_name == "mlp":
+    elif model == "mlp":
         model = make_pipeline(
             StandardScaler(), MLPClassifier(**model_kwargs, random_state=random_state)
         )

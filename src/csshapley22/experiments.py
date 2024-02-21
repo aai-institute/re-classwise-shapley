@@ -1,6 +1,6 @@
 import pickle
 
-from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import precision_recall_curve, roc_auc_score
 
 from csshapley22.log import setup_logger
 
@@ -9,7 +9,7 @@ setup_logger()
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Optional, Tuple
+from typing import Callable, Dict, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -61,8 +61,10 @@ def _dispatch_experiment(
     datasets: ValTestSetFactory,
     valuation_methods: ValuationMethodsFactory,
     *,
-    data_pre_process_fn: Callable[[NDArray[int]], NDArray[int]] = None,
-    metric_fn: Callable[[Utility, ValuationResult], Tuple[float, Optional[pd.Series]]],
+    data_pre_process_fn: Callable[[NDArray[int]], Tuple[NDArray[int], Dict]] = None,
+    metric_fn: Callable[
+        [Utility, ValuationResult, Dict], Tuple[float, Optional[pd.Series]]
+    ],
 ) -> ExperimentResult:
     base_frame = pd.DataFrame(
         index=list(datasets.keys()), columns=list(valuation_methods.keys())
@@ -82,8 +84,9 @@ def _dispatch_experiment(
     logger.info(f"Loading dataset '{dataset_idx}'.")
     logger.debug("Creating utility")  # type: ignore
 
+    info = None
     if data_pre_process_fn is not None:
-        val_dataset.y_train = data_pre_process_fn(val_dataset.y_train)
+        val_dataset.y_train, info = data_pre_process_fn(val_dataset.y_train)
         test_dataset.y_train = val_dataset.y_train
 
     for valuation_method_name, valuation_method in valuation_methods.items():
@@ -103,7 +106,7 @@ def _dispatch_experiment(
         test_utility = Utility(
             data=test_dataset, model=model, scorer=Scorer(scoring="accuracy")
         )
-        metric, graph = metric_fn(test_utility, values)
+        metric, graph = metric_fn(test_utility, values, info)
         result.metric.loc[dataset_idx, valuation_method_name] = metric
 
         if graph is not None:
@@ -138,7 +141,7 @@ def experiment_wad(
     """
 
     def _weighted_accuracy_drop(
-        test_utility: Utility, values: ValuationResult
+        test_utility: Utility, values: ValuationResult, info: Dict
     ) -> Tuple[float, pd.Series]:
         eval_utility = Utility(
             data=test_utility.data,
@@ -167,41 +170,30 @@ def experiment_noise_removal(
     valuation_methods_factory: ValuationMethodsFactory,
     perc_flip_labels: float = 0.2,
 ) -> ExperimentResult:
-    def _flip_labels(labels: NDArray[int]) -> NDArray[int]:
+    def _flip_labels(labels: NDArray[int]) -> Tuple[NDArray[int], Dict]:
         num_data_indices = int(perc_flip_labels * len(labels))
         p = np.random.permutation(len(labels))[:num_data_indices]
         labels[p] = 1 - labels[p]
-        return labels
+        return labels, {"idx": p, "num_flipped": num_data_indices}
 
     def _roc_auc(
-        test_utility: Utility, values: ValuationResult
+        test_utility: Utility, values: ValuationResult, info: Dict
     ) -> Tuple[float, pd.Series]:
-        n = len(test_utility.data.y_train)
-        num_data_indices = int(perc_flip_labels * n)
-        p = np.argsort(values)[:num_data_indices]
-        test_utility.data.y_train[p] = 1 - test_utility.data.y_train[p]
+        y_true = np.zeros(len(test_utility.data.y_train), dtype=int)
+        y_true[info["idx"]] = 1
+
+        y_pred = np.zeros(len(test_utility.data.y_train), dtype=int)
+        y_pred[np.argsort(values)[: info["num_flipped"]]] = 1
 
         logger.debug("Computing precision-recall curve on separate test set..")
-        u = Utility(
-            data=test_utility.data,
-            model=test_utility.model,
-            scorer=Scorer(scoring="roc_auc"),
-            clone_before_fit=False,
+        precision, recall, thresholds = precision_recall_curve(
+            y_true,
+            y_pred.astype(float),
         )
-
-        metric = u(u.data.indices)
-        if len(np.unique(u.data.y_test)) == 2:
-            precision, recall, thresholds = precision_recall_curve(
-                u.data.y_test,
-                u.model.predict_proba(test_utility.data.x_test)[:, 1],
-            )
-            graph = pd.Series(precision, index=recall)
-            graph = graph[~graph.index.duplicated(keep="first")]
-            graph = graph.sort_index(ascending=True)
-        else:
-            graph = None
-
-        return metric, graph
+        graph = pd.Series(precision, index=recall)
+        graph = graph[~graph.index.duplicated(keep="first")]
+        graph = graph.sort_index(ascending=True)
+        return roc_auc_score(y_true, y_pred), graph
 
     result = _dispatch_experiment(
         model,

@@ -5,12 +5,11 @@ import time
 
 import click
 import numpy as np
-from dvc.api import params_show
 from pydvl.utils import Scorer, Utility
 
 from re_classwise_shapley.accessor import Accessor
 from re_classwise_shapley.model import instantiate_model
-from re_classwise_shapley.utils import pipeline_seed
+from re_classwise_shapley.utils import load_params_fast, pipeline_seed
 from re_classwise_shapley.valuation_methods import compute_values
 
 
@@ -52,7 +51,7 @@ def calculate_values(
     seed = pipeline_seed(repetition_id, n_pipeline_step)
     sub_seeds = np.random.SeedSequence(seed).generate_state(2)
 
-    params = params_show()
+    params = load_params_fast()
     valuation_method_config = params["valuation_methods"][valuation_method]
     backend = params["settings"]["backend"]
     n_jobs = params["settings"]["n_jobs"]

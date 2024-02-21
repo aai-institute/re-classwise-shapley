@@ -28,21 +28,11 @@ active:
   - beta_shapley
   - tmc_shapley
   repetitions:
-  - 6
-  - 7
-  - 8
-  - 9
-  - 10
-  - 11
-  - 12
-  - 13
-  - 14
-  - 15
-  - 16
-  - 17
-  - 18
-  - 19
-  - 20
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
 
 experiments:
   point_removal:
@@ -52,6 +42,11 @@ experiments:
         idx: weighted_metric_drop
         metric: accuracy
         eval_model: logistic_regression
+        len_curve_perc: 0.5
+      weighted_accuracy_drop_logistic_regression_balanced:
+        idx: weighted_metric_drop
+        metric: accuracy
+        eval_model: logistic_regression_balanced
         len_curve_perc: 0.5
       weighted_accuracy_drop_knn:
         idx: weighted_metric_drop
@@ -67,6 +62,11 @@ experiments:
         idx: weighted_metric_drop
         metric: accuracy
         eval_model: svm
+        len_curve_perc: 0.5
+      weighted_accuracy_drop_svm_balanced:
+        idx: weighted_metric_drop
+        metric: accuracy
+        eval_model: svm_balanced
         len_curve_perc: 0.5
       weighted_accuracy_drop_mlp:
         idx: weighted_metric_drop
@@ -158,6 +158,10 @@ models:
   logistic_regression:
     solver: liblinear
 
+  logistic_regression_balanced:
+    solver: liblinear
+    class_weight: balanced
+    
   gradient_boosting_classifier:
     n_estimators: 40
     min_samples_split: 6
@@ -169,6 +173,10 @@ models:
 
   svm:
     kernel: rbf
+  
+  svm_balanced:
+    kernel: rbf
+    class_weight: balanced
 
   mlp: {}
 

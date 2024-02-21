@@ -6,7 +6,7 @@ settings:
     seed: 42  # 42 
 
   parallel:
-    n_jobs: 90
+    n_jobs: 94
     backend: joblib
 
 active:

@@ -120,5 +120,4 @@ def compute_values(
         )
 
     logger.info(f"Values: {values.values}")
-    logger.info(f"Counts are: {values.counts}")
     return values

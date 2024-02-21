@@ -54,10 +54,11 @@ def compute_values(
         )
 
     elif valuation_method == "beta_shapley":
+        n_updates = int(m.ceil(kwargs["n_updates"] / n_jobs))
         values = compute_semivalues(
             u=utility,
             mode=SemiValueMode.BetaShapley,
-            done=MaxUpdates(n_updates=int(kwargs["n_updates"])),
+            done=MaxUpdates(n_updates=n_updates),
             alpha=kwargs["alpha"],
             beta=kwargs["beta"],
             n_jobs=n_jobs,
@@ -66,11 +67,12 @@ def compute_values(
         )
 
     elif valuation_method == "tmc_shapley":
+        n_updates = int(m.ceil(kwargs["n_updates"] / n_jobs))
         values = compute_shapley_values(
             utility,
             mode=ShapleyMode.PermutationMontecarlo,
             truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),
-            done=MaxUpdates(n_updates=int(kwargs["n_updates"])),
+            done=MaxUpdates(n_updates=n_updates),
             n_jobs=n_jobs,
             config=parallel_config,
             progress=progress,

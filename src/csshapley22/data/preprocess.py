@@ -15,8 +15,8 @@ logger = setup_logger()
 
 
 def principal_resnet_components(
-    x: np.ndarray, n_components: int, grayscale: bool = False
-) -> np.ndarray:
+    x: np.ndarray, y: np.ndarray, n_components: int, grayscale: bool = False
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     This method calculates the internal feature representation by a
     pre-trained resnet18. These are then used by PCA to extract the first
@@ -24,7 +24,6 @@ def principal_resnet_components(
 
     :param x: The features ot be used for processing.
     :param n_components: The number of pca components.
-    :return: The transformed values.
     """
     logger.info("Applying resnet18.")
     weights = ResNet18_Weights.DEFAULT
@@ -56,7 +55,22 @@ def principal_resnet_components(
     pca = PCA(n_components=n_components)
     features = pca.fit_transform(features)
     features = (features - features.mean()) / features.std()
-    return features
+    return features, y
+
+
+def threshold_y(
+    x: np.ndarray, y: np.ndarray, threshold: int
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Leave x as it is. All y value which are smaller than the passed threshold
+    are set to 0 and all values which are larger are set to 1.
+
+    :param x: The features ot be used for processing.
+    :param y: Output feature of the data.
+    :param threshold: The threshold for y.
+    """
+    y = (y <= threshold).astype(int)
+    return x, y
 
 
 def binarize_classes(
@@ -81,6 +95,9 @@ def binarize_classes(
     return X, y
 
 
-PreprocessorRegistry = {"principal_resnet_components": principal_resnet_components}
+PreprocessorRegistry = {
+    "principal_resnet_components": principal_resnet_components,
+    "threshold_y": threshold_y,
+}
 
 FilterRegistry = {"binarization": binarize_classes}

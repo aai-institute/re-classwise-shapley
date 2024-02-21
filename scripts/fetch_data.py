@@ -35,7 +35,7 @@ def fetch_single_dataset(dataset_name: str, openml_id: int):
     logger.info(f"Dataset {dataset_name} doesn't exist.")
 
     data = fetch_openml(data_id=openml_id)
-    x = data.data.to_numpy()
+    x = data.data.to_numpy().astype(float)
     y = data.target.to_numpy()
 
     np.save(dataset_folder / "x.npy", x)

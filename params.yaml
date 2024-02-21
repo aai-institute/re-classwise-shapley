@@ -6,11 +6,30 @@ experiment_one:
     truncated_monte_carlo:
 
   datasets:
-    click:
-      train_size: 0.8
-
     diabetes:
-      train_size: 0.8
+      train_size: 128
+      dev_size: 128
+      test_size: 512
+
+    click:
+      train_size: 500
+      dev_size: 500
+      test_size: 2000
+
+    cpu:
+      train_size: 500
+      dev_size: 500
+      test_size: 2000
+
+    covertype:
+      train_size: 500
+      dev_size: 500
+      test_size: 2000
+
+    phoneme:
+      train_size: 500
+      dev_size: 500
+      test_size: 2000
 
   settings:
     n_repetitions: 3

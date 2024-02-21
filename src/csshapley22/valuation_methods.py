@@ -19,9 +19,9 @@ def compute_values(
     utility: Utility, valuation_method: str, **kwargs
 ) -> ValuationResult:
     progress = kwargs.get("progress", False)
-    n_jobs = 4
+    n_jobs = 1
     parallel_config = ParallelConfig(
-        backend="ray", n_cpus_local=n_jobs, logging_level=logging.WARNING
+        backend="sequential", n_cpus_local=n_jobs, logging_level=logging.WARNING
     )
     if valuation_method == "random":
         values = ValuationResult.from_random(size=len(utility.data))

@@ -65,7 +65,7 @@ stages:
       --experiment-name ${item.experiment} 
       --dataset-name ${item.dataset}
       --model-name ${item.model} 
-      --valuation-method ${item.method}
+      --valuation-method-name ${item.method}
       --repetition-id ${item.repetition}
     params:
       - models.${item.model}
@@ -90,7 +90,7 @@ stages:
       --experiment-name point_removal
       --dataset-name ${item.dataset}
       --model-name ${item.model}
-      --valuation-method ${item.method}
+      --valuation-method-name ${item.method}
       --repetition-id ${item.repetition}
       --metric-name ${item.metric}
     params:
@@ -116,7 +116,7 @@ stages:
       --experiment-name noise_removal
       --dataset-name ${item.dataset}
       --model-name ${item.model}
-      --valuation-method ${item.method}
+      --valuation-method-name ${item.method}
       --repetition-id ${item.repetition}
       --metric-name ${item.metric}
     params:

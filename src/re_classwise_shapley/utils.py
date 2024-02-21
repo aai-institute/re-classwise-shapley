@@ -9,7 +9,7 @@ from re_classwise_shapley.log import setup_logger
 
 logger = setup_logger()
 
-__all__ = ["pipeline_seed", "n_threaded"]
+__all__ = ["flatten_dict", "pipeline_seed", "load_params_fast", "n_threaded"]
 
 
 def pipeline_seed(initial_seed: Seed, pipeline_step: int) -> int:

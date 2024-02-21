@@ -1,3 +1,19 @@
+"""
+Stage 3 for sampling data from a preprocessed dataset.
+
+1. Fetch data
+2. Preprocess data
+3. Sample data
+4. Calculate Shapley values
+5. Evaluate metrics
+6. Render plots
+
+The sampling method is described by the experiment. Each experiment has a sampler
+defined in the `samplers` section of the `params.yaml` file. Furthermore, preprocessors
+are defined per experiment. For example one can randomly flip a percentage of the labels
+in the dataset.
+"""
+
 import json
 import os
 import pickle
@@ -35,9 +51,10 @@ def sample_data(
     the `Accessor.SAMPLED_PATH` directory.
 
     Args:
-        experiment_name: Name of the executed experiment. Experiments define the
-            sampling method.
-        dataset_name: Dataset to use.
+        experiment_name: Name of the executed experiment. As specified in the
+            `params.experiments` section.
+        dataset_name: The name of the dataset to preprocess. As specified in th
+            `params.datasets` section.
         repetition_id: Repetition id of the experiment. It is used also as a seed for
             all randomness.
     """
@@ -105,6 +122,7 @@ def sample_val_test_set(
         test: Relative size of the test set in percent.
         max_samples: Limit the number of samples taken from the dataset.
         seed: Either an instance of a numpy random number generator or a seed for it.
+
     Returns:
         Tuple containing the validation and test set. Both share the same training set.
     """

@@ -1,3 +1,19 @@
+"""
+Stage 4 calculates Shapley values for sampled dataset.
+
+1. Fetch data
+2. Preprocess data
+3. Sample data
+4. Calculate Shapley values
+5. Evaluate metrics
+6. Render plots
+
+Calculates Shapley values for a sampled dataset. The sampled dataset is defined by the
+experiment name, dataset name and repetition id. The Shapley values are calculated using
+the valuation method specified in the `params.valuation_methods` section. The Shapley
+values are stored in the `Accessor.VALUES_PATH` directory.
+"""
+
 import json
 import os
 import pickle
@@ -21,12 +37,12 @@ logger = setup_logger("calculate_values")
 @click.option("--dataset-name", type=str, required=True)
 @click.option("--model-name", type=str, required=True)
 @click.option("--repetition-id", type=int, required=True)
-@click.option("--valuation-method", type=str, required=True)
+@click.option("--valuation-method-name", type=str, required=True)
 def calculate_values(
     experiment_name: str,
     dataset_name: str,
     model_name: str,
-    valuation_method: str,
+    valuation_method_name: str,
     repetition_id: int,
 ):
     """
@@ -35,13 +51,15 @@ def calculate_values(
     are stored in the `Accessor.VALUES_PATH` directory.
 
     Args:
-        experiment_name: Experiment name as specified in the `params.experiments`
-            section.
-        dataset_name: Dataset name as specified in the `params.datasets` section.
-        model_name: Model name as specified in the `params.models` section.
-        valuation_method: Valuation method name as specified in the
+        experiment_name: Name of the executed experiment. As specified in the
+            `params.experiments` section.
+        dataset_name: The name of the dataset to preprocess. As specified in th
+            `params.datasets` section.
+        model_name: Model to use. As specified in the `params.models` section.
+        valuation_method_name: Name of the valuation method to use. As specified in the
             `params.valuation_methods` section.
-        repetition_id: Unique repetition id used for seeding the experiment
+        repetition_id: Repetition id of the experiment. It is used also as a seed for
+            all randomness.
     """
 
     input_dir = (
@@ -56,10 +74,10 @@ def calculate_values(
     )
 
     if os.path.exists(
-        output_dir / f"valuation.{valuation_method}.pkl"
-    ) and os.path.exists(output_dir / f"valuation.{valuation_method}.stats.json"):
+        output_dir / f"valuation.{valuation_method_name}.pkl"
+    ) and os.path.exists(output_dir / f"valuation.{valuation_method_name}.stats.json"):
         return logger.info(
-            f"Values for {valuation_method} exist in '{output_dir}'. Skipping..."
+            f"Values for {valuation_method_name} exist in '{output_dir}'. Skipping..."
         )
 
     with open(input_dir / "val_set.pkl", "rb") as file:
@@ -70,7 +88,7 @@ def calculate_values(
     sub_seeds = np.random.SeedSequence(seed).generate_state(2)
 
     params = load_params_fast()
-    valuation_method_config = params["valuation_methods"][valuation_method]
+    valuation_method_config = params["valuation_methods"][valuation_method_name]
     backend = params["settings"]["backend"]
     n_jobs = params["settings"]["n_jobs"]
 
@@ -101,12 +119,14 @@ def calculate_values(
 
     os.makedirs(output_dir, exist_ok=True)
     with open(
-        output_dir / f"valuation.{valuation_method}.pkl",
+        output_dir / f"valuation.{valuation_method_name}.pkl",
         "wb",
     ) as file:
         pickle.dump(values, file)
 
-    with open(output_dir / f"valuation.{valuation_method}.stats.json", "w") as file:
+    with open(
+        output_dir / f"valuation.{valuation_method_name}.stats.json", "w"
+    ) as file:
         json.dump(runtime_stats, file)
 
 

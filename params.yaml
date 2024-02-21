@@ -1,7 +1,8 @@
 settings:
   n_jobs: 94
   backend: joblib
-
+  mlflow_tracking_uri: http://localhost:5000
+    
 active:
   experiments: [
     point_removal,
@@ -11,7 +12,7 @@ active:
     logistic_regression,
     svm,
     knn,
-    gradient_boosting_classifier
+    gradient_boosting_classifier,
   ]
   datasets: [
     cifar10,
@@ -25,14 +26,13 @@ active:
     phoneme
   ]
   valuation_methods: [
-    random,
     loo,
     classwise_shapley,
     beta_shapley,
     tmc_shapley,
-    #banzhaf_shapley,
-    #owen_sampling_shapley,
-    #least_core
+    banzhaf_shapley,
+    owen_sampling_shapley,
+    least_core
   ]
   repetitions: [ 1, 2, 3, 4, 5 ]
 

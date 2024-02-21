@@ -1,6 +1,6 @@
 global:
   n_repetitions: 5
-  n_jobs: 5
+  n_jobs: 8
   backend: ray
   temp_dir: /raid/tmp/ray
 

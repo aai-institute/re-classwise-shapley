@@ -13,16 +13,14 @@ Evaluate metrics using calculated Shapley values as specified in the
 directory. The metrics are usually stored as `*.csv` files. Each metric consists of
 a single value and a curve. The curve is stored as `*.curve.csv` file.
 """
-
 import logging
 import os
 from functools import partial, reduce
-from pathlib import Path
 
 import click
 import pandas as pd
 from pydvl.parallel import ParallelConfig
-from pydvl.utils import DiskCacheBackend, MemcachedClientConfig
+from pydvl.utils import MemcachedClientConfig
 from pydvl.utils.functional import maybe_add_argument
 
 from re_classwise_shapley.cache import PrefixedMemcachedCacheBackend
@@ -127,9 +125,16 @@ def _evaluate_metrics(
 
     n_pipeline_step = 5
     seed = pipeline_seed(repetition_id, n_pipeline_step)
-    cache = PrefixedMemcachedCacheBackend(
-        config=MemcachedClientConfig(), prefix=f"{experiment_name}/{dataset_name}"
-    )
+    cache = None
+    if (
+        "eval_model" in metric_kwargs
+        and "cache_group" in params["valuation_methods"][valuation_method_name]
+    ):
+        cache_group = params["valuation_methods"][valuation_method_name]["cache_group"]
+        prefix = f"{experiment_name}/{dataset_name}/{cache_group}"
+        cache = PrefixedMemcachedCacheBackend(
+            config=MemcachedClientConfig(), prefix=prefix
+        )
 
     logger.info("Evaluating metric...")
     with n_threaded(n_threads=1):

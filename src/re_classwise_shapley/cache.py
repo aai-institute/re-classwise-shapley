@@ -4,9 +4,9 @@ from pydvl.utils import MemcachedCacheBackend
 
 
 class PrefixedMemcachedCacheBackend(MemcachedCacheBackend):
-    def __init__(self, *args, prefix: str, **kwargs):
+    def __init__(self, *args, **kwargs):
+        self._prefix = kwargs["prefix"]
         super().__init__(*args, **kwargs)
-        self._prefix = prefix
 
     def get(self, key: str) -> Optional[Any]:
         return super().get(f"{self._prefix}/{key}")

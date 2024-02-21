@@ -18,7 +18,6 @@ import json
 import os
 import pickle
 import time
-from pathlib import Path
 
 import click
 import numpy as np
@@ -95,9 +94,13 @@ def _calculate_values(
         )
 
     params = load_params_fast()
-    cache = PrefixedMemcachedCacheBackend(
-        config=MemcachedClientConfig(), prefix=f"{experiment_name}/{dataset_name}"
-    )
+    cache = None
+    if "cache_group" in params["valuation_methods"][valuation_method_name]:
+        cache_group = params["valuation_methods"][valuation_method_name]["cache_group"]
+        prefix = f"{experiment_name}/{dataset_name}/{cache_group}"
+        cache = PrefixedMemcachedCacheBackend(
+            config=MemcachedClientConfig(), prefix=prefix
+        )
 
     val_set = Accessor.datasets(experiment_name, dataset_name).loc[0, "val_set"]
 

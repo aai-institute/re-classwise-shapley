@@ -20,7 +20,7 @@ active:
     fmnist_binary,
     mnist_binary,
     mnist_multi,
-    phoneme,
+    phoneme
   ]
   valuation_methods: [
     random,
@@ -79,7 +79,7 @@ datasets:
     openml_id: 37
   
   cpu:
-    openml_id: 197,
+    openml_id: 197
     preprocessor:
       threshold_y:
         threshold: 89

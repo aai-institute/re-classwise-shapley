@@ -8,9 +8,12 @@ import numpy as np
 from pydvl.utils import Scorer, Utility
 
 from re_classwise_shapley.accessor import Accessor
+from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.model import instantiate_model
 from re_classwise_shapley.utils import load_params_fast, pipeline_seed
 from re_classwise_shapley.valuation_methods import compute_values
+
+logger = setup_logger("calculate_values")
 
 
 @click.command()
@@ -44,6 +47,21 @@ def calculate_values(
     input_dir = (
         Accessor.SAMPLED_PATH / experiment_name / dataset_name / str(repetition_id)
     )
+    output_dir = (
+        Accessor.VALUES_PATH
+        / experiment_name
+        / model_name
+        / dataset_name
+        / str(repetition_id)
+    )
+
+    if os.path.exists(
+        output_dir / f"valuation.{valuation_method}.pkl"
+    ) and os.path.exists(output_dir / f"valuation.{valuation_method}.stats.json"):
+        return logger.info(
+            f"Values for {valuation_method} exist in '{output_dir}'. Skipping..."
+        )
+
     with open(input_dir / "val_set.pkl", "rb") as file:
         val_set = pickle.load(file)
 
@@ -81,13 +99,6 @@ def calculate_values(
     diff_time = time.time() - start_time
     runtime_stats = {"time_s": diff_time}
 
-    output_dir = (
-        Accessor.VALUES_PATH
-        / experiment_name
-        / model_name
-        / dataset_name
-        / str(repetition_id)
-    )
     os.makedirs(output_dir, exist_ok=True)
     with open(
         output_dir / f"valuation.{valuation_method}.pkl",

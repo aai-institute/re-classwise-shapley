@@ -423,6 +423,7 @@ def plot_metric_boxplot(
             hue="method_name",
             palette=COLOR_ENCODING,
             legend=False,
+            bootstrap=10000,
             width=0.5,
             ax=ax,
         )

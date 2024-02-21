@@ -86,6 +86,13 @@ def _calculate_values(
         / str(repetition_id)
     )
 
+    if os.path.exists(
+        output_dir / f"valuation.{valuation_method_name}.pkl"
+    ) and os.path.exists(output_dir / f"valuation.{valuation_method_name}.stats.json"):
+        return logger.info(
+            f"Values for {valuation_method_name} exist in '{output_dir}'. Skipping..."
+        )
+
     params = load_params_fast()
     cache = None
     if "cache_group" in params["valuation_methods"][valuation_method_name]:

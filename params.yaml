@@ -4,7 +4,8 @@ settings:
   mlflow_tracking_uri: http://localhost:5000
 
   threshold_characteristics:
-    valuation_method: loo  # Method used to calculate the threshold characteristics.
+    active: true
+    valuation_method: banzhaf_shapley  # Method used to calculate the threshold characteristics.
     model: logistic_regression  # Default model to use for determining the values
     max_plotting_percentage: 1e-4  # Threshold for stopping plotting in direction of x-axis.
 

@@ -130,8 +130,11 @@ def _evaluate_metrics(
         and "cache_group" in params["valuation_methods"][valuation_method_name]
     ):
         cache_group = params["valuation_methods"][valuation_method_name]["cache_group"]
-        prefix = f"{experiment_name}/{dataset_name}/{cache_group}"
-        cache = PrefixMemcachedCacheBackend(prefix=prefix)
+        prefix = f"{experiment_name}/{dataset_name}/{model_name}/{cache_group}"
+        try:
+            cache = PrefixMemcachedCacheBackend(prefix=prefix)
+        except ConnectionRefusedError:
+            cache = None
 
     logger.info("Evaluating metric...")
     with n_threaded(n_threads=1):

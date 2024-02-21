@@ -187,10 +187,8 @@ class SubsetScorer(Scorer):
         self._normalize = normalize
 
     def __call__(self, model: SupervisedModel, X: NDArray, y: NDArray) -> float:
-        n = len(y)
         idx = self._idx
-        score = Scorer.__call__(self, model=model, X=X[idx], y=y[idx])
-        return score * len(idx) / n
+        return Scorer.__call__(self, model=model, X=X[idx], y=y[idx])
 
 
 def calculate_subset_score(

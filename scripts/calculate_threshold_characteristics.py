@@ -73,8 +73,10 @@ def _calculate_threshold_characteristics(
         return logger.info(f"Plot exist in '{output_dir}'. Skipping...")
 
     params = load_params_fast()
-
     threshold_characteristics_settings = params["settings"]["threshold_characteristics"]
+    if threshold_characteristics_settings["active"].lower() == "false":
+        return logger.info("Calculation was deactivated in the settings...")
+
     model_name = threshold_characteristics_settings["model"]
     valuation_method_name = threshold_characteristics_settings["valuation_method"]
 

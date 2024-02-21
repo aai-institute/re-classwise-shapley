@@ -1,6 +1,6 @@
 settings:
   evaluation:
-    n_repetitions: 20
+    n_repetitions: 10
 
   random:
     seed: 42  # 42 
@@ -35,11 +35,10 @@ active:
 
 experiments:
   wad_drop:
+    transfer_models:
+      [ "logistic_regression", "knn", "svm" ]
   noise_removal:
     perc_flip_labels: 0.2
-  wad_drop_transfer:
-    transfer_models:
-      [ "logistic_regression", "knn", "gradient_boosting_classifier", "svm", "mlp" ]
 
 models:
   logistic_regression: {

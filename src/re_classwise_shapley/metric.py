@@ -81,7 +81,7 @@ def metric_weighted_metric_drop(
     u_eval = Utility(
         data=data,
         model=model,
-        scorer=Scorer(metric, default=0),
+        scorer=Scorer(metric, default=np.nan),
         catch_errors=True,
     )
     metrics = _curve_score_over_point_removal_or_addition(

@@ -115,17 +115,14 @@ def _calculate_values(
     )
 
     start_time = time.time()
+    algorithm_name = valuation_method_config.pop("algorithm")
     values = compute_values(
         u,
-        valuation_method=valuation_method_config["algorithm"],
+        valuation_method=algorithm_name,
         n_jobs=n_jobs,
         backend=backend,
         seed=int(sub_seeds[1]),
-        **(
-            valuation_method_config["kwargs"]
-            if "kwargs" in valuation_method_config
-            else {}
-        ),
+        **valuation_method_config,
     )
     diff_time = time.time() - start_time
     runtime_stats = {"time_s": diff_time}

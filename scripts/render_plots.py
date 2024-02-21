@@ -26,14 +26,17 @@ from dotenv import load_dotenv
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import log_datasets, log_figure, setup_logger
 from re_classwise_shapley.plotting import (
-    linear_dataframe_to_table,
     plot_curves,
     plot_histogram,
     plot_metric_boxplot,
     plot_metric_table,
     plot_time,
 )
-from re_classwise_shapley.utils import flatten_dict, load_params_fast
+from re_classwise_shapley.utils import (
+    flatten_dict,
+    linear_dataframe_to_table,
+    load_params_fast,
+)
 
 logger = setup_logger("render_plots")
 

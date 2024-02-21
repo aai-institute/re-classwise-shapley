@@ -14,7 +14,7 @@ from re_classwise_shapley.filter import FilterRegistry
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import RawDataset, Seed
 
-__all__ = ["PreprocessorRegistry"]
+__all__ = ["PreprocessorRegistry", "apply_sample_preprocessors", "preprocess_dataset"]
 
 logger = setup_logger(__name__)
 

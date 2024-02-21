@@ -1,8 +1,9 @@
 import os
 import os.path
+import pickle
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union, cast
 
 import click
 import dataframe_image as dfi
@@ -12,8 +13,10 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from dotenv import load_dotenv
+from mlflow.data.pandas_dataset import PandasDataset
 from numpy._typing import NDArray
 from PIL import Image
+from pydvl.utils import Dataset
 from pydvl.value import ValuationResult
 from scipy.stats import gaussian_kde
 
@@ -93,24 +96,70 @@ def render_plots(experiment_name: str, model_name: str):
         params = load_params_fast()
         params = flatten_dict(params)
         mlflow.log_params(params)
+        log_dataset(experiment_name)
 
-        logger.info("Plotting histogram.")
-        plot_histogram(experiment_name, model_name, output_folder)
-
+        logger.info("Plotting metric tables.")
         params = load_params_fast()
         metrics = params["experiments"][experiment_name]["metrics"]
-        logger.info("Plotting metric tables.")
         results_per_dataset = load_results_per_dataset_and_method(
             experiment_path, metrics
         )
         plot_metric_table(results_per_dataset, output_folder)
 
-        logger.info("Plotting curves.")
-        plot_curves(
-            results_per_dataset,
-            f"Experiment '{experiment_name}' on model '{model_name}'",
-            output_folder,
-        )
+        for mode in ["light", "dark"]:
+            output_folder = output_folder / mode
+            os.makedirs(output_folder, exist_ok=True)
+            dark_mode = mode == "dark"
+            logger.info(f"Plotting histogram in {mode}.")
+            plot_histogram(
+                experiment_name, model_name, output_folder, dark_mode=dark_mode
+            )
+
+            logger.info(f"Plotting curves in {mode}.")
+            plot_curves(
+                results_per_dataset,
+                f"Experiment '{experiment_name}' on model '{model_name}'",
+                output_folder,
+                dark_mode=dark_mode,
+            )
+
+
+def log_dataset(
+    experiment_name: str,
+):
+    def _convert(x, y):
+        return pd.DataFrame(np.concatenate((x, y.reshape([-1, 1])), axis=1))
+
+    params = load_params_fast()
+    for dataset_name in params["active"]["datasets"]:
+        for repetition in params["active"]["repetitions"]:
+            data_dir = (
+                Accessor.SAMPLED_PATH / experiment_name / dataset_name / str(repetition)
+            )
+
+            for set_name in ["test_set", "val_set"]:
+                with open(data_dir / f"{set_name}.pkl", "rb") as file:
+                    test_set = cast(Dataset, pickle.load(file))
+
+                    x = np.concatenate((test_set.x_train, test_set.x_test), axis=0)
+                    y = np.concatenate((test_set.y_train, test_set.y_test), axis=0)
+                    train_df = _convert(x, y)
+                    train_df.columns = test_set.feature_names + test_set.target_names
+                    train_dataset: PandasDataset = (
+                        mlflow.data.pandas_dataset.from_pandas(
+                            train_df,
+                            targets=test_set.target_names[0],
+                            name=f"{dataset_name}_{repetition}_{set_name}",
+                        )
+                    )
+                    mlflow.log_input(
+                        train_dataset,
+                        tags={
+                            "set": set_name,
+                            "dataset": dataset_name,
+                            "repetition": str(repetition),
+                        },
+                    )
 
 
 def mean_density(
@@ -134,7 +183,13 @@ def mean_density(
     return density
 
 
-def plot_histogram(experiment_name: str, model_name: str, output_folder: Path):
+def plot_histogram(
+    experiment_name: str,
+    model_name: str,
+    output_folder: Path,
+    dark_mode: bool,
+    patch_size: Tuple[int, int] = (4, 3),
+):
     """
     Plot the histogram of the data values for each dataset and valuation method.
 
@@ -142,36 +197,46 @@ def plot_histogram(experiment_name: str, model_name: str, output_folder: Path):
         experiment_name: Experiment name to obtain histograms of.
         model_name: Model name to obtain histograms of.
         output_folder: Folder to store the plots in.
-
+        dark_mode: Whether to activate dark mode or not.
+        patch_size: Size of one image patch of the multi plot.
     """
     params = load_params_fast()
     params_active = params["active"]
     dataset_names = params_active["datasets"]
     valuation_methods = params_active["valuation_methods"]
     repetitions = params_active["repetitions"]
-    bins = 20
 
     accessor = Accessor(experiment_name, model_name)
     valuation_results = accessor.valuation_results(
         dataset_names, valuation_methods, repetitions
     )
 
-    figsize = (4, 3)
-    h = 2
-    w = int((len(valuation_results) + 1) / 2)
+    activate_mode(dark_mode)
+    h, w = 2, int((len(valuation_results) + 1) / 2)
     fig_ax_d = {}
     idx = 0
+
     for dataset_name, dataset_config in valuation_results.items():
         for method_name, method_values in dataset_config.items():
             logger.info(f"Plotting histogram for {dataset_name=}, {method_name=}.")
 
             if method_name not in fig_ax_d.keys():
-                fig, ax = plt.subplots(h, w, figsize=(w * figsize[0], h * figsize[1]))
+                fig, ax = plt.subplots(
+                    h, w, figsize=(w * patch_size[0], h * patch_size[1])
+                )
                 ax = ax.T.flatten()
+
+                if dark_mode:
+                    for i in range(len(ax)):
+                        ax[i].patch.set_facecolor("none")
+                        ax[i].patch.set_alpha(0.0)
+
                 fig_ax_d[method_name] = (fig, ax)
 
             fig, ax = fig_ax_d[method_name]
-            sns.histplot(method_values.reshape(-1), kde=True, ax=ax[idx])
+            sns.histplot(
+                method_values.reshape(-1), kde=True, ax=ax[idx], bins="sturges"
+            )
             ax[idx].set_title(f"({chr(97 + idx)}) {dataset_name}")
 
         idx += 1
@@ -187,8 +252,10 @@ def plot_histogram(experiment_name: str, model_name: str, output_folder: Path):
         f_name = f"density.{key}.png"
         logger.info(f"Logging plot '{f_name}'")
         output_file = output_folder / f_name
-        mlflow.log_figure(fig, f"densities/{f_name}")
+        path = "light" if not dark_mode else "dark"
+        mlflow.log_figure(fig, f"densities/{path}/{f_name}")
         fig.savefig(output_file)
+        plt.close(fig)
 
 
 def plot_curves(
@@ -197,6 +264,7 @@ def plot_curves(
     ],
     title: str,
     output_folder: Path,
+    dark_mode: bool,
 ):
     """
     Plot the curves of the data values for each dataset and valuation method.
@@ -216,13 +284,17 @@ def plot_curves(
     )
     output_folder = output_folder / "curves"
     os.makedirs(output_folder, exist_ok=True)
-
+    activate_mode(dark_mode)
     num_datasets = len(dataset_names)
     h = 2
     w = int(num_datasets / 2) + 1
     for metric_name in metric_names:
         fig, ax = plt.subplots(h, w, figsize=(w * 20 / 4, h * 5 / 2))
         ax = ax.T.flatten()
+        if dark_mode:
+            for i in range(len(ax)):
+                ax[i].patch.set_facecolor("none")
+                ax[i].patch.set_alpha(0.0)
 
         for idx, dataset_name in enumerate(dataset_names):
             for method_name in valuation_methods:
@@ -250,13 +322,28 @@ def plot_curves(
 
         ax[-1].grid(False)
         ax[-1].axis("off")
-        ax[-1].legend(handles, labels, loc="center", fontsize=16)
+        ax[-1].legend(handles, labels, loc="center", fontsize=10)
         fig.suptitle(title + f" with metric '{metric_name}'")
         fig.subplots_adjust(hspace=0.4)
 
         output_file = output_folder / f"{metric_name}.png"
-        mlflow.log_figure(fig, f"curves/{metric_name}.png")
+        path = "light" if not dark_mode else "dark"
+        mlflow.log_figure(fig, f"curves/{path}/{metric_name}.png")
         fig.savefig(output_file)
+        plt.close(fig)
+
+
+def activate_mode(dark_mode):
+    plt.rcdefaults()
+    if dark_mode:
+        params = {
+            "ytick.color": "w",
+            "xtick.color": "w",
+            "axes.labelcolor": "w",
+            "axes.edgecolor": "w",
+        }
+        plt.rcParams.update(params)
+        plt.style.use("dark_background")
 
 
 def plot_metric_table(
@@ -300,11 +387,19 @@ def plot_metric_table(
         with Image.open(output_file) as im:
             mlflow.log_image(im, f"metrics/{metric_name}_mean.png")
 
+        mlflow.log_text(
+            mean_metric.to_markdown(), f"markdown/metrics/{metric_name}_mean.md"
+        )
+
         df_styled = std_metric.style.highlight_min(color="lightgreen", axis=1)
         output_file = output_folder / f"{metric_name}_std.png"
         dfi.export(df_styled, output_file, table_conversion="matplotlib")
         with Image.open(output_file) as im:
             mlflow.log_image(im, f"metrics/{metric_name}_std.png")
+
+        mlflow.log_text(
+            std_metric.to_markdown(), f"markdown/metrics/{metric_name}_std.md"
+        )
 
 
 def load_results_per_dataset_and_method(

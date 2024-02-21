@@ -44,7 +44,7 @@ def compute_values(
             utility,
             done=MaxUpdates(n_updates=int(kwargs["n_updates"])),
             truncation=RelativeTruncation(utility, rtol=kwargs["rtol"]),
-            normalize_score=kwargs["normalize_values"],
+            normalize_values=kwargs["normalize_values"],
             n_resample_complement_sets=kwargs["n_resample_complement_sets"],
             use_default_scorer_value=kwargs.get("use_default_scorer_value", True),
             min_elements_per_label=kwargs.get("min_elements_per_label", 1),

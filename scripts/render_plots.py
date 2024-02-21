@@ -13,17 +13,26 @@ Render plots for the data valuation experiment. The plots are stored in the
 also stored in mlflow. The id of the mlflow experiment is given by the schema
 `experiment_name.model_name`.
 """
+import math as m
 import os
 import os.path
 from datetime import datetime
 
 import click
 import mlflow
+import numpy as np
 from dotenv import load_dotenv
 
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import log_datasets, log_figure, setup_logger
-from re_classwise_shapley.plotting import plot_curves, plot_histogram, plot_time
+from re_classwise_shapley.plotting import (
+    linear_dataframe_to_table,
+    plot_curves,
+    plot_histogram,
+    plot_metric_boxplot,
+    plot_metric_table,
+    plot_time,
+)
 from re_classwise_shapley.utils import flatten_dict, load_params_fast
 
 logger = setup_logger("render_plots")
@@ -75,7 +84,8 @@ def _render_plots(experiment_name: str, model_name: str):
     dataset_names = params_active["datasets"]
     method_names = params_active["valuation_methods"]
     repetitions = params_active["repetitions"]
-    metrics = list(params["experiments"][experiment_name]["metrics"].keys())
+    metrics_def = params["experiments"][experiment_name]["metrics"]
+    metrics = list(metrics_def.keys())
 
     mlflow.set_tracking_uri(params["settings"]["mlflow_tracking_uri"])
     experiment_id = get_or_create_mlflow_experiment(mlflow_id)
@@ -113,7 +123,7 @@ def _render_plots(experiment_name: str, model_name: str):
 
         logger.info(f"Plot boxplot for execution time.")
         with plot_time(valuation_results) as fig:
-            log_figure(fig, output_folder, "time.svg")
+            log_figure(fig, output_folder, "time.svg", "boxplots")
 
         metrics_and_curves = Accessor.metrics_and_curves(
             experiment_name,
@@ -124,12 +134,35 @@ def _render_plots(experiment_name: str, model_name: str):
             metrics,
         )
         for metric_name in metrics:
-            logger.info(f"Plotting curve for metric {metric_name}.")
-            single_curve = metrics_and_curves.loc[
+            metric_and_curves_for_metric = metrics_and_curves.loc[
                 metrics_and_curves["metric_name"] == metric_name
-            ]
-            with plot_curves(single_curve) as fig:
+            ].copy()
+
+            len_curve_perc = metrics_def[metric_name].pop("len_curve_perc", None)
+            logger.info(f"Plotting curve for metric {metric_name}.")
+            with plot_curves(
+                metric_and_curves_for_metric, len_curve_perc=len_curve_perc
+            ) as fig:
                 log_figure(fig, output_folder, f"{metric_name}.svg", "curves")
+
+            logger.info(f"Plotting table for metric {metric_name}.")
+            metric_table = linear_dataframe_to_table(
+                metric_and_curves_for_metric,
+                "dataset_name",
+                "method_name",
+                "metric",
+                np.mean,
+            )
+            for dataset_name, row in metric_table.items():
+                for method_name, v in row.items():
+                    mlflow.log_metric(f"{metric_name}.{dataset_name}.{method_name}", v)
+
+            with plot_metric_table(metric_table) as fig:
+                log_figure(fig, output_folder, f"{metric_name}.table.svg", "tables")
+
+            logger.info(f"Plotting boxplot for metric {metric_name}.")
+            with plot_metric_boxplot(metric_and_curves_for_metric) as fig:
+                log_figure(fig, output_folder, f"{metric_name}.box.svg", "boxplots")
 
 
 if __name__ == "__main__":

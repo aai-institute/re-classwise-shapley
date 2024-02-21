@@ -82,15 +82,20 @@ def weighted_reciprocal_diff_average(
 
     values.sort(reverse=highest_first)
     scores = pd.Series(index=np.arange(len(u.data)), dtype=np.float64)
-    scores.iloc[0] = u(u.data.indices)
+    scores.iloc[0] = u(u.data.indices) if highest_first else u(set())
 
     for j in maybe_progress(len(u.data) - 1, display=progress, desc="Removal Scores"):
-        scores.iloc[j + 1] = u(values.indices[j + 1 :])
+        scores.iloc[j + 1] = (
+            u(values.indices[j + 1 :]) if highest_first else u(values.indices[: j + 1])
+        )
 
     diff_scores = scores.diff(-1).values[:-1]
     diff_scores = np.nancumsum(diff_scores)
     weighted_diff_scores = diff_scores / (np.arange(1, len(diff_scores) + 1))
     avg = np.sum(weighted_diff_scores)
+    if not highest_first:
+        avg *= -1
+
     return float(avg), scores
 
 

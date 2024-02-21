@@ -1,9 +1,7 @@
 import os
-
-os.environ["OPENBLAS_NUM_THREADS"] = "1"
-
 import pickle
 import shutil
+import time
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
@@ -164,6 +162,7 @@ def run_experiment(
     for idx, valuation_method_name in enumerate(valuation_method_names):
         valuation_method = valuation_methods[valuation_method_name]
         logger.info(f"Computing values using '{valuation_method_name}'.")
+        start_time = time.time()
         values = valuation_method(
             Utility(
                 data=val_dataset,
@@ -172,9 +171,12 @@ def run_experiment(
             ),
             seed=seed,
         )
+        diff_time = time.time() - start_time
         result.result[valuation_method_name] = values
         test_utility = Utility(
-            data=test_dataset, model=deepcopy(model), scorer=Scorer(scoring="accuracy")
+            data=test_dataset,
+            model=deepcopy(model),
+            scorer=Scorer(scoring="accuracy", default=0.0),
         )
 
         for metric_name, metric_fn in metrics.items():
@@ -187,10 +189,16 @@ def run_experiment(
             result.metric[valuation_method_name][metric_name] = metric
             result.curves[valuation_method_name][metric_name] = graph
 
+        result.metric[valuation_method_name]["time"] = diff_time
+
     return result
 
 
-def set_affinity(cpus):
+def limit_process_affinity(cpus: List[int]):
+    """
+    Limit the execution of the program onto these cpus.
+    :param cpus: List of cpus to use.
+    """
     p = psutil.Process(os.getpid())
     p.cpu_affinity(cpus)
 

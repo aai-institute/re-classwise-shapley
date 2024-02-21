@@ -1,13 +1,8 @@
-from typing import Dict, Iterable, Union
-
 import numpy as np
-from numpy.typing import NDArray
 from pydvl.utils import Utility, maybe_progress
 from pydvl.value.result import ValuationResult
 
 __all__ = ["weighted_reciprocal_diff_average"]
-
-from sklearn.metrics import accuracy_score
 
 
 def weighted_reciprocal_diff_average(
@@ -27,7 +22,7 @@ def weighted_reciprocal_diff_average(
     avg = 0
 
     for j in maybe_progress(len(u.data), display=progress, desc="Removal Scores"):
-        j_accuracy = u(u.data.indices[j + 1 :])
+        j_accuracy = u(values.indices[j + 1 :])
         discount_factor = 1 / (j + 1)
         new_term = discount_factor * (full_accuracy - j_accuracy)
 

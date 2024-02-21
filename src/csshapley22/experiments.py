@@ -1,3 +1,5 @@
+from sklearn.metrics import precision_recall_curve
+
 from csshapley22.log import setup_logger
 
 setup_logger()
@@ -26,7 +28,7 @@ logger = setup_logger()
 class ExperimentResult:
     valuation_results: pd.DataFrame
     metric: pd.DataFrame
-    graphs: Optional[pd.DataFrame]
+    curves: Optional[pd.DataFrame]
     metric_name: str = None
 
     def store(self, output_dir: Path) -> "ExperimentResult":
@@ -34,8 +36,8 @@ class ExperimentResult:
         output_dir.mkdir(parents=True, exist_ok=True)
         self.metric.to_csv(output_dir / "metric.csv")
         self.valuation_results.to_pickle(output_dir / "valuation_results.pkl")
-        if self.graphs is not None:
-            self.graphs.to_pickle(output_dir / "scores.pkl")
+        if self.curves is not None:
+            self.curves.to_pickle(output_dir / "curves.pkl")
 
         return self
 
@@ -52,7 +54,7 @@ def _dispatch_experiment(
         index=list(datasets.keys()), columns=list(valuation_methods.keys())
     )
     result = ExperimentResult(
-        metric=copy(base_frame), valuation_results=copy(base_frame), graphs=None
+        metric=copy(base_frame), valuation_results=copy(base_frame), curves=None
     )
 
     for dataset_idx, (val_dataset, test_dataset) in datasets.items():
@@ -86,13 +88,13 @@ def _dispatch_experiment(
             result.metric.loc[dataset_idx, valuation_method_name] = metric
 
             if graph is not None:
-                if result.graphs is None:
-                    result.graphs = copy(base_frame)
+                if result.curves is None:
+                    result.curves = copy(base_frame)
 
-                result.graphs.loc[dataset_idx, valuation_method_name] = [graph]
+                result.curves.loc[dataset_idx, valuation_method_name] = [graph]
 
-    if result.graphs is not None:
-        result.graphs = result.graphs.applymap(lambda x: x[0])
+    if result.curves is not None:
+        result.curves = result.curves.applymap(lambda x: x[0])
 
     return result
 
@@ -152,19 +154,31 @@ def experiment_noise_removal(
         labels[p] = 1 - labels[p]
         return labels
 
-    def _roc_auc(test_utility: Utility, values: ValuationResult) -> Tuple[float, None]:
+    def _roc_auc(
+        test_utility: Utility, values: ValuationResult
+    ) -> Tuple[float, pd.Series]:
         n = len(test_utility.data.y_train)
         num_data_indices = int(perc_flip_labels * n)
         p = np.argsort(values)[:num_data_indices]
         test_utility.data.y_train[p] = 1 - test_utility.data.y_train[p]
 
-        logger.debug("Computing best data points removal score on separate test set.")
+        logger.debug("Computing precision-recall curve on separate test set..")
         u = Utility(
             data=test_utility.data,
             model=test_utility.model,
             scorer=Scorer(scoring="roc_auc"),
+            clone_before_fit=False,
         )
-        return u(u.data.indices), None
+
+        metric = u(u.data.indices)
+        precision, recall, thresholds = precision_recall_curve(
+            u.data.y_test,
+            u.model.predict_proba(test_utility.data.x_test)[:, 1],
+        )
+        graph = pd.Series(precision, index=recall)
+        graph = graph[~graph.index.duplicated(keep="first")]
+        graph = graph.sort_index(ascending=True)
+        return metric, graph
 
     result = _dispatch_experiment(
         model,

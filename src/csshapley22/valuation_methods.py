@@ -30,7 +30,7 @@ def compute_values(
     parallel_config = ParallelConfig(
         backend=kwargs["backend"],
         n_cpus_local=n_jobs,
-        logging_level=logging.DEBUG,
+        logging_level=logging.INFO,
         _temp_dir=tmp_dir,
     )
     if valuation_method == "random":

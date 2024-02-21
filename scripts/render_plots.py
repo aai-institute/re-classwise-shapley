@@ -8,11 +8,7 @@ from dvc.api import params_show
 
 from csshapley22.constants import OUTPUT_DIR, RANDOM_SEED
 from csshapley22.log import setup_logger
-from csshapley22.plotting import (
-    plot_utility_over_num_removals,
-    plot_values_histogram,
-    setup_plotting,
-)
+from csshapley22.plotting import plot_curve, plot_values_histogram, setup_plotting
 from csshapley22.utils import set_random_seed
 
 logger = setup_logger()
@@ -38,21 +34,30 @@ def render_plots(experiment_name: str, dataset_name: str):
         os.makedirs(model_plots_output_dir, exist_ok=True)
 
         if experiment_name == "wad_drop":
-            metrics, valuation_results, scores = load_results(
+            metrics, valuation_results, curves = load_results(
                 model_input_dir,
                 load_scores=True,
             )
-            plot_utility_over_num_removals(
-                scores,
+            plot_curve(
+                curves,
                 output_dir=model_plots_output_dir,
+                label_x="Number of removed instances",
+                label_y="Accuracy",
             )
             plot_values_histogram(
                 valuation_results,
                 output_dir=model_plots_output_dir,
             )
         elif experiment_name == "noise_removal":
-            metrics, valuation_results = load_results(
+            metrics, valuation_results, curves = load_results(
                 model_input_dir,
+                load_scores=True,
+            )
+            plot_curve(
+                curves,
+                output_dir=model_plots_output_dir,
+                label_x="Recall",
+                label_y="Precision",
             )
             plot_values_histogram(
                 valuation_results,
@@ -61,23 +66,25 @@ def render_plots(experiment_name: str, dataset_name: str):
 
         elif experiment_name == "wad_drop_transfer":
             for sub_folder in os.listdir(model_input_dir / "repetition=0"):
-                metrics, valuation_results, scores = load_results(
+                metrics, valuation_results, curves = load_results(
                     model_input_dir,
                     load_scores=True,
                     sub_folder=sub_folder,
                 )
                 sub_plots_output_dir = model_plots_output_dir / sub_folder
                 os.makedirs(sub_plots_output_dir, exist_ok=True)
-                plot_utility_over_num_removals(
-                    scores,
-                    output_dir=sub_plots_output_dir,
+                plot_curve(
+                    curves,
+                    output_dir=model_plots_output_dir,
+                    label_x="Number of removed instances",
+                    label_y="Accuracy",
                 )
                 plot_values_histogram(
                     valuation_results,
                     output_dir=sub_plots_output_dir,
                 )
 
-        logger.info("Finished data valuation experiment")
+        logger.info("Finished plotting.")
 
 
 def load_results(
@@ -85,7 +92,7 @@ def load_results(
 ):
     metrics = None
     valuation_results = None
-    scores = None
+    curves = None
 
     for repetition in os.listdir(model_input_dir):
         repetition_input_dir = model_input_dir / repetition
@@ -107,11 +114,9 @@ def load_results(
         )
 
         if load_scores:
-            it_scores = pd.read_pickle(repetition_input_dir / "scores.pkl")
-            scores = (
-                it_metrics
-                if metrics is None
-                else pd.concat((scores, it_scores), axis=0)
+            it_curves = pd.read_pickle(repetition_input_dir / "curves.pkl")
+            curves = (
+                it_curves if curves is None else pd.concat((curves, it_curves), axis=0)
             )
     metrics = metrics.reset_index(drop=True)
     valuation_results = valuation_results.reset_index(drop=True).applymap(
@@ -119,8 +124,8 @@ def load_results(
     )
 
     if load_scores:
-        scores = scores.reset_index(drop=True)
-        return metrics, valuation_results, scores
+        curves = curves.reset_index(drop=True)
+        return metrics, valuation_results, curves
     else:
         return metrics, valuation_results
 

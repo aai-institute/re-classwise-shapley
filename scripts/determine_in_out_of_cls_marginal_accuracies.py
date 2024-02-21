@@ -31,7 +31,7 @@ from re_classwise_shapley.types import ensure_list
 from re_classwise_shapley.utils import load_params_fast, pipeline_seed
 from re_classwise_shapley.valuation_methods import compute_values
 
-logger = setup_logger("preprocess_data")
+logger = setup_logger("determine_in_out_of_clas_accuracy")
 
 
 class InClsScorer(Scorer):
@@ -69,8 +69,8 @@ def determine_in_cls_out_of_cls_marginal_accuracies(
 def _determine_in_cls_out_of_cls_marginal_accuracies(
     experiment_name: str,
     model_name: str = "logistic_regression",
-    valuation_method_name: str = "loo",
-    max_plotting_percentage: float = 1e-5,
+    valuation_method_name: str = "tmc_shapley",
+    max_plotting_percentage: float = 1e-4,
 ):
     output_dir = Accessor.INFO_PATH / experiment_name
     if os.path.exists(output_dir / "threshold_characteristics.svg") and os.path.exists(

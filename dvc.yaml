@@ -13,13 +13,13 @@ stages:
       - scripts/fetch_data.py
       - src/re_classwise_shapley/io.py
     outs:
-      - output/raw/${item.dataset}
+      - output/raw/${item.dataset}:
+          persist: true
 
   preprocess-data:
     matrix:
       dataset: ${active.datasets}
-    cmd: python -m scripts.preprocess_data
-      --dataset-name ${item.dataset}
+    cmd: python -m scripts.preprocess_data --dataset-name ${item.dataset}
     params:
       - datasets.${item.dataset}
     deps:
@@ -28,7 +28,8 @@ stages:
       - src/re_classwise_shapley/io.py
       - output/raw/${item.dataset}
     outs:
-      - output/preprocessed/${item.dataset}
+      - output/preprocessed/${item.dataset}:
+          persist: true
 
   # Experiments
   # ====================================================================================
@@ -49,7 +50,8 @@ stages:
       - scripts/sample_data.py
       - output/preprocessed/${item.dataset}
     outs:
-      - output/sampled/${item.experiment}/${item.dataset}/${item.repetition}
+      - output/sampled/${item.experiment}/${item.dataset}/${item.repetition}:
+          persist: true
   
   calculate-values:
     matrix:
@@ -73,7 +75,8 @@ stages:
       - src/re_classwise_shapley/valuation_methods.py
       - output/sampled/${item.experiment}/${item.dataset}/${item.repetition}
     outs:
-      - output/values/${item.experiment}/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
+      - output/values/${item.experiment}/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl:
+          persist: true
 
   # TODO Make more concise once https://github.com/iterative/dvc/issues/9948 is closed.
   evaluate-metrics-point-removal:
@@ -97,8 +100,10 @@ stages:
       - src/re_classwise_shapley/metric.py
       - output/values/point_removal/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
     outs:
-      - output/results/point_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.csv
-      - output/results/point_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.curve.csv
+      - output/results/point_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.csv:
+          persist: true
+      - output/results/point_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.curve.csv:
+          persist: true
   
   evaluate-metrics-noise-removal:
     matrix:
@@ -121,8 +126,10 @@ stages:
       - src/re_classwise_shapley/metric.py
       - output/values/noise_removal/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
     outs:
-      - output/results/noise_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.csv
-      - output/results/noise_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.curve.csv
+      - output/results/noise_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.csv:
+          persist: true
+      - output/results/noise_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.curve.csv:
+          persist: true
   
   render-plots:
     matrix:

@@ -80,8 +80,9 @@ jobs:
     - name: Copy test config
       run: cp params.test.yaml params.yaml
 
-    - name: Run pipeline without dvc
-      run: python scripts/run_pipeline.py
-
     - name: Run pipeline using dvc
-      run: dvc exp run
+      run: python3 -m dvc exp run
+
+    - name: Run pipeline without dvc
+      run: python3 scripts/run_pipeline.py
+

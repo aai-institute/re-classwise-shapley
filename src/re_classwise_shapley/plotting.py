@@ -19,6 +19,7 @@ __all__ = [
     "plot_time",
     "plot_metric_boxplot",
     "plot_metric_table",
+    "plot_threshold_characteristics",
 ]
 
 logger = setup_logger(__name__)

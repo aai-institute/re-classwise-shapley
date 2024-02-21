@@ -18,8 +18,6 @@ import os
 
 import click
 import numpy as np
-from numpy.typing import NDArray
-from pydvl.utils import Scorer, SupervisedModel
 
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
@@ -32,29 +30,6 @@ from re_classwise_shapley.utils import (
 from re_classwise_shapley.valuation_methods import calculate_subset_score
 
 logger = setup_logger("determine_in_out_of_clas_accuracy")
-
-
-class SubsetScorer(Scorer):
-    """
-    A scorer which operates on a subset and additionally normalizes the output score.
-
-    Args:
-        subset: An array of indices mapping to the subset of training indices to include in the score calculation.
-        normalize: True, iff the score shall be multiplied by `len(subset) / len(train_indices)`.
-    """
-
-    def __init__(
-        self, *args, subset: NDArray[np.int_], normalize: bool = True, **kwargs
-    ):
-        Scorer.__init__(self, *args, **kwargs)
-        self._idx = subset
-        self._normalize = normalize
-
-    def __call__(self, model: SupervisedModel, X: NDArray, y: NDArray) -> float:
-        n = len(y)
-        idx = self._idx
-        score = Scorer.__call__(self, model=model, X=X[idx], y=y[idx])
-        return score * len(idx) / n
 
 
 @click.command()

@@ -1,6 +1,7 @@
 import os
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import mlflow
@@ -13,6 +14,7 @@ from matplotlib.ticker import FormatStrFormatter
 from re_classwise_shapley.accessor import Accessor
 from re_classwise_shapley.io import save_df_as_table
 from re_classwise_shapley.log import setup_logger
+from re_classwise_shapley.types import OneOrMany, ensure_list
 from re_classwise_shapley.utils import load_params_fast
 
 __all__ = [
@@ -20,6 +22,7 @@ __all__ = [
     "plot_histogram",
     "plot_metric_table",
     "plot_curves",
+    "plot_time",
 ]
 
 logger = setup_logger(__name__)
@@ -97,256 +100,201 @@ def shaded_mean_normal_confidence_interval(
     ax.plot(abscissa, mean, color=mean_color, **kwargs)
 
 
-def plot_histogram(
-    experiment_name: str,
-    model_name: str,
-    output_folder: Path,
+@contextmanager
+def plot_grid_over_datasets(
+    valuation_results: pd.DataFrame,
+    plot_func: callable,
     patch_size: Tuple[float, float] = (4, 4),
-    ref_method: str = "tmc_shapley",
-):
+    n_cols: int = 3,
+    legend: bool = False,
+    format_ticks: str = None,
+    **kwargs,
+) -> plt.Figure:
+    """
+    Generalized function for plotting data using a specified plot function.
+
+    Args:
+        valuation_results: A pd.DataFrame containing columns `time_s`, `dataset_name`
+            and `method_name`.
+        plot_func: A callable function for plotting data.
+        patch_size: Size of one image patch of the multi plot.
+        n_cols: Number of columns for subplot layout.
+        **kwargs: Additional keyword arguments to pass to the plot_func.
+    """
+    dataset_names = valuation_results["dataset_name"].unique().tolist()
+    n_rows = int((len(dataset_names) + n_cols - 1) / n_cols)
+    fig, ax = plt.subplots(
+        n_rows, n_cols, figsize=(n_rows * patch_size[0], n_cols * patch_size[1])
+    )
+    ax = ax.flatten()
+
+    for dataset_idx, dataset_name in enumerate(dataset_names):
+        dataset_data = valuation_results.loc[
+            valuation_results["dataset_name"] == dataset_name
+        ]
+        plot_func(data=dataset_data, ax=ax[dataset_idx], **kwargs)
+
+        ax[dataset_idx].patch.set_facecolor("none")
+        ax[dataset_idx].patch.set_alpha(0.0)
+
+        if dataset_idx % n_cols != 0:
+            ax[dataset_idx].set_ylabel("")
+            ax[dataset_idx].tick_params(
+                left=False,
+                labelleft=False,
+            )
+        else:
+            ax[dataset_idx].set_xlabel(kwargs.get("ylabel", ""))
+
+        if int(dataset_idx / n_cols) < n_rows - 1:
+            ax[dataset_idx].set_xlabel("")
+            ax[dataset_idx].tick_params(
+                bottom=False,
+                labelbottom=False,
+            )
+        else:
+            ax[dataset_idx].set_xlabel(kwargs.get("xlabel", ""))
+
+        if format_ticks is not None:
+            ax[dataset_idx].xaxis.set_ticks(np.linspace(*ax[dataset_idx].get_xlim(), 5))
+            ax[dataset_idx].xaxis.set_major_formatter(FormatStrFormatter(format_ticks))
+        ax[dataset_idx].set_title(f"({chr(97 + dataset_idx)}) {dataset_name}")
+
+    if legend:
+        legend_kwargs = {"framealpha": 0}
+        handles, labels = ax[-1].get_legend_handles_labels()
+        fig.legend(
+            handles,
+            labels,
+            loc="outside lower center",
+            ncol=5,
+            fontsize=12,
+            fancybox=False,
+            shadow=False,
+            **legend_kwargs,
+        )
+
+    yield fig
+    plt.close(fig)
+
+
+@contextmanager
+def plot_histogram(
+    valuation_results: pd.DataFrame,
+    method_names: OneOrMany[str],
+    patch_size: Tuple[float, float] = (4, 4),
+    n_cols: int = 3,
+) -> plt.Figure:
     """
     Plot the histogram of the data values for each dataset and valuation method.
 
     Args:
-        experiment_name: Experiment name to obtain histograms of.
-        model_name: Model name to obtain histograms of.
-        output_folder: Folder to store the plots in.
+        valuation_results: A pd.DataFrame containing columns `time_s`, `dataset_name`
+            and `method_name`.
+        method_names: A list of method names to plot.
         patch_size: Size of one image patch of the multi plot.
-        ref_method: Reference method to plot the histogram against.
+        n_cols: Number of columns for subplot layout.
     """
-    params = load_params_fast()
-    params_active = params["active"]
-    dataset_names = params_active["datasets"]
-    valuation_methods = params_active["valuation_methods"]
-    repetitions = params_active["repetitions"]
 
-    accessor = Accessor(experiment_name, model_name)
-    valuation_results = accessor.valuation_results(
-        dataset_names, valuation_methods, repetitions
-    )
-
-    output_folder = output_folder / "densities"
-    h = 3
-    w = int((len(valuation_results) + h - 1) / h)
-    fig_ax_d = {}
-    idx = 0
-
-    for dataset_name, dataset_config in valuation_results.items():
-        for method_name, method_values in dataset_config.items():
-            logger.info(f"Plotting histogram for {dataset_name=}, {method_name=}.")
-
-            if method_name not in fig_ax_d.keys():
-                fig, ax = plt.subplots(
-                    w, h, figsize=(w * patch_size[0], h * patch_size[1])
-                )
-                ax = ax.flatten()
-
-                fig_ax_d[method_name] = (fig, ax)
-
-            fig, ax = fig_ax_d[method_name]
+    def plot_histogram_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
+        for method_name in kwargs["method_names"]:
+            method_dataset_valuation_results = data.loc[
+                valuation_results["method_name"] == method_name
+            ]
+            method_values = np.stack(
+                method_dataset_valuation_results["valuation"].apply(lambda v: v.values)
+            )
             sns.histplot(
-                method_values[0],
+                method_values.reshape(-1),
                 kde=True,
-                ax=ax[idx],
+                ax=ax,
                 bins="sturges",
                 alpha=0.4,
                 color=COLORS[COLOR_ENCODING[method_name]][0],
                 label=method_name,
             )
-            sns.histplot(
-                dataset_config[ref_method][0],
-                kde=True,
-                ax=ax[idx],
-                bins="sturges",
-                alpha=0.4,
-                color=COLORS[COLOR_ENCODING[ref_method]][0],
-                label=ref_method,
-            )
-            if idx % h != 0:
-                ax[idx].set_ylabel("")
 
-            ax[idx].set_title(
-                f"({chr(97 + idx)}) {dataset_name}",
-                color="black",
-            )
+    with plot_grid_over_datasets(
+        valuation_results,
+        plot_histogram_func,
+        patch_size=patch_size,
+        n_cols=n_cols,
+        legend=True,
+        method_names=ensure_list(method_names),
+        xlabel="Value",
+        ylabel="counts",
+        format_ticks="%.3f",
+    ) as fig:
+        yield fig
 
-        idx += 1
 
-    for key, (fig, ax) in fig_ax_d.items():
-        legend_kwargs = {"framealpha": 0}
-        handles, labels = ax[-1].get_legend_handles_labels()
-        leg = fig.legend(
-            handles,
-            labels,
-            loc="outside lower center",
-            ncol=5,
-            fontsize=12,
-            fancybox=False,
-            shadow=False,
-            **legend_kwargs,
+@contextmanager
+def plot_time(
+    valuation_results: pd.DataFrame,
+    patch_size: Tuple[float, float] = (4, 4),
+    n_cols: int = 3,
+) -> plt.Figure:
+    """
+    Plot execution times as boxplot.
+
+    Args:
+        valuation_results: A pd.DataFrame containing columns `time_s`, `dataset_name`
+            and `method_name`.
+        patch_size: Size of one image patch of the multi plot.
+        n_cols: Number of columns for subplot layout.
+    """
+
+    def plot_time_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
+        sns.boxplot(
+            data=data,
+            x="time_s",
+            y="method_name",
+            width=0.5,
+            ax=ax,
         )
 
-        for i in range(len(ax)):
-            ax[i].xaxis.set_ticks(np.linspace(*ax[i].get_xlim(), 5))
-            ax[i].xaxis.set_major_formatter(FormatStrFormatter("%.3f"))
-
-        for i in range(len(ax)):
-            ax[i].patch.set_facecolor("none")
-            ax[i].patch.set_alpha(0.0)
-
-        f_name = f"density.{key}.svg"
-        logger.info(f"Logging plot '{f_name}'")
-        os.makedirs(output_folder, exist_ok=True)
-        output_file = output_folder / f_name
-
-        plt.subplots_adjust(
-            left=0.05, right=0.98, top=0.97, bottom=0.03, hspace=0.17, wspace=0.17
-        )
-        fig.savefig(output_file, transparent=True)
-        mlflow.log_artifact(str(output_file), f"densities")
-        plt.close(fig)
+    with plot_grid_over_datasets(
+        valuation_results,
+        plot_time_func,
+        patch_size=patch_size,
+        n_cols=n_cols,
+        legend=False,
+        xlabel="s",
+    ) as fig:
+        yield fig
 
 
+@contextmanager
 def plot_curves(
-    results_per_dataset: Dict[
-        str, Dict[str, Dict[str, Tuple[pd.Series, pd.DataFrame]]]
-    ],
-    output_folder: Path,
+    data: pd.DataFrame,
     patch_size: Tuple[float, float] = (4, 3),
+    n_cols: int = 3,
 ):
     """
     Plot the curves of the data values for each dataset and valuation method.
-
-    Args:
-        results_per_dataset: A dictionary of dictionaries containing realizations of
-            the distribution over curves.
-        output_folder: Output folder to store the plots in.
-        patch_size: Size of one image patch of the multi plot.
     """
-    params = load_params_fast()
-    params_active = params["active"]
-    dataset_names = params_active["datasets"]
-    valuation_methods = params_active["valuation_methods"]
-    metric_names = sorted(
-        results_per_dataset[dataset_names[0]][valuation_methods[0]].keys()
-    )
-    output_folder = output_folder / "curves"
-    os.makedirs(output_folder, exist_ok=True)
-    num_datasets = len(dataset_names)
-    w = 3
-    h = int((len(dataset_names) + w - 1) / w)
-    for metric_name in metric_names:
-        fig, ax = plt.subplots(h, w, figsize=(h * patch_size[0], w * patch_size[1]))
-        ax = ax.flatten()
 
-        for idx, dataset_name in enumerate(dataset_names):
-            for method_name in valuation_methods:
-                logger.info(
-                    f"Plotting curve for {dataset_name=}, {metric_name=}, {method_name=}."
-                )
-                results = results_per_dataset[dataset_name][method_name][metric_name][1]
-                color_name = COLOR_ENCODING[method_name]
-                mean_color, shade_color = COLORS[color_name]
-                results = results.sort_index()
+    def plot_curves_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
+        for method_name, method_data in data.groupby("method_name"):
+            color_name = COLOR_ENCODING[method_name]
+            mean_color, shade_color = COLORS[color_name]
 
-                shaded_mean_normal_confidence_interval(
-                    results,
-                    abscissa=results.index,
-                    mean_color=mean_color,
-                    shade_color=shade_color,
-                    label=method_name,
-                    ax=ax[idx],
-                )
-                ax[idx].set_title(
-                    f"({chr(97 + idx)}) {dataset_name}",
-                    color="black",
-                )
-        for i in range(num_datasets, len(ax)):
-            ax[i].grid(False)
-            ax[i].axis("off")
-            ax[i].patch.set_facecolor("none")
-            ax[i].patch.set_alpha(0.0)
+            results = pd.concat(method_data["curve"].tolist(), axis=1)
+            shaded_mean_normal_confidence_interval(
+                results,
+                abscissa=results.index,
+                mean_color=mean_color,
+                shade_color=shade_color,
+                label=method_name,
+                ax=ax,
+            )
 
-        legend_kwargs = {"framealpha": 0}
-        handles, labels = ax[num_datasets - 1].get_legend_handles_labels()
-        leg = fig.legend(
-            handles,
-            labels,
-            loc="outside lower center",
-            ncol=5,
-            fontsize=12,
-            fancybox=False,
-            shadow=False,
-            **legend_kwargs,
-        )
-
-        for text in leg.get_texts():
-            plt.setp(text, color="k")
-
-        plt.subplots_adjust(left=0.05, right=0.99, top=0.97, bottom=0.13, hspace=0.3)
-        os.makedirs(output_folder, exist_ok=True)
-        local_path = output_folder / f"{metric_name}.svg"
-        fig.savefig(local_path, transparent=True)
-        mlflow.log_artifact(str(local_path), f"curves")
-        plt.close(fig)
-
-
-def plot_metric_table(
-    results_per_dataset: Dict[
-        str, Dict[str, Dict[str, Tuple[pd.Series, pd.DataFrame]]]
-    ],
-    output_folder: Path,
-):
-    """
-    Renders the mean, standard deviation and coefficient of variation of the metrics.
-
-    Args:
-        results_per_dataset: A dictionary of dictionaries containing realizations of
-            the distribution over metrics.
-        output_folder: Output folder to store the plots in.
-    """
-    params = load_params_fast()
-    params_active = params["active"]
-    dataset_names = params_active["datasets"]
-    valuation_methods = params_active["valuation_methods"]
-    metric_names = sorted(
-        results_per_dataset[dataset_names[0]][valuation_methods[0]].keys()
-    )
-    output_folder = output_folder / "metrics"
-    os.makedirs(output_folder, exist_ok=True)
-
-    for metric_name in metric_names:
-        mean_metric = pd.DataFrame(index=dataset_names, columns=valuation_methods)
-        std_metric = pd.DataFrame(index=dataset_names, columns=valuation_methods)
-
-        for dataset_name in dataset_names:
-            for method_name in valuation_methods:
-                logger.info(
-                    f"Plotting metric for {dataset_name=}, {metric_name=}, {method_name=}."
-                )
-                val = results_per_dataset[dataset_name][method_name][metric_name][
-                    0
-                ].loc[metric_name]
-                m = np.mean(val)
-                s = np.std(val)
-                mean_metric.loc[dataset_name, method_name] = m
-                std_metric.loc[dataset_name, method_name] = s
-                mlflow.log_metric(f"{metric_name}_{dataset_name}_{method_name}_mean", m)
-                mlflow.log_metric(f"{metric_name}_{dataset_name}_{method_name}_std", s)
-
-        local_path = output_folder / f"{metric_name}_mean.svg"
-        save_df_as_table(mean_metric.astype(float), local_path)
-        mlflow.log_artifact(str(local_path), "metrics")
-        mlflow.log_text(mean_metric.to_markdown(), f"metrics/{metric_name}_mean.md")
-
-        local_path = output_folder / f"{metric_name}_std.svg"
-        save_df_as_table(std_metric.astype(float), local_path)
-        mlflow.log_artifact(str(local_path), "metrics")
-        mlflow.log_text(std_metric.to_markdown(), f"metrics/{metric_name}_std.md")
-
-        local_path = output_folder / f"{metric_name}_cv.svg"
-        save_df_as_table(
-            std_metric.astype(float) / mean_metric.astype(float), local_path
-        )
-        mlflow.log_artifact(str(local_path), "metrics")
-        mlflow.log_text(std_metric.to_markdown(), f"metrics/{metric_name}_cv.md")
+    with plot_grid_over_datasets(
+        data,
+        plot_curves_func,
+        patch_size=patch_size,
+        n_cols=n_cols,
+        legend=True,
+        xlabel="s",
+    ) as fig:
+        yield fig

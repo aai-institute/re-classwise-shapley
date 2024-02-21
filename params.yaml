@@ -47,9 +47,11 @@ active:
   - classwise_shapley
   - tmc_shapley
   - beta_shapley
+  - banzhaf_shapley
+  - least_core
   - loo
   repetitions:
-    from: 6
+    from: 1
     to: 20
 
 experiments:

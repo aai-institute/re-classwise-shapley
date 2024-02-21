@@ -34,6 +34,7 @@ active:
   - beta_shapley
   - tmc_shapley
   - classwise_shapley
+  - banzhaf_shapley
   repetitions:
   - 1
   - 2

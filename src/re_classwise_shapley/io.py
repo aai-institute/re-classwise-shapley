@@ -10,6 +10,7 @@ from typing import Any, Callable, Dict, Tuple
 
 import numpy as np
 import pandas as pd
+from pydvl.utils import maybe_progress
 from tqdm import tqdm
 
 from re_classwise_shapley.log import setup_logger
@@ -101,12 +102,7 @@ def walker_product_space(
         """
         product_space = list(map(ensure_list, product_space))
         rows = []
-        pbar = tqdm(
-            list(product(*product_space)),
-            ncols=120,
-        )
-        for folder_instance in pbar:
-            pbar.desc = f"Processing: {folder_instance}"
+        for folder_instance in product(*product_space):
             row = fn(*folder_instance)
             rows.append(row)
 

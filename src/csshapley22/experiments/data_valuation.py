@@ -52,9 +52,11 @@ def run():
         repetition_output_dir = experiment_output_dir / f"{repetition=}"
 
         for model_name in models.keys():
+            experiments_output_dir = repetition_output_dir / model_name
+
             # Experiment One
             model = model_generator_factory[model_name]()
-            experiment_one_path = repetition_output_dir / "wad"
+            experiment_one_path = experiments_output_dir / "wad"
             experiment_wad(
                 model=model,
                 datasets=datasets,
@@ -63,7 +65,7 @@ def run():
 
             # Experiment Two
             model = model_generator_factory[model_name]()
-            experiment_two_path = repetition_output_dir / "noise_removal"
+            experiment_two_path = experiments_output_dir / "noise_removal"
             experiment_noise_removal(
                 model=model,
                 datasets=datasets,
@@ -73,7 +75,7 @@ def run():
             # Experiment Three
             model = model_generator_factory[model_name]()
             experiment_three_settings = params["experiment_3"]
-            experiment_three_path = repetition_output_dir / "value_transfer"
+            experiment_three_path = experiments_output_dir / "value_transfer"
 
             for test_model_name in experiment_three_settings["test_models"]:
                 if test_model_name not in models:

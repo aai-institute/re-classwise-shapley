@@ -6,12 +6,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+import numpy as np
 import pandas as pd
 import psutil
 from dvc.api import params_show
 from numpy.random import SeedSequence
 from numpy.typing import NDArray
-from pydvl.utils import Dataset, Scorer, SupervisedModel, Utility
+from pydvl.utils import Dataset, Scorer, SupervisedModel, Utility, ensure_seed_sequence
 from pydvl.value.result import ValuationResult
 
 from re_classwise_shapley.config import Config
@@ -156,7 +157,6 @@ def run_experiment(
         test_dataset.y_train = val_dataset.y_train
 
     valuation_method_names = list(valuation_methods.keys())
-    seeds = seed.spawn(len(valuation_method_names))
 
     for idx, valuation_method_name in enumerate(valuation_method_names):
         valuation_method = valuation_methods[valuation_method_name]
@@ -167,7 +167,7 @@ def run_experiment(
                 model=deepcopy(model),
                 scorer=Scorer("accuracy", default=0.0),
             ),
-            seed=seeds[idx],
+            seed=seed,
         )
         result.result[valuation_method_name] = values
         test_utility = Utility(
@@ -195,19 +195,19 @@ def set_affinity(cpus):
 def run_and_store_experiment(
     experiment_name: str,
     output_dir: Path,
-    loader_kwargs: Callable[[Optional[SeedSequence]], Dict[str, Any]],
+    loader_kwargs: Callable[[Optional[int]], Dict[str, Any]],
     dataset_name: str,
     model_name: str,
     n_repetitions: int = 1,
-    seed: int = None,
 ):
     params = params_show()
     set_affinity(list(range(int(params["settings"]["parallel"]["n_jobs"]))))
     logger.info(Config.DOUBLE_BREAK)
     logger.info(f"Start {experiment_name=} with '{model_name=}' on '{dataset_name=}.")
-    logger.info(f"Args: \t{seed=}, \n\t\t{output_dir=}.")
 
-    seed_sequence = init_random_seed(seed)
+    seed = params["settings"]["random"]["seed"]
+    logger.info(f"Args: \t{seed=}, \n\t\t{output_dir=}.")
+    seed_sequence = ensure_seed_sequence(seed)
     seeds = seed_sequence.spawn(n_repetitions)
 
     valuation_methods = parse_valuation_method_dict(
@@ -222,16 +222,16 @@ def run_and_store_experiment(
         logger.info(Config.SINGLE_BREAK)
         logger.info(f"Executing {repetition=}.")
 
+        sub_seeds = seeds[repetition].generate_state(4)
         model_kwargs = params["models"][model_name]
-        sub_seeds = seeds[repetition].spawn(4)
-        model = instantiate_model(model_name, model_kwargs, seed=sub_seeds[0])
+        model = instantiate_model(model_name, model_kwargs, seed=int(sub_seeds[0]))
 
         val_test_set_kwargs = params["datasets"][dataset_name]
         val_test_set = fetch_and_sample_val_test_dataset(
-            dataset_name, val_test_set_kwargs["split"], seed=sub_seeds[1]
+            dataset_name, val_test_set_kwargs["split"], seed=int(sub_seeds[1])
         )
 
-        experiment_kwargs = loader_kwargs(sub_seeds[2])
+        experiment_kwargs = loader_kwargs(int(sub_seeds[2]))
         repetition_output_dir = output_dir / f"{repetition=}"
 
         try:
@@ -240,7 +240,7 @@ def run_and_store_experiment(
                 val_test_set=val_test_set,
                 valuation_methods=valuation_methods,
                 **experiment_kwargs,
-                seed=sub_seeds[3],
+                seed=int(sub_seeds[3]),
             )
             result.store(repetition_output_dir)
         except Exception as e:

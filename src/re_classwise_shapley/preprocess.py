@@ -131,7 +131,7 @@ PreprocessorRegistry = {
 
 
 def flip_labels(
-    labels: NDArray[int], perc_flip_labels: float = 0.2, seed: Seed = None
+    labels: NDArray[int], perc_flip_labels: float = 0.2, seed: int = None
 ) -> Tuple[NDArray[int], Dict]:
     rng = np.random.default_rng(seed)
     num_data_indices = int(perc_flip_labels * len(labels))

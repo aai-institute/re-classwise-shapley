@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 import numpy as np
 from numpy.typing import NDArray
@@ -15,9 +15,8 @@ from re_classwise_shapley.types import Seed
 
 
 def instantiate_model(
-    model_name: str, model_kwargs: Dict, seed: Seed = None
+    model_name: str, model_kwargs: Dict, seed: Optional[int] = None
 ) -> SupervisedModel:
-    seed = seed.generate_state(1)[0]
     random_state = np.random.RandomState(seed)
 
     if model_name == "gradient_boosting_classifier":

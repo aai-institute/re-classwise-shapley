@@ -16,19 +16,16 @@ from re_classwise_shapley.types import Seed
 @click.option("--dataset-name", type=str, required=True)
 @click.option("--model-name", type=str, required=True)
 @click.option("--transfer-model-name", type=str, required=False)
-@click.option("--seed", type=int, required=False)
 def run_experiment_wad_drop(
     dataset_name: str,
     model_name: str,
     transfer_model_name: Optional[str] = None,
-    seed: Optional[int] = None,
 ):
     """
     Run an experiment and store the results of the run on disk.
     :param dataset_name: Dataset to use.
     :param model_name: Model to use.
     :param transfer_model_name: Model to use for transfer learning.
-    :param seed: Seed to use for the experiment.
     """
     experiment_name = "wad_drop"
     if transfer_model_name is not None:
@@ -36,12 +33,6 @@ def run_experiment_wad_drop(
 
     if transfer_model_name == model_name:
         return
-
-    seed = (
-        seed
-        if seed is not None
-        else abs(int(hash(experiment_name + dataset_name + model_name)))
-    )
 
     def kwargs_loader(_seed: Seed = None):
         transfer_model_low = None
@@ -87,12 +78,10 @@ def run_experiment_wad_drop(
 
     output_dir /= dataset_name
     os.makedirs(output_dir, exist_ok=True)
-
     run_and_store_experiment(
         experiment_name,
         dataset_name=dataset_name,
         model_name=model_name,
-        seed=seed,
         output_dir=output_dir,
         loader_kwargs=kwargs_loader,
         n_repetitions=params["settings"]["evaluation"]["n_repetitions"],

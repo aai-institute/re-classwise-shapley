@@ -1,13 +1,13 @@
 from copy import deepcopy
-from typing import Dict, Tuple
+from typing import Dict
 
 import numpy as np
 import pandas as pd
+from dvc.api import params_show
 from numpy.typing import NDArray
 from pydvl.utils import Dataset, Scorer, SupervisedModel, Utility, maybe_progress
 from pydvl.value.result import ValuationResult
 from sklearn.metrics import auc
-from sklearn.neighbors import KNeighborsClassifier
 
 from re_classwise_shapley.log import setup_logger
 
@@ -18,6 +18,7 @@ __all__ = [
     "metric_roc_auc",
 ]
 
+from re_classwise_shapley.model import instantiate_model
 
 logger = setup_logger(__name__)
 
@@ -50,7 +51,7 @@ def metric_weighted_metric_drop(
     data: Dataset,
     values: ValuationResult,
     info: Dict,
-    eval_model: SupervisedModel,
+    eval_model: str,
     metric: str = "accuracy",
     progress: bool = False,
 ) -> float:
@@ -75,9 +76,11 @@ def metric_weighted_metric_drop(
     Returns:
         The weighted reciprocal difference average in the given metric.
     """
+    model_kwargs = params_show()["models"][eval_model]
+    model = instantiate_model(eval_model, model_kwargs, seed=0)
     u_eval = Utility(
         data=data,
-        model=deepcopy(eval_model),
+        model=model,
         scorer=Scorer(metric, default=0),
         catch_errors=True,
     )
@@ -117,7 +120,7 @@ def curve_score_over_point_removal_or_addition(
     data: Dataset,
     values: ValuationResult,
     info: Dict,
-    eval_model: SupervisedModel,
+    eval_model: str,
     metric: str = "accuracy",
     highest_point_removal: bool = True,
     progress: bool = False,
@@ -140,9 +143,11 @@ def curve_score_over_point_removal_or_addition(
     Returns:
         A pd.Series object containing the utility scores for each prefix of the ranking.
     """
+    model_kwargs = params_show()["models"][eval_model]
+    model = instantiate_model(eval_model, model_kwargs, seed=0)
     u_eval = Utility(
         data=data,
-        model=deepcopy(eval_model),
+        model=model,
         scorer=Scorer(metric, default=np.nan),
         catch_errors=True,
     )

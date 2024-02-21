@@ -1,7 +1,6 @@
 import json
 import os
 import pickle
-from enum import Enum
 from functools import partial
 from typing import Callable, Dict, Literal
 
@@ -23,93 +22,32 @@ from re_classwise_shapley.model import instantiate_model
 
 logger = setup_logger("evaluate_metrics")
 
+# Type -> Metric -> Function
+MetricRegistry = {
+    "metric": {
+        "weighted_metric_drop": metric_weighted_metric_drop,
+        "roc_auc": metric_roc_auc,
+    },
+    "curve": {
+        "point_removal": curve_score_over_point_removal_or_addition,
+        "precision_recall": curve_precision_recall_valuation_result,
+    },
+}
+
 
 def instantiate_metric_functions(
-    prefix: str,
+    type: Literal["metric", "curve"],
     idx: Literal["weighted_metric_drop", "roc_auc"],
     **kwargs,
-) -> Dict[str, Callable[[Dataset, ValuationResult, Dict], float]]:
-    """
-    Dispatches the metrics to functions accepting a dataset, valuation result and
-    preprocess info.
+) -> partial:
+    if type not in MetricRegistry.keys():
+        raise NotImplementedError(f"Type {type} is not registered.")
 
-    Args:
-        prefix: Prefix for the keys to be used to identify the metrics.
-        idx: Identifier for the metric to be used.
-        **kwargs: Contains kw arguments for metrics.
+    type_metric_registry = MetricRegistry[type]
+    if idx not in type_metric_registry.keys():
+        raise NotImplementedError(f"Idx {idx} for type {type} is not registered.")
 
-    Returns:
-        A dictionary of functions to calculate the metrics.
-    """
-    params = params_show()
-    metrics = {}
-    if idx == "weighted_metric_drop":
-        eval_models = kwargs["eval_models"]
-        metric = kwargs["metric"]
-        for eval_model in eval_models:
-            metric_key = f"{prefix}.{eval_model}"
-            transfer_model_kwargs = params["models"][eval_model]
-            eval_model_instance = instantiate_model(eval_model, transfer_model_kwargs)
-            metrics[metric_key] = partial(
-                metric_weighted_metric_drop,
-                eval_model=eval_model_instance,
-                metric=metric,
-            )
-
-        return metrics  # type: ignore
-    elif idx == "roc_auc":
-        metrics[prefix] = partial(
-            metric_roc_auc, flipped_labels=kwargs["flipped_labels"]
-        )
-        return metrics  # type: ignore
-
-    else:
-        raise NotImplementedError(f"Metric {idx} is not implemented.")
-
-
-def instantiate_curves(
-    prefix: str,
-    idx: str,
-    **kwargs,
-) -> Dict[str, Callable[[Dataset, ValuationResult, Dict], pd.DataFrame]]:
-    """
-    Dispatches the metrics to functions accepting a dataset, valuation result and
-    preprocess info.
-
-    Args:
-        prefix: Prefix for the keys to be used to identify the metrics.
-        idx: Identifier for the metric to be used.
-        **kwargs: Contains kw arguments for metrics.
-
-    Returns:
-        A dictionary of functions to calculate the curves.
-    """
-    params = params_show()
-    curves = {}
-    if idx == "highest_point_removal" or idx == "lowest_point_addition":
-        highest_point_removal = idx == "highest_point_removal"
-        metric = kwargs["metric"]
-        eval_models = kwargs["eval_models"]
-        for eval_model in eval_models:
-            curve_key = f"{prefix}.{eval_model}"
-            transfer_model_kwargs = params["models"][eval_model]
-            transfer_model = instantiate_model(eval_model, transfer_model_kwargs)
-            curves[curve_key] = partial(
-                curve_score_over_point_removal_or_addition,
-                eval_model=transfer_model,
-                metric=metric,
-                highest_point_removal=highest_point_removal,
-            )
-
-        return curves  # type: ignore
-    elif idx == "precision_recall":
-        flipped_labels = kwargs["flipped_labels"]
-        curves[prefix] = partial(
-            curve_precision_recall_valuation_result, flipped_labels=flipped_labels
-        )
-        return curves  # type: ignore
-    else:
-        raise NotImplementedError(f"Curve {idx} is not implemented.")
+    return partial(type_metric_registry[idx], **kwargs)
 
 
 @click.command()
@@ -118,12 +56,14 @@ def instantiate_curves(
 @click.option("--model-name", type=str, required=True)
 @click.option("--repetition-id", type=int, required=True)
 @click.option("--valuation-method", type=str, required=True)
+@click.option("--metric-name", type=str, required=True)
 def evaluate_metrics(
     experiment_name: str,
     dataset_name: str,
     model_name: str,
     valuation_method: str,
     repetition_id: int,
+    metric_name: str,
 ):
     """
     Calculate data values for a specified dataset.
@@ -168,32 +108,22 @@ def evaluate_metrics(
 
     params = params_show()
     metrics = params["experiments"][experiment_name]["metrics"]
+    metric_kwargs = metrics[metric_name]
+    metric_type = metric_kwargs.pop("type")
+    metric_idx = metric_kwargs.pop("idx")
+    metric_fn = instantiate_metric_functions(metric_type, metric_idx, **metric_kwargs)
+    metric_values = metric_fn(test_set, values, preprocess_info)
+    file_name = output_dir / f"{metric_name}.csv"
 
-    eval_metrics = {}
-    for metric_name, metric_kwargs in metrics.items():
-        eval_metrics.update(instantiate_metric_functions(metric_name, **metric_kwargs))
+    match metric_type:
+        case "metric":
+            evaluated_metrics = pd.Series([metric_values])
+            evaluated_metrics.name = "value"
+            evaluated_metrics.index.name = "metric"
+            evaluated_metrics.to_csv(file_name)
 
-    evaluated_metrics = {}
-    for eval_metric_key, eval_metric in eval_metrics.items():
-        logger.info("Evaluating metric %s", eval_metric_key)
-        eval_metric_value = eval_metric(test_set, values, preprocess_info)
-        evaluated_metrics[eval_metric_key] = eval_metric_value
-
-    evaluated_metrics = pd.Series(evaluated_metrics)
-    evaluated_metrics.name = "value"
-    evaluated_metrics.index.name = "metric"
-    evaluated_metrics.to_csv(output_dir / f"metrics.csv")
-
-    curves = params["experiments"][experiment_name]["curves"]
-    eval_curves = {}
-    for curve_name, curve_kwargs in curves.items():
-        eval_curves.update(instantiate_curves(curve_name, **curve_kwargs))
-
-    for eval_curve_key, eval_curve in eval_curves.items():
-        logger.info("Evaluating curve %s", eval_curve_key)
-        eval_curve_value = eval_curve(test_set, values, preprocess_info)
-        file_name = output_dir / f"{eval_curve_key}.csv"
-        eval_curve_value.to_csv(file_name)
+        case "curve":
+            metric_values.to_csv(file_name)
 
 
 if __name__ == "__main__":

@@ -5,12 +5,12 @@ stages:
     deps:
     - path: scripts/fetch_data.py
       hash: md5
-      md5: 958c7baee7c2948d780dc42b128fda7f
-      size: 2012
+      md5: 8c924d49a9d72b586ad3127815756891
+      size: 2193
     - path: src/re_classwise_shapley/io.py
       hash: md5
-      md5: 6c73b1d8d72531daa65c345833e08384
-      size: 3438
+      md5: f8e40f40e8fa07299b38d82a221d539c
+      size: 1928
     params:
       params.yaml:
         datasets.diabetes.openml_id: 37
@@ -25,12 +25,12 @@ stages:
     deps:
     - path: scripts/fetch_data.py
       hash: md5
-      md5: 958c7baee7c2948d780dc42b128fda7f
-      size: 2012
+      md5: 8c924d49a9d72b586ad3127815756891
+      size: 2193
     - path: src/re_classwise_shapley/io.py
       hash: md5
-      md5: 6c73b1d8d72531daa65c345833e08384
-      size: 3438
+      md5: f8e40f40e8fa07299b38d82a221d539c
+      size: 1928
     params:
       params.yaml:
         datasets.phoneme.openml_id: 1489
@@ -50,16 +50,16 @@ stages:
       nfiles: 3
     - path: scripts/preprocess_data.py
       hash: md5
-      md5: 52db888a50d625baeef2d49562611c31
-      size: 3118
+      md5: 2c88920cf64ba7eefeb042c14619d8b5
+      size: 3996
     - path: src/re_classwise_shapley/filter.py
       hash: md5
-      md5: 3af4fc088f8a5ec896fe7a79773f6727
-      size: 1318
+      md5: e022fb4f4a76072667d7a9d3e549c15e
+      size: 1285
     - path: src/re_classwise_shapley/io.py
       hash: md5
-      md5: 6c73b1d8d72531daa65c345833e08384
-      size: 3438
+      md5: f8e40f40e8fa07299b38d82a221d539c
+      size: 1928
     params:
       params.yaml:
         datasets.diabetes:
@@ -80,16 +80,16 @@ stages:
       nfiles: 3
     - path: scripts/preprocess_data.py
       hash: md5
-      md5: 52db888a50d625baeef2d49562611c31
-      size: 3118
+      md5: 2c88920cf64ba7eefeb042c14619d8b5
+      size: 3996
     - path: src/re_classwise_shapley/filter.py
       hash: md5
-      md5: 3af4fc088f8a5ec896fe7a79773f6727
-      size: 1318
+      md5: e022fb4f4a76072667d7a9d3e549c15e
+      size: 1285
     - path: src/re_classwise_shapley/io.py
       hash: md5
-      md5: 6c73b1d8d72531daa65c345833e08384
-      size: 3438
+      md5: f8e40f40e8fa07299b38d82a221d539c
+      size: 1928
     params:
       params.yaml:
         datasets.phoneme:
@@ -111,8 +111,8 @@ stages:
       nfiles: 5
     - path: scripts/sample_data.py
       hash: md5
-      md5: ea416ef255a417270e5bd803b50f7445
-      size: 6581
+      md5: 9cccf19b81346b71131381a7d0295a61
+      size: 9127
     params:
       params.yaml:
         experiments.point_removal.sampler: default
@@ -133,8 +133,8 @@ stages:
       nfiles: 5
     - path: scripts/sample_data.py
       hash: md5
-      md5: ea416ef255a417270e5bd803b50f7445
-      size: 6581
+      md5: 9cccf19b81346b71131381a7d0295a61
+      size: 9127
     params:
       params.yaml:
         experiments.point_removal.sampler: default
@@ -221,8 +221,8 @@ stages:
       nfiles: 5
     - path: scripts/sample_data.py
       hash: md5
-      md5: ea416ef255a417270e5bd803b50f7445
-      size: 6581
+      md5: 9cccf19b81346b71131381a7d0295a61
+      size: 9127
     params:
       params.yaml:
         experiments.point_removal.sampler: default
@@ -243,8 +243,8 @@ stages:
       nfiles: 5
     - path: scripts/sample_data.py
       hash: md5
-      md5: ea416ef255a417270e5bd803b50f7445
-      size: 6581
+      md5: 9cccf19b81346b71131381a7d0295a61
+      size: 9127
     params:
       params.yaml:
         experiments.point_removal.sampler: default
@@ -331,8 +331,8 @@ stages:
       nfiles: 5
     - path: scripts/sample_data.py
       hash: md5
-      md5: ea416ef255a417270e5bd803b50f7445
-      size: 6581
+      md5: 9cccf19b81346b71131381a7d0295a61
+      size: 9127
     params:
       params.yaml:
         experiments.noise_removal.sampler: default
@@ -353,8 +353,8 @@ stages:
       nfiles: 5
     - path: scripts/sample_data.py
       hash: md5
-      md5: ea416ef255a417270e5bd803b50f7445
-      size: 6581
+      md5: 9cccf19b81346b71131381a7d0295a61
+      size: 9127
     params:
       params.yaml:
         experiments.noise_removal.sampler: default
@@ -441,8 +441,8 @@ stages:
       nfiles: 5
     - path: scripts/sample_data.py
       hash: md5
-      md5: ea416ef255a417270e5bd803b50f7445
-      size: 6581
+      md5: 9cccf19b81346b71131381a7d0295a61
+      size: 9127
     params:
       params.yaml:
         experiments.noise_removal.sampler: default
@@ -463,8 +463,8 @@ stages:
       nfiles: 5
     - path: scripts/sample_data.py
       hash: md5
-      md5: ea416ef255a417270e5bd803b50f7445
-      size: 6581
+      md5: 9cccf19b81346b71131381a7d0295a61
+      size: 9127
     params:
       params.yaml:
         experiments.noise_removal.sampler: default
@@ -552,12 +552,12 @@ stages:
       nfiles: 2
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -581,12 +581,12 @@ stages:
       nfiles: 2
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -612,12 +612,12 @@ stages:
       nfiles: 2
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -641,12 +641,12 @@ stages:
       nfiles: 2
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -852,12 +852,12 @@ stages:
       nfiles: 2
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -881,12 +881,12 @@ stages:
       nfiles: 2
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -912,12 +912,12 @@ stages:
       nfiles: 2
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -941,12 +941,12 @@ stages:
       nfiles: 2
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -1152,12 +1152,12 @@ stages:
       nfiles: 3
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -1181,12 +1181,12 @@ stages:
       nfiles: 3
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -1212,12 +1212,12 @@ stages:
       nfiles: 3
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -1241,12 +1241,12 @@ stages:
       nfiles: 3
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -1452,12 +1452,12 @@ stages:
       nfiles: 3
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -1481,12 +1481,12 @@ stages:
       nfiles: 3
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -1512,12 +1512,12 @@ stages:
       nfiles: 3
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -1541,12 +1541,12 @@ stages:
       nfiles: 3
     - path: scripts/calculate_values.py
       hash: md5
-      md5: 3cb86531a3438121dc9e3a3cb5e2b1cd
-      size: 2689
+      md5: 245e295a9945ae4c79052ead6ca749ea
+      size: 3303
     - path: src/re_classwise_shapley/valuation_methods.py
       hash: md5
-      md5: ccc719f7bb1ad8f45c8b90d181245002
-      size: 4683
+      md5: a4facf10ae86b3f6394e9993a7824e49
+      size: 5451
     params:
       params.yaml:
         models.logistic_regression:
@@ -3246,64 +3246,2945 @@ stages:
     deps:
     - path: output/results/point_removal/logistic_regression
       hash: md5
-      md5: f99e7db3c9a2cf08074dce392c21e2ba.dir
-      size: 157075
-      nfiles: 60
+      md5: 28193df27e84f425202e9c9c1bf23073.dir
+      size: 127344
+      nfiles: 51
     - path: scripts/render_plots.py
       hash: md5
-      md5: a8f03a209f77d8a135fa30bcf7ceca5c
-      size: 10043
+      md5: 9636613dcd5e3b56b4ec68f5a11a0ce0
+      size: 12993
     params:
       params.yaml:
-        experiments.point_removal.curves:
-          highest_point_removal_accuracy:
-            idx: highest_point_removal
-            metric: accuracy
-            eval_models:
-            - logistic_regression
-          lowest_point_addition_accuracy:
-            idx: lowest_point_addition
-            metric: accuracy
-            eval_models:
-            - logistic_regression
         experiments.point_removal.metrics:
-          weighted_accuracy_drop:
+          weighted_accuracy_drop_logistic_regression:
+            type: metric
             idx: weighted_metric_drop
             metric: accuracy
-            eval_models:
-            - logistic_regression
+            eval_model: logistic_regression
+          highest_point_removal_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: true
+          lowest_point_addition_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: false
+          weighted_accuracy_drop_knn:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: knn
+          highest_point_removal_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: true
+          lowest_point_addition_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: false
     outs:
     - path: output/plots/point_removal/logistic_regression
       hash: md5
-      md5: c9b262073e4a2a121662f874be0bbc7b.dir
-      size: 161552
-      nfiles: 4
+      md5: 17c2aa293e229ef81ef2c395dfc2cdbd.dir
+      size: 400461
+      nfiles: 10
   render_plots@noise_removal-logistic_regression:
     cmd: python -m scripts.render_plots --experiment-name noise_removal --model-name
       logistic_regression
     deps:
     - path: output/results/noise_removal/logistic_regression
       hash: md5
-      md5: 1159d70dad4ac7b49a5f72ab9eb0752d.dir
-      size: 30017
-      nfiles: 40
+      md5: 380dc017006d3a095e2be637c56b5a49.dir
+      size: 11940
+      nfiles: 16
     - path: scripts/render_plots.py
       hash: md5
-      md5: a8f03a209f77d8a135fa30bcf7ceca5c
-      size: 10043
+      md5: 9636613dcd5e3b56b4ec68f5a11a0ce0
+      size: 12993
     params:
       params.yaml:
-        experiments.noise_removal.curves:
-          precision_recall:
-            idx: precision_recall
-            flipped_labels: preprocessor.flip_labels.idx
         experiments.noise_removal.metrics:
           roc_auc:
+            type: metric
             idx: roc_auc
+            flipped_labels: preprocessor.flip_labels.idx
+          precision_recall:
+            type: curve
+            idx: precision_recall
             flipped_labels: preprocessor.flip_labels.idx
     outs:
     - path: output/plots/noise_removal/logistic_regression
       hash: md5
-      md5: eb367fc3f85afd4cc2717f1569f62daa.dir
-      size: 84412
-      nfiles: 3
+      md5: 03023f2ab672a383e21acb9cfa164bff.dir
+      size: 148521
+      nfiles: 5
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-random-weighted_accuracy_drop_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name weighted_accuracy_drop_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_logistic_regression:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random/weighted_accuracy_drop_logistic_regression.csv
+      hash: md5
+      md5: f75f2adc2b531e1222db10e22c2ac3d9
+      size: 36
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-random-highest_point_removal_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name highest_point_removal_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random/highest_point_removal_accuracy_logistic_regression.csv
+      hash: md5
+      md5: cb676ec079d51aafa999f8b90e12ddf4
+      size: 2680
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-random-lowest_point_addition_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name lowest_point_addition_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random/lowest_point_addition_accuracy_logistic_regression.csv
+      hash: md5
+      md5: 5e02a9306d789aa4ba2dcbae26d638b7
+      size: 2694
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-random-weighted_accuracy_drop_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name weighted_accuracy_drop_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_knn:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: knn
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random/weighted_accuracy_drop_knn.csv
+      hash: md5
+      md5: f582060756d6e94f7c77b790180c2a6a
+      size: 35
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-random-highest_point_removal_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name highest_point_removal_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random/highest_point_removal_accuracy_knn.csv
+      hash: md5
+      md5: e28b4ca6a3e57f4a994e1757db2b2701
+      size: 2681
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-random-lowest_point_addition_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name lowest_point_addition_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random/lowest_point_addition_accuracy_knn.csv
+      hash: md5
+      md5: 5530d3766937637749f094828b7c2152
+      size: 2695
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-random-weighted_accuracy_drop_gradient_boosting_classifier:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name weighted_accuracy_drop_gradient_boosting_classifier
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop_logistic_regression:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: logistic_regression
+          highest_point_removal_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: true
+          lowest_point_addition_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: false
+          weighted_accuracy_drop_knn:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: knn
+          highest_point_removal_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: true
+          lowest_point_addition_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: false
+          weighted_accuracy_drop_gradient_boosting_classifier:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+          highest_point_removal_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: true
+          lowest_point_addition_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: false
+          weighted_accuracy_drop_svm:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: svm
+          highest_point_removal_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+          weighted_accuracy_drop_mlp:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: mlp
+          highest_point_removal_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random/weighted_accuracy_drop_gradient_boosting_classifier.csv
+      hash: md5
+      md5: 422de3189553049addcee4639fe1bf32
+      size: 19
+  ? evaluate_metrics_point_removal@diabetes-logistic_regression-1-random-highest_point_removal_accuracy_gradient_boosting_classifier
+  : cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name highest_point_removal_accuracy_gradient_boosting_classifier
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop_logistic_regression:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: logistic_regression
+          highest_point_removal_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: true
+          lowest_point_addition_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: false
+          weighted_accuracy_drop_knn:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: knn
+          highest_point_removal_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: true
+          lowest_point_addition_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: false
+          weighted_accuracy_drop_gradient_boosting_classifier:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+          highest_point_removal_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: true
+          lowest_point_addition_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: false
+          weighted_accuracy_drop_svm:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: svm
+          highest_point_removal_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+          weighted_accuracy_drop_mlp:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: mlp
+          highest_point_removal_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random/highest_point_removal_accuracy_gradient_boosting_classifier.csv
+      hash: md5
+      md5: 8b9bfd6c26d5b7bdf45bf15a452cb3cb
+      size: 2699
+  ? evaluate_metrics_point_removal@diabetes-logistic_regression-1-random-lowest_point_addition_accuracy_gradient_boosting_classifier
+  : cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name lowest_point_addition_accuracy_gradient_boosting_classifier
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop_logistic_regression:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: logistic_regression
+          highest_point_removal_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: true
+          lowest_point_addition_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: false
+          weighted_accuracy_drop_knn:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: knn
+          highest_point_removal_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: true
+          lowest_point_addition_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: false
+          weighted_accuracy_drop_gradient_boosting_classifier:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+          highest_point_removal_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: true
+          lowest_point_addition_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: false
+          weighted_accuracy_drop_svm:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: svm
+          highest_point_removal_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+          weighted_accuracy_drop_mlp:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: mlp
+          highest_point_removal_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random/lowest_point_addition_accuracy_gradient_boosting_classifier.csv
+      hash: md5
+      md5: 610c69bd9c5eaa2e1d15c436884041b9
+      size: 2713
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-random-weighted_accuracy_drop_svm:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name weighted_accuracy_drop_svm
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop_logistic_regression:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: logistic_regression
+          highest_point_removal_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: true
+          lowest_point_addition_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: false
+          weighted_accuracy_drop_knn:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: knn
+          highest_point_removal_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: true
+          lowest_point_addition_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: false
+          weighted_accuracy_drop_gradient_boosting_classifier:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+          highest_point_removal_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: true
+          lowest_point_addition_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: false
+          weighted_accuracy_drop_svm:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: svm
+          highest_point_removal_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+          weighted_accuracy_drop_mlp:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: mlp
+          highest_point_removal_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random/weighted_accuracy_drop_svm.csv
+      hash: md5
+      md5: 6084001a2c43b1306eff4e95721583d5
+      size: 34
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-random-highest_point_removal_accuracy_svm:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name highest_point_removal_accuracy_svm
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop_logistic_regression:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: logistic_regression
+          highest_point_removal_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: true
+          lowest_point_addition_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: false
+          weighted_accuracy_drop_knn:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: knn
+          highest_point_removal_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: true
+          lowest_point_addition_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: false
+          weighted_accuracy_drop_gradient_boosting_classifier:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+          highest_point_removal_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: true
+          lowest_point_addition_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: false
+          weighted_accuracy_drop_svm:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: svm
+          highest_point_removal_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+          weighted_accuracy_drop_mlp:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: mlp
+          highest_point_removal_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random/highest_point_removal_accuracy_svm.csv
+      hash: md5
+      md5: f575f4a41157c7033fe47297494ba752
+      size: 2685
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-random-lowest_point_addition_accuracy_svm:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name lowest_point_addition_accuracy_svm
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop_logistic_regression:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: logistic_regression
+          highest_point_removal_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: true
+          lowest_point_addition_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: false
+          weighted_accuracy_drop_knn:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: knn
+          highest_point_removal_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: true
+          lowest_point_addition_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: false
+          weighted_accuracy_drop_gradient_boosting_classifier:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+          highest_point_removal_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: true
+          lowest_point_addition_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: false
+          weighted_accuracy_drop_svm:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: svm
+          highest_point_removal_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+          weighted_accuracy_drop_mlp:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: mlp
+          highest_point_removal_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random/lowest_point_addition_accuracy_svm.csv
+      hash: md5
+      md5: 49ee3038377b549131f9a6f97f491e7f
+      size: 2699
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-random-weighted_accuracy_drop_mlp:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name weighted_accuracy_drop_mlp
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop_logistic_regression:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: logistic_regression
+          highest_point_removal_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: true
+          lowest_point_addition_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: false
+          weighted_accuracy_drop_knn:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: knn
+          highest_point_removal_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: true
+          lowest_point_addition_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: false
+          weighted_accuracy_drop_gradient_boosting_classifier:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+          highest_point_removal_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: true
+          lowest_point_addition_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: false
+          weighted_accuracy_drop_svm:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: svm
+          highest_point_removal_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+          weighted_accuracy_drop_mlp:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: mlp
+          highest_point_removal_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random/weighted_accuracy_drop_mlp.csv
+      hash: md5
+      md5: 240d99b5847c2fcb7cec3ed65d40a5c7
+      size: 35
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-random-highest_point_removal_accuracy_mlp:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name highest_point_removal_accuracy_mlp
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop_logistic_regression:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: logistic_regression
+          highest_point_removal_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: true
+          lowest_point_addition_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: false
+          weighted_accuracy_drop_knn:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: knn
+          highest_point_removal_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: true
+          lowest_point_addition_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: false
+          weighted_accuracy_drop_gradient_boosting_classifier:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+          highest_point_removal_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: true
+          lowest_point_addition_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: false
+          weighted_accuracy_drop_svm:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: svm
+          highest_point_removal_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+          weighted_accuracy_drop_mlp:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: mlp
+          highest_point_removal_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random/highest_point_removal_accuracy_mlp.csv
+      hash: md5
+      md5: f575f4a41157c7033fe47297494ba752
+      size: 2685
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-random-lowest_point_addition_accuracy_mlp:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name lowest_point_addition_accuracy_mlp
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics:
+          weighted_accuracy_drop_logistic_regression:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: logistic_regression
+          highest_point_removal_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: true
+          lowest_point_addition_accuracy_logistic_regression:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: logistic_regression
+            highest_point_removal: false
+          weighted_accuracy_drop_knn:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: knn
+          highest_point_removal_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: true
+          lowest_point_addition_accuracy_knn:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: knn
+            highest_point_removal: false
+          weighted_accuracy_drop_gradient_boosting_classifier:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+          highest_point_removal_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: true
+          lowest_point_addition_accuracy_gradient_boosting_classifier:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: gradient_boosting_classifier
+            highest_point_removal: false
+          weighted_accuracy_drop_svm:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: svm
+          highest_point_removal_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_svm:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+          weighted_accuracy_drop_mlp:
+            type: metric
+            idx: weighted_metric_drop
+            metric: accuracy
+            eval_model: mlp
+          highest_point_removal_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: true
+          lowest_point_addition_accuracy_mlp:
+            type: curve
+            idx: point_removal
+            metric: accuracy
+            eval_model: svm
+            highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/random/lowest_point_addition_accuracy_mlp.csv
+      hash: md5
+      md5: 49ee3038377b549131f9a6f97f491e7f
+      size: 2699
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-loo-weighted_accuracy_drop_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name weighted_accuracy_drop_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.loo.pkl
+      hash: md5
+      md5: 82360e49dcce7f59b34b7c132282efed
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_logistic_regression:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/loo/weighted_accuracy_drop_logistic_regression.csv
+      hash: md5
+      md5: f0476debbf74fdb518576246b2642c67
+      size: 35
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-loo-highest_point_removal_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name highest_point_removal_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.loo.pkl
+      hash: md5
+      md5: 82360e49dcce7f59b34b7c132282efed
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/loo/highest_point_removal_accuracy_logistic_regression.csv
+      hash: md5
+      md5: 3b5280f01382d2b304df32ba58989779
+      size: 2692
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-loo-lowest_point_addition_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name lowest_point_addition_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.loo.pkl
+      hash: md5
+      md5: 82360e49dcce7f59b34b7c132282efed
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/loo/lowest_point_addition_accuracy_logistic_regression.csv
+      hash: md5
+      md5: 6d0778535e96621a06b8a98647ccf460
+      size: 2706
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-loo-weighted_accuracy_drop_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name weighted_accuracy_drop_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.loo.pkl
+      hash: md5
+      md5: 82360e49dcce7f59b34b7c132282efed
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_knn:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: knn
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/loo/weighted_accuracy_drop_knn.csv
+      hash: md5
+      md5: 30ed82f98265f6bb2d4381c46b182a08
+      size: 35
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-loo-highest_point_removal_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name highest_point_removal_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.loo.pkl
+      hash: md5
+      md5: 82360e49dcce7f59b34b7c132282efed
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/loo/highest_point_removal_accuracy_knn.csv
+      hash: md5
+      md5: ffe6d2b5838583fb4df9fe43381dcbc5
+      size: 2688
+  evaluate_metrics_point_removal@diabetes-logistic_regression-1-loo-lowest_point_addition_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name lowest_point_addition_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/1/valuation.loo.pkl
+      hash: md5
+      md5: 82360e49dcce7f59b34b7c132282efed
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/1/loo/lowest_point_addition_accuracy_knn.csv
+      hash: md5
+      md5: 67d55f988b2a5879325fb94f569fd86f
+      size: 2702
+  evaluate_metrics_point_removal@diabetes-logistic_regression-2-random-weighted_accuracy_drop_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name weighted_accuracy_drop_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.random.pkl
+      hash: md5
+      md5: 13870aad07eb7c5a2e718f9a8642e4d6
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_logistic_regression:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/2/random/weighted_accuracy_drop_logistic_regression.csv
+      hash: md5
+      md5: 79f8f4a82569ed21ebdb91c1015ab957
+      size: 35
+  evaluate_metrics_point_removal@diabetes-logistic_regression-2-random-highest_point_removal_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name highest_point_removal_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.random.pkl
+      hash: md5
+      md5: 13870aad07eb7c5a2e718f9a8642e4d6
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/2/random/highest_point_removal_accuracy_logistic_regression.csv
+      hash: md5
+      md5: 99f235c4e3ca52e71b2e1183adec8c27
+      size: 2687
+  evaluate_metrics_point_removal@diabetes-logistic_regression-2-random-lowest_point_addition_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name lowest_point_addition_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.random.pkl
+      hash: md5
+      md5: 13870aad07eb7c5a2e718f9a8642e4d6
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/2/random/lowest_point_addition_accuracy_logistic_regression.csv
+      hash: md5
+      md5: 57f2484bb9b66f9c3125178bed11bd67
+      size: 2701
+  evaluate_metrics_point_removal@diabetes-logistic_regression-2-random-weighted_accuracy_drop_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name weighted_accuracy_drop_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.random.pkl
+      hash: md5
+      md5: 13870aad07eb7c5a2e718f9a8642e4d6
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_knn:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: knn
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/2/random/weighted_accuracy_drop_knn.csv
+      hash: md5
+      md5: 5f5336fd060503f928347dc2be756f6c
+      size: 35
+  evaluate_metrics_point_removal@diabetes-logistic_regression-2-random-highest_point_removal_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name highest_point_removal_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.random.pkl
+      hash: md5
+      md5: 13870aad07eb7c5a2e718f9a8642e4d6
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/2/random/highest_point_removal_accuracy_knn.csv
+      hash: md5
+      md5: 940e7dafe71ebfe19b921d0031a675e6
+      size: 2681
+  evaluate_metrics_point_removal@diabetes-logistic_regression-2-random-lowest_point_addition_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name lowest_point_addition_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.random.pkl
+      hash: md5
+      md5: 13870aad07eb7c5a2e718f9a8642e4d6
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/2/random/lowest_point_addition_accuracy_knn.csv
+      hash: md5
+      md5: 822ab41255bb07d32a6bf9b8c3a750d1
+      size: 2695
+  evaluate_metrics_point_removal@diabetes-logistic_regression-2-loo-weighted_accuracy_drop_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name weighted_accuracy_drop_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.loo.pkl
+      hash: md5
+      md5: 0af3eac796e46551f39f6e5765fb0689
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_logistic_regression:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/2/loo/weighted_accuracy_drop_logistic_regression.csv
+      hash: md5
+      md5: 050a0966e6507bf34b83f9bc0258a1b3
+      size: 34
+  evaluate_metrics_point_removal@diabetes-logistic_regression-2-loo-highest_point_removal_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name highest_point_removal_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.loo.pkl
+      hash: md5
+      md5: 0af3eac796e46551f39f6e5765fb0689
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/2/loo/highest_point_removal_accuracy_logistic_regression.csv
+      hash: md5
+      md5: aef754a347a8bd6f69022e5e37ad72a6
+      size: 2684
+  evaluate_metrics_point_removal@diabetes-logistic_regression-2-loo-lowest_point_addition_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name lowest_point_addition_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.loo.pkl
+      hash: md5
+      md5: 0af3eac796e46551f39f6e5765fb0689
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/2/loo/lowest_point_addition_accuracy_logistic_regression.csv
+      hash: md5
+      md5: 0bf73d4a71837d8f66bceb2e6ef689d7
+      size: 2698
+  evaluate_metrics_point_removal@diabetes-logistic_regression-2-loo-weighted_accuracy_drop_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name weighted_accuracy_drop_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.loo.pkl
+      hash: md5
+      md5: 0af3eac796e46551f39f6e5765fb0689
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_knn:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: knn
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/2/loo/weighted_accuracy_drop_knn.csv
+      hash: md5
+      md5: dd3c89886dd7223c384a083f855cc0fc
+      size: 37
+  evaluate_metrics_point_removal@diabetes-logistic_regression-2-loo-highest_point_removal_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name highest_point_removal_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.loo.pkl
+      hash: md5
+      md5: 0af3eac796e46551f39f6e5765fb0689
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/2/loo/highest_point_removal_accuracy_knn.csv
+      hash: md5
+      md5: aa0495d52faa38ff1ed3f1c59e08a032
+      size: 2696
+  evaluate_metrics_point_removal@diabetes-logistic_regression-2-loo-lowest_point_addition_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name lowest_point_addition_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/diabetes/2/valuation.loo.pkl
+      hash: md5
+      md5: 0af3eac796e46551f39f6e5765fb0689
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/diabetes/2/loo/lowest_point_addition_accuracy_knn.csv
+      hash: md5
+      md5: 7e9698995d2faaf790b7bf94db502626
+      size: 2710
+  evaluate_metrics_point_removal@phoneme-logistic_regression-1-random-weighted_accuracy_drop_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name weighted_accuracy_drop_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.random.pkl
+      hash: md5
+      md5: 238a2380b711c422f213d5a6113dddad
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_logistic_regression:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/1/random/weighted_accuracy_drop_logistic_regression.csv
+      hash: md5
+      md5: c77283ac82e11856ba00f9b7f86e3fa8
+      size: 36
+  evaluate_metrics_point_removal@phoneme-logistic_regression-1-random-highest_point_removal_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name highest_point_removal_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.random.pkl
+      hash: md5
+      md5: 238a2380b711c422f213d5a6113dddad
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/1/random/highest_point_removal_accuracy_logistic_regression.csv
+      hash: md5
+      md5: 6fce30c287dd95d1039da224a23b21ab
+      size: 5046
+  evaluate_metrics_point_removal@phoneme-logistic_regression-1-random-lowest_point_addition_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name lowest_point_addition_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.random.pkl
+      hash: md5
+      md5: 238a2380b711c422f213d5a6113dddad
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/1/random/lowest_point_addition_accuracy_logistic_regression.csv
+      hash: md5
+      md5: 3b7580488dee9fa7beccbdead4f8773c
+      size: 5060
+  evaluate_metrics_point_removal@phoneme-logistic_regression-1-random-weighted_accuracy_drop_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name weighted_accuracy_drop_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.random.pkl
+      hash: md5
+      md5: 238a2380b711c422f213d5a6113dddad
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_knn:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: knn
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/1/random/weighted_accuracy_drop_knn.csv
+      hash: md5
+      md5: 503b2516c090ea7b65e0227a7909c231
+      size: 36
+  evaluate_metrics_point_removal@phoneme-logistic_regression-1-random-highest_point_removal_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name highest_point_removal_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.random.pkl
+      hash: md5
+      md5: 238a2380b711c422f213d5a6113dddad
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/1/random/highest_point_removal_accuracy_knn.csv
+      hash: md5
+      md5: d11e83a8371ddad582c05d94a1132a8f
+      size: 5095
+  evaluate_metrics_point_removal@phoneme-logistic_regression-1-random-lowest_point_addition_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name lowest_point_addition_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.random.pkl
+      hash: md5
+      md5: 238a2380b711c422f213d5a6113dddad
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/1/random/lowest_point_addition_accuracy_knn.csv
+      hash: md5
+      md5: d0fc6c8c6152290ee7c454f72ab76520
+      size: 5109
+  evaluate_metrics_point_removal@phoneme-logistic_regression-1-loo-weighted_accuracy_drop_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name weighted_accuracy_drop_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.loo.pkl
+      hash: md5
+      md5: 0d02e7099da49d86b656121db6a658aa
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_logistic_regression:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/1/loo/weighted_accuracy_drop_logistic_regression.csv
+      hash: md5
+      md5: 9fd98b527239221a8428a7296317f1d8
+      size: 35
+  evaluate_metrics_point_removal@phoneme-logistic_regression-1-loo-highest_point_removal_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name highest_point_removal_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.loo.pkl
+      hash: md5
+      md5: 0d02e7099da49d86b656121db6a658aa
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/1/loo/highest_point_removal_accuracy_logistic_regression.csv
+      hash: md5
+      md5: 38d3babebef317adb9556dd424c750c7
+      size: 5039
+  evaluate_metrics_point_removal@phoneme-logistic_regression-1-loo-lowest_point_addition_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name lowest_point_addition_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.loo.pkl
+      hash: md5
+      md5: 0d02e7099da49d86b656121db6a658aa
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/1/loo/lowest_point_addition_accuracy_logistic_regression.csv
+      hash: md5
+      md5: 4aa27d8450d61617c5e40d54f236ae40
+      size: 5053
+  evaluate_metrics_point_removal@phoneme-logistic_regression-1-loo-weighted_accuracy_drop_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name weighted_accuracy_drop_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.loo.pkl
+      hash: md5
+      md5: 0d02e7099da49d86b656121db6a658aa
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_knn:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: knn
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/1/loo/weighted_accuracy_drop_knn.csv
+      hash: md5
+      md5: e880718e0735231fd74544dfad6fe043
+      size: 35
+  evaluate_metrics_point_removal@phoneme-logistic_regression-1-loo-highest_point_removal_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name highest_point_removal_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.loo.pkl
+      hash: md5
+      md5: 0d02e7099da49d86b656121db6a658aa
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/1/loo/highest_point_removal_accuracy_knn.csv
+      hash: md5
+      md5: 8393d0bb4605b4b2d3764cac17717f3e
+      size: 5061
+  evaluate_metrics_point_removal@phoneme-logistic_regression-1-loo-lowest_point_addition_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name lowest_point_addition_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/1/valuation.loo.pkl
+      hash: md5
+      md5: 0d02e7099da49d86b656121db6a658aa
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/1/loo/lowest_point_addition_accuracy_knn.csv
+      hash: md5
+      md5: 69aa685c6daed26da5b34ccee471eb0d
+      size: 5075
+  evaluate_metrics_point_removal@phoneme-logistic_regression-2-random-weighted_accuracy_drop_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name weighted_accuracy_drop_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.random.pkl
+      hash: md5
+      md5: b83dcdb347639a1c6465a86b926fa277
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_logistic_regression:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/2/random/weighted_accuracy_drop_logistic_regression.csv
+      hash: md5
+      md5: b38496bd947feecd3cf726a3d843b50f
+      size: 37
+  evaluate_metrics_point_removal@phoneme-logistic_regression-2-random-highest_point_removal_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name highest_point_removal_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.random.pkl
+      hash: md5
+      md5: b83dcdb347639a1c6465a86b926fa277
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/2/random/highest_point_removal_accuracy_logistic_regression.csv
+      hash: md5
+      md5: 209fc464d624e13a6e77511e80ef09ef
+      size: 5078
+  evaluate_metrics_point_removal@phoneme-logistic_regression-2-random-lowest_point_addition_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name lowest_point_addition_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.random.pkl
+      hash: md5
+      md5: b83dcdb347639a1c6465a86b926fa277
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/2/random/lowest_point_addition_accuracy_logistic_regression.csv
+      hash: md5
+      md5: 972b85a876d4eb17b69380a8d9b4830e
+      size: 5092
+  evaluate_metrics_point_removal@phoneme-logistic_regression-2-random-weighted_accuracy_drop_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name weighted_accuracy_drop_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.random.pkl
+      hash: md5
+      md5: b83dcdb347639a1c6465a86b926fa277
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_knn:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: knn
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/2/random/weighted_accuracy_drop_knn.csv
+      hash: md5
+      md5: a11dfb2e9b09fac456065cb8633fa0fb
+      size: 34
+  evaluate_metrics_point_removal@phoneme-logistic_regression-2-random-highest_point_removal_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name highest_point_removal_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.random.pkl
+      hash: md5
+      md5: b83dcdb347639a1c6465a86b926fa277
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/2/random/highest_point_removal_accuracy_knn.csv
+      hash: md5
+      md5: 599f6d0a7872bbbbf189890a9db77cba
+      size: 5058
+  evaluate_metrics_point_removal@phoneme-logistic_regression-2-random-lowest_point_addition_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name lowest_point_addition_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.random.pkl
+      hash: md5
+      md5: b83dcdb347639a1c6465a86b926fa277
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/2/random/lowest_point_addition_accuracy_knn.csv
+      hash: md5
+      md5: 82f11022b6145538306a7ec3dc4c7721
+      size: 5072
+  evaluate_metrics_point_removal@phoneme-logistic_regression-2-loo-weighted_accuracy_drop_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name weighted_accuracy_drop_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.loo.pkl
+      hash: md5
+      md5: 1f6abaf14ffbec6175179689b5c25329
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_logistic_regression:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: logistic_regression
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/2/loo/weighted_accuracy_drop_logistic_regression.csv
+      hash: md5
+      md5: a81ec74fb57087824b46d1018b1c8255
+      size: 35
+  evaluate_metrics_point_removal@phoneme-logistic_regression-2-loo-highest_point_removal_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name highest_point_removal_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.loo.pkl
+      hash: md5
+      md5: 1f6abaf14ffbec6175179689b5c25329
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/2/loo/highest_point_removal_accuracy_logistic_regression.csv
+      hash: md5
+      md5: 62ab5d5fdc0007471601e08452d81e79
+      size: 5146
+  evaluate_metrics_point_removal@phoneme-logistic_regression-2-loo-lowest_point_addition_accuracy_logistic_regression:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name lowest_point_addition_accuracy_logistic_regression
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.loo.pkl
+      hash: md5
+      md5: 1f6abaf14ffbec6175179689b5c25329
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_logistic_regression:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: logistic_regression
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/2/loo/lowest_point_addition_accuracy_logistic_regression.csv
+      hash: md5
+      md5: d05db9827ddfcb92b58162110790c2de
+      size: 5160
+  evaluate_metrics_point_removal@phoneme-logistic_regression-2-loo-weighted_accuracy_drop_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name weighted_accuracy_drop_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.loo.pkl
+      hash: md5
+      md5: 1f6abaf14ffbec6175179689b5c25329
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.weighted_accuracy_drop_knn:
+          type: metric
+          idx: weighted_metric_drop
+          metric: accuracy
+          eval_model: knn
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/2/loo/weighted_accuracy_drop_knn.csv
+      hash: md5
+      md5: 3fe8de2f692cdcdd7242957594051407
+      size: 35
+  evaluate_metrics_point_removal@phoneme-logistic_regression-2-loo-highest_point_removal_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name highest_point_removal_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.loo.pkl
+      hash: md5
+      md5: 1f6abaf14ffbec6175179689b5c25329
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.highest_point_removal_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: true
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/2/loo/highest_point_removal_accuracy_knn.csv
+      hash: md5
+      md5: 102ee2b3b3569184d0c07aba81115ad0
+      size: 5160
+  evaluate_metrics_point_removal@phoneme-logistic_regression-2-loo-lowest_point_addition_accuracy_knn:
+    cmd: python -m scripts.evaluate_metrics --experiment-name point_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name lowest_point_addition_accuracy_knn
+    deps:
+    - path: output/values/point_removal/logistic_regression/phoneme/2/valuation.loo.pkl
+      hash: md5
+      md5: 1f6abaf14ffbec6175179689b5c25329
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.point_removal.metrics.lowest_point_addition_accuracy_knn:
+          type: curve
+          idx: point_removal
+          metric: accuracy
+          eval_model: knn
+          highest_point_removal: false
+    outs:
+    - path: output/results/point_removal/logistic_regression/phoneme/2/loo/lowest_point_addition_accuracy_knn.csv
+      hash: md5
+      md5: 0ee60d49a3ccf28771323f5d290b7d97
+      size: 5174
+  evaluate_metrics_noise_removal@diabetes-logistic_regression-1-random-roc_auc:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name roc_auc
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.roc_auc:
+          type: metric
+          idx: roc_auc
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/1/random/roc_auc.csv
+      hash: md5
+      md5: 871b90995f1e2a73203e982d33b9c7f4
+      size: 35
+  evaluate_metrics_noise_removal@diabetes-logistic_regression-1-random-precision_recall:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name precision_recall
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/1/valuation.random.pkl
+      hash: md5
+      md5: 15eb9ba1541ca9c13c579ba64d7f05c7
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.precision_recall:
+          type: curve
+          idx: precision_recall
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/1/random/precision_recall.csv
+      hash: md5
+      md5: f5d7af890dea08546e3b8f40bfea7a6f
+      size: 592
+  evaluate_metrics_noise_removal@diabetes-logistic_regression-1-loo-roc_auc:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name roc_auc
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/1/valuation.loo.pkl
+      hash: md5
+      md5: f1cd847816cc14cd5ffe4d09fb9550d8
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.roc_auc:
+          type: metric
+          idx: roc_auc
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/1/loo/roc_auc.csv
+      hash: md5
+      md5: 03d026d099cf187a4ec7f1161b29c28d
+      size: 35
+  evaluate_metrics_noise_removal@diabetes-logistic_regression-1-loo-precision_recall:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name precision_recall
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/1/valuation.loo.pkl
+      hash: md5
+      md5: f1cd847816cc14cd5ffe4d09fb9550d8
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.precision_recall:
+          type: curve
+          idx: precision_recall
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/1/loo/precision_recall.csv
+      hash: md5
+      md5: b423edc982c23c50838da8699d12b672
+      size: 561
+  evaluate_metrics_noise_removal@diabetes-logistic_regression-2-random-roc_auc:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name roc_auc
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/2/valuation.random.pkl
+      hash: md5
+      md5: 13870aad07eb7c5a2e718f9a8642e4d6
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.roc_auc:
+          type: metric
+          idx: roc_auc
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/2/random/roc_auc.csv
+      hash: md5
+      md5: 4c6a4f678a0107a53b7c55adfe25fff9
+      size: 35
+  evaluate_metrics_noise_removal@diabetes-logistic_regression-2-random-precision_recall:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name precision_recall
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/2/valuation.random.pkl
+      hash: md5
+      md5: 13870aad07eb7c5a2e718f9a8642e4d6
+      size: 9442
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.precision_recall:
+          type: curve
+          idx: precision_recall
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/2/random/precision_recall.csv
+      hash: md5
+      md5: e2ffbb6afa624207bc99ba3d68714aa7
+      size: 600
+  evaluate_metrics_noise_removal@diabetes-logistic_regression-2-loo-roc_auc:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name roc_auc
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/2/valuation.loo.pkl
+      hash: md5
+      md5: 7c72b57ca67b178ffe89e1854327cfa1
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.roc_auc:
+          type: metric
+          idx: roc_auc
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/2/loo/roc_auc.csv
+      hash: md5
+      md5: 6fdea82b0a89ab3f8616980d303933b1
+      size: 34
+  evaluate_metrics_noise_removal@diabetes-logistic_regression-2-loo-precision_recall:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      diabetes --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name precision_recall
+    deps:
+    - path: output/values/noise_removal/logistic_regression/diabetes/2/valuation.loo.pkl
+      hash: md5
+      md5: 7c72b57ca67b178ffe89e1854327cfa1
+      size: 9471
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.precision_recall:
+          type: curve
+          idx: precision_recall
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/diabetes/2/loo/precision_recall.csv
+      hash: md5
+      md5: 317ba98a28da3a93749a8204257182d9
+      size: 532
+  evaluate_metrics_noise_removal@phoneme-logistic_regression-1-random-roc_auc:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name roc_auc
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/1/valuation.random.pkl
+      hash: md5
+      md5: 238a2380b711c422f213d5a6113dddad
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.roc_auc:
+          type: metric
+          idx: roc_auc
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/1/random/roc_auc.csv
+      hash: md5
+      md5: 23c8f7f52e6a2952c2bf73cb28fc5816
+      size: 35
+  evaluate_metrics_noise_removal@phoneme-logistic_regression-1-random-precision_recall:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      1 --metric-name precision_recall
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/1/valuation.random.pkl
+      hash: md5
+      md5: 238a2380b711c422f213d5a6113dddad
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.precision_recall:
+          type: curve
+          idx: precision_recall
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/1/random/precision_recall.csv
+      hash: md5
+      md5: 5186c9a8d4052300bd3c07356553abc9
+      size: 2379
+  evaluate_metrics_noise_removal@phoneme-logistic_regression-1-loo-roc_auc:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name roc_auc
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/1/valuation.loo.pkl
+      hash: md5
+      md5: 219b28e6a45ecaf5f737ac674ead2d47
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.roc_auc:
+          type: metric
+          idx: roc_auc
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/1/loo/roc_auc.csv
+      hash: md5
+      md5: b5c6f09bf9e93303e3ed1cb0a9e92347
+      size: 34
+  evaluate_metrics_noise_removal@phoneme-logistic_regression-1-loo-precision_recall:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      1 --metric-name precision_recall
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/1/valuation.loo.pkl
+      hash: md5
+      md5: 219b28e6a45ecaf5f737ac674ead2d47
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.precision_recall:
+          type: curve
+          idx: precision_recall
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/1/loo/precision_recall.csv
+      hash: md5
+      md5: 81e996f3c35b88bc3860850af872ff77
+      size: 2274
+  evaluate_metrics_noise_removal@phoneme-logistic_regression-2-random-roc_auc:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name roc_auc
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/2/valuation.random.pkl
+      hash: md5
+      md5: b83dcdb347639a1c6465a86b926fa277
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.roc_auc:
+          type: metric
+          idx: roc_auc
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/2/random/roc_auc.csv
+      hash: md5
+      md5: 7cf3fac3702d2319c754a4d94b34ab7a
+      size: 35
+  evaluate_metrics_noise_removal@phoneme-logistic_regression-2-random-precision_recall:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method random --repetition-id
+      2 --metric-name precision_recall
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/2/valuation.random.pkl
+      hash: md5
+      md5: b83dcdb347639a1c6465a86b926fa277
+      size: 35360
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.precision_recall:
+          type: curve
+          idx: precision_recall
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/2/random/precision_recall.csv
+      hash: md5
+      md5: 783a288a49526f3c47ff0395d10d1de2
+      size: 2310
+  evaluate_metrics_noise_removal@phoneme-logistic_regression-2-loo-roc_auc:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name roc_auc
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/2/valuation.loo.pkl
+      hash: md5
+      md5: c8e7461e6bd55825eee16fe01292302d
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.roc_auc:
+          type: metric
+          idx: roc_auc
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/2/loo/roc_auc.csv
+      hash: md5
+      md5: 4819bbcae8ba41473e4b29515ae1f48f
+      size: 35
+  evaluate_metrics_noise_removal@phoneme-logistic_regression-2-loo-precision_recall:
+    cmd: python -m scripts.evaluate_metrics --experiment-name noise_removal --dataset-name
+      phoneme --model-name logistic_regression --valuation-method loo --repetition-id
+      2 --metric-name precision_recall
+    deps:
+    - path: output/values/noise_removal/logistic_regression/phoneme/2/valuation.loo.pkl
+      hash: md5
+      md5: c8e7461e6bd55825eee16fe01292302d
+      size: 35389
+    - path: scripts/evaluate_metrics.py
+      hash: md5
+      md5: b1ce65745711a862ae19c579a5e6daff
+      size: 3922
+    - path: src/re_classwise_shapley/metric.py
+      hash: md5
+      md5: bab603a085436d4ff708b9ca9129d76c
+      size: 8905
+    params:
+      params.yaml:
+        experiments.noise_removal.metrics.precision_recall:
+          type: curve
+          idx: precision_recall
+          flipped_labels: preprocessor.flip_labels.idx
+    outs:
+    - path: output/results/noise_removal/logistic_regression/phoneme/2/loo/precision_recall.csv
+      hash: md5
+      md5: b93cc683f39d689f3feba613458cb621
+      size: 2414

@@ -2,15 +2,12 @@ import glob
 import json
 import os
 import shutil
-from functools import partial
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import numpy as np
 
 from re_classwise_shapley.log import setup_logger
-from re_classwise_shapley.types import RawDataset, ValuationMethodDict
-from re_classwise_shapley.valuation_methods import compute_values
+from re_classwise_shapley.types import RawDataset
 
 logger = setup_logger(__name__)
 

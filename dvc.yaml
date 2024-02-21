@@ -75,28 +75,52 @@ stages:
     outs:
       - output/values/${item.experiment}/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
 
-  evaluate_metrics:
+  # TODO Make more concise once https://github.com/iterative/dvc/issues/9948 is closed.
+  evaluate_metrics_point_removal:
     matrix:
-      experiment: ${active.experiments}
       dataset: ${active.datasets}
       model: ${active.models}
       repetition: ${active.repetitions}
       method: ${active.valuation_methods}
+      metric: ${experiments.point_removal.metrics}
     cmd: python -m scripts.evaluate_metrics
-      --experiment-name ${item.experiment}
+      --experiment-name point_removal
       --dataset-name ${item.dataset}
       --model-name ${item.model}
       --valuation-method ${item.method}
       --repetition-id ${item.repetition}
+      --metric-name ${item.metric}
     params:
-      - experiments.${item.experiment}.metrics
-      - experiments.${item.experiment}.curves
+      - experiments.point_removal.metrics.${item.metric}
     deps:
       - scripts/evaluate_metrics.py
       - src/re_classwise_shapley/metric.py
-      - output/values/${item.experiment}/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
+      - output/values/point_removal/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
     outs:
-      - output/results/${item.experiment}/${item.model}/${item.dataset}/${item.repetition}/${item.method}
+      - output/results/point_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.csv
+  
+  evaluate_metrics_noise_removal:
+    matrix:
+      dataset: ${active.datasets}
+      model: ${active.models}
+      repetition: ${active.repetitions}
+      method: ${active.valuation_methods}
+      metric: ${experiments.noise_removal.metrics}
+    cmd: python -m scripts.evaluate_metrics
+      --experiment-name noise_removal
+      --dataset-name ${item.dataset}
+      --model-name ${item.model}
+      --valuation-method ${item.method}
+      --repetition-id ${item.repetition}
+      --metric-name ${item.metric}
+    params:
+      - experiments.noise_removal.metrics.${item.metric}
+    deps:
+      - scripts/evaluate_metrics.py
+      - src/re_classwise_shapley/metric.py
+      - output/values/noise_removal/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
+    outs:
+      - output/results/noise_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.csv
   
   render_plots:
     matrix:
@@ -107,7 +131,6 @@ stages:
       --model-name ${item.model}
     params:
       - experiments.${item.experiment}.metrics
-      - experiments.${item.experiment}.curves
     deps:
       - scripts/render_plots.py
       - output/results/${item.experiment}/${item.model}

@@ -2,7 +2,8 @@ import logging
 import math as m
 from typing import Literal
 
-from pydvl.utils import ParallelConfig, Utility
+from pydvl.parallel.config import ParallelConfig
+from pydvl.utils import Utility
 from pydvl.value import (
     ClasswiseScorer,
     MaxChecks,

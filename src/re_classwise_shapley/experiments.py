@@ -141,6 +141,7 @@ def run_experiment(
         Callable[[Utility, ValuationResult, Dict], Tuple[float, Optional[pd.Series]]],
     ] = None,
     seed: Seed = None,
+    n_threads: int = None,
 ) -> ExperimentResult:
     val_dataset, test_dataset = val_test_set
     result = ExperimentResult(
@@ -163,6 +164,7 @@ def run_experiment(
         valuation_method = valuation_methods[valuation_method_name]
         logger.info(f"Computing values using '{valuation_method_name}'.")
         start_time = time.time()
+
         values = valuation_method(
             Utility(
                 data=val_dataset,

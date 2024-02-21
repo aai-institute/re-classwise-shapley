@@ -10,6 +10,7 @@ Runs the whole pipeline without dvc.
 """
 import os
 from itertools import product
+from time import sleep
 
 import click
 from calculate_threshold_characteristics import _calculate_threshold_characteristics
@@ -25,6 +26,14 @@ from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.utils import load_params_fast
 
 logger = setup_logger("run_pipeline")
+
+
+def repeat(fn, *args, n_repeats: int = 3, sleep_seconds: float = 60, **kwargs):
+    for n_try in range(n_repeats):
+        try:
+            return fn(*args, **kwargs)
+        except:
+            sleep(sleep_seconds)
 
 
 @click.command()
@@ -43,7 +52,7 @@ def run_pipeline():
 
         for dataset_name in active_params["datasets"]:
             logger.info(f"Fetching dataset {dataset_name}.")
-            _fetch_data(dataset_name)
+            repeat(_fetch_data, dataset_name)
             logger.info(f"Preprocessing dataset {dataset_name}.")
             _preprocess_data(dataset_name)
 
@@ -65,8 +74,11 @@ def run_pipeline():
             _sample_data(experiment_name, dataset_name)
 
             for repetition_id in active_params["repetitions"]:
-                _calculate_threshold_characteristics(
-                    experiment_name, dataset_name, repetition_id
+                repeat(
+                    _calculate_threshold_characteristics,
+                    experiment_name,
+                    dataset_name,
+                    repetition_id,
                 )
 
         for experiment_name, model_name in product(
@@ -99,7 +111,8 @@ def run_pipeline():
                     f"Calculate values for dataset {dataset_name}, valuation method "
                     f"{valuation_method_name} and seed {repetition_id}."
                 )
-                _calculate_values(
+                repeat(
+                    _calculate_values,
                     experiment_name,
                     dataset_name,
                     model_name,
@@ -125,7 +138,8 @@ def run_pipeline():
                         f"{repetition_id}."
                     )
                     logger.info(f"Evaluate metric {curve_name}.")
-                    _evaluate_curves(
+                    repeat(
+                        _evaluate_curves,
                         experiment_name,
                         dataset_name,
                         model_name,
@@ -143,7 +157,8 @@ def run_pipeline():
                         f"{repetition_id}."
                     )
                     logger.info(f"Evaluate metric {metric_name}.")
-                    _evaluate_metrics(
+                    repeat(
+                        _evaluate_metrics,
                         experiment_name,
                         dataset_name,
                         model_name,

@@ -7,7 +7,7 @@ setup_logger()
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Dict, Tuple, TypeVar
+from typing import Callable, Dict, Optional, Tuple, TypeVar
 
 import numpy as np
 import pandas as pd
@@ -29,6 +29,7 @@ logger = setup_logger()
 class ExperimentResult:
     valuation_results: pd.DataFrame
     metric: pd.DataFrame
+    graphs: Optional[pd.DataFrame]
     metric_name: str = None
 
     def store(self, output_dir: Path) -> "ExperimentResult":
@@ -45,13 +46,13 @@ def _dispatch_experiment(
     valuation_methods: ValuationMethodsFactory,
     *,
     data_pre_process_fn: Callable[[NDArray[int]], NDArray[int]] = None,
-    metric_fn: Callable[[Utility, ValuationResult], float],
+    metric_fn: Callable[[Utility, ValuationResult], Tuple[float, Optional[pd.Series]]],
 ) -> ExperimentResult:
     base_frame = pd.DataFrame(
         index=list(datasets.keys()), columns=list(valuation_methods.keys())
     )
     result = ExperimentResult(
-        metric=copy(base_frame), valuation_results=copy(base_frame)
+        metric=copy(base_frame), valuation_results=copy(base_frame), graphs=None
     )
 
     for dataset_idx, (val_dataset, test_dataset) in datasets.items():
@@ -82,9 +83,17 @@ def _dispatch_experiment(
             test_utility = Utility(
                 data=test_dataset, model=model, scorer=Scorer(scoring="accuracy")
             )
-            result.metric.loc[dataset_idx, valuation_method_name] = metric_fn(
-                test_utility, values
-            )
+            metric, graph = metric_fn(test_utility, values)
+            result.metric.loc[dataset_idx, valuation_method_name] = metric
+
+            if graph is not None:
+                if result.graphs is None:
+                    result.graphs = copy(base_frame)
+
+                result.graphs.loc[dataset_idx, valuation_method_name] = [graph]
+
+    if result.graphs is not None:
+        result.graphs = result.graphs.applymap(lambda x: x[0])
 
     return result
 
@@ -110,16 +119,16 @@ def experiment_wad(
 
     def _weighted_accuracy_drop(
         test_utility: Utility, values: ValuationResult
-    ) -> float:
+    ) -> Tuple[float, pd.Series]:
         eval_utility = Utility(
             data=test_utility.data,
             model=test_model if test_model is not None else model,
             scorer=Scorer("accuracy"),
         )
-        weighted_accuracy_drop = weighted_reciprocal_diff_average(
+        weighted_accuracy_drop, graph = weighted_reciprocal_diff_average(
             u=eval_utility, values=values, progress=progress
         )
-        return float(weighted_accuracy_drop)
+        return float(weighted_accuracy_drop), graph
 
     result = _dispatch_experiment(
         model,
@@ -144,7 +153,7 @@ def experiment_noise_removal(
         labels[p] = 1 - labels[p]
         return labels
 
-    def _roc_auc(test_utility: Utility, values: ValuationResult) -> float:
+    def _roc_auc(test_utility: Utility, values: ValuationResult) -> Tuple[float, None]:
         n = len(test_utility.data.y_train)
         num_data_indices = int(perc_flip_labels * n)
         p = np.argsort(values)[:num_data_indices]
@@ -156,7 +165,7 @@ def experiment_noise_removal(
             model=test_utility.model,
             scorer=Scorer(scoring="roc_auc"),
         )
-        return u(u.data.indices)
+        return u(u.data.indices), None
 
     result = _dispatch_experiment(
         model,

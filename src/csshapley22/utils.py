@@ -1,6 +1,7 @@
 import logging
 import os
 import random
+import subprocess
 
 import numpy as np
 import pandas as pd
@@ -66,3 +67,15 @@ def instantiate_model(model_name: str) -> Pipeline:
     else:
         raise ValueError(f"Unknown model '{model_name}'")
     return model
+
+
+def get_git_revision_hash() -> str:
+    return subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
+
+
+def get_git_revision_short_hash() -> str:
+    return (
+        subprocess.check_output(["git", "rev-parse", "--short", "HEAD"])
+        .decode("ascii")
+        .strip()
+    )

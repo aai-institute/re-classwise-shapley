@@ -6,7 +6,7 @@ from dvc.api import params_show
 from dvc.repo import Repo
 
 from csshapley22.constants import RANDOM_SEED
-from csshapley22.dataset import DatasetRegistry
+from csshapley22.data.fetch import fetch_datasets
 from csshapley22.experiments.experiment_one import run_experiment_one
 from csshapley22.utils import set_random_seed, setup_logger
 from csshapley22.valuation_methods import compute_values
@@ -21,16 +21,12 @@ set_random_seed(RANDOM_SEED)
 def run(model_name: str):
     logger.info("Starting data valuation experiment")
 
-    params = params_show()["experiment_one"]
+    params = params_show()
     logger.info(f"Using parameters:\n{params}")
+    experiment_one_params = params["experiment_one"]
+    valuation_methods = experiment_one_params["valuation_methods"]
 
-    valuation_methods = params["valuation_methods"]
-    datasets = params["datasets"]
-
-    datasets = {
-        dataset_name: DatasetRegistry[dataset_name](**dataset_kwargs)
-        for dataset_name, dataset_kwargs in datasets.items()
-    }
+    datasets = fetch_datasets()
     valuation_functions = {
         valuation_method_name: partial(
             compute_values, valuation_method=valuation_method_name
@@ -57,9 +53,7 @@ def run(model_name: str):
             valuation_functions=valuation_functions,
         )
         logger.info("Saving results to disk")
-        result.metric.to_csv(
-            repetition_output_dir / "weighted_accuracy_drops.csv", index=False
-        )
+        result.metric.to_csv(repetition_output_dir / "weighted_accuracy_drops.csv")
 
     logger.info("Finished data valuation experiment")
 

@@ -32,7 +32,8 @@ def repeat(fn, *args, n_repeats: int = 3, sleep_seconds: float = 60, **kwargs):
     for n_try in range(n_repeats):
         try:
             return fn(*args, **kwargs)
-        except:
+        except BaseException as e:
+            logger.error(f"An error occurred with message {str(e)}")
             sleep(sleep_seconds)
 
 

@@ -13,7 +13,6 @@ Render plots for the data valuation experiment. The plots are stored in the
 also stored in mlflow. The id of the mlflow experiment is given by the schema
 `experiment_name.model_name`.
 """
-import math as m
 import os
 import os.path
 from datetime import datetime
@@ -22,9 +21,15 @@ import click
 import mlflow
 import numpy as np
 from dotenv import load_dotenv
+from matplotlib import pyplot as plt
 
 from re_classwise_shapley.io import Accessor
-from re_classwise_shapley.log import log_datasets, log_figure, setup_logger
+from re_classwise_shapley.log import (
+    get_or_create_mlflow_experiment,
+    log_datasets,
+    log_figure,
+    setup_logger,
+)
 from re_classwise_shapley.plotting import (
     plot_curves,
     plot_histogram,
@@ -39,25 +44,6 @@ from re_classwise_shapley.utils import (
 )
 
 logger = setup_logger("render_plots")
-
-
-def get_or_create_mlflow_experiment(experiment_name: str) -> str:
-    """
-    Get or create a mlflow experiment. If the experiment does not exist, it will be
-    created.
-
-    Args:
-        experiment_name: Name of the experiment.
-
-    Returns:
-        Identifier of the experiment.
-    """
-    experiment = mlflow.get_experiment_by_name(experiment_name)
-    if not experiment:
-        experiment_id = mlflow.create_experiment(experiment_name)
-    else:
-        experiment_id = experiment.experiment_id
-    return experiment_id
 
 
 @click.command()
@@ -77,7 +63,6 @@ def render_plots(experiment_name: str, model_name: str):
 
 
 def _render_plots(experiment_name: str, model_name: str):
-    load_dotenv()
     logger.info("Starting plotting of data valuation experiment")
     output_folder = Accessor.PLOT_PATH / experiment_name / model_name
     mlflow_id = f"{experiment_name}.{model_name}"
@@ -110,6 +95,7 @@ def _render_plots(experiment_name: str, model_name: str):
             )
         )
 
+        plt.switch_backend("agg")
         valuation_results = Accessor.valuation_results(
             experiment_name,
             model_name,
@@ -169,4 +155,5 @@ def _render_plots(experiment_name: str, model_name: str):
 
 
 if __name__ == "__main__":
+    load_dotenv()
     render_plots()

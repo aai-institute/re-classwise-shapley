@@ -6,7 +6,7 @@ from typing import Callable, Literal
 import numpy as np
 from numpy.typing import NDArray
 from pydvl.parallel.config import ParallelConfig
-from pydvl.utils import Dataset, Scorer, SupervisedModel, Utility
+from pydvl.utils import Dataset, InMemoryCacheBackend, Scorer, SupervisedModel, Utility
 from pydvl.value import (
     ClasswiseScorer,
     MaxChecks,
@@ -233,6 +233,7 @@ def calculate_subset_score(
             model=instantiate_model(model_name, model_kwargs, seed=int(model_seed)),
             scorer=SubsetScorer("accuracy", subset=subset_idx_fn(c), default=np.nan),
             catch_errors=False,
+            cache_backend=InMemoryCacheBackend(),
         )
         values = compute_values(
             u,

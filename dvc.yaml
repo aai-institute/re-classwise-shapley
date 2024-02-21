@@ -36,8 +36,6 @@ stages:
     deps:
       - scripts/render_plots.py
       - output/results/wad_drop/${item.model}
-    outs:
-      - output/plots/wad_drop/${item.model}
 
   cs-shapley-noise-removal-experiment:
     matrix:
@@ -57,8 +55,6 @@ stages:
     deps:
       - scripts/render_plots.py
       - output/results/noise_removal/${item.model}
-    outs:
-      - output/plots/noise_removal/${item.model}
 
   cs-shapley-wad-drop-transfer-experiment:
     matrix:
@@ -81,5 +77,3 @@ stages:
     deps:
       - scripts/render_plots.py
       - output/results/wad_drop_transfer/${item.model}/${item.transfer_model}
-    outs:
-      - output/plots/wad_drop_transfer/${item.model}/${item.transfer_model}

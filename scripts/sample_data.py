@@ -59,7 +59,7 @@ def sample_data(
 
     preprocess_info = None
     if "preprocessors" in experiment_config:
-        preprocess_info, val_set = apply_preprocessors(
+        val_set, preprocess_info = apply_preprocessors(
             val_set, experiment_config["preprocessors"], seed_sequence
         )
 

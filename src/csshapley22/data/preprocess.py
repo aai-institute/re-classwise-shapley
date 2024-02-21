@@ -15,7 +15,7 @@ logger = setup_logger()
 
 
 def principal_resnet_components(
-    x: np.ndarray, n_components: int, size: int
+    x: np.ndarray, n_components: int, grayscale: bool = False
 ) -> np.ndarray:
     """
     This method calculates the internal feature representation by a
@@ -27,16 +27,26 @@ def principal_resnet_components(
     :return: The transformed values.
     """
     logger.info("Applying resnet18.")
-    resnet = resnet18(weights=ResNet18_Weights.DEFAULT)
+    weights = ResNet18_Weights.DEFAULT
+    resnet = resnet18(weights=weights)
+    preprocess = weights.transforms()
 
+    # Apply it to the input image
     collected_features = []
-    batch_size = 10000
+    batch_size = 100
     num_batches = int(m.ceil(len(x) / batch_size))
     for batch_num in tqdm(range(num_batches), desc="Processing batches"):
         win_x = x[batch_num * batch_size : (batch_num + 1) * batch_size]
-        win_x = torch.tensor(win_x)
-        win_x = torch.cat(3 * [win_x.reshape([-1, 1, size, size])], axis=1)
-        features = resnet(win_x.type(torch.float))
+        win_x = torch.tensor(win_x).type(torch.float)
+        if grayscale:
+            win_x = win_x.unsqueeze(1).repeat([1, 3, 1])
+        else:
+            win_x = win_x.reshape([len(win_x), 3, -1])
+
+        size = int(np.sqrt(win_x.shape[2]))
+        win_x = win_x.reshape([len(win_x), 3, size, size])
+        pre_win_x = preprocess(win_x)
+        features = resnet(pre_win_x)
         features = features.detach().numpy()
         collected_features.append(features)
 

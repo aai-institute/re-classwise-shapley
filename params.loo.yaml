@@ -47,7 +47,7 @@ active:
   - classwise_shapley
   - tmc_shapley
   - beta_shapley
-  - banzhaf_shapley
+  - loo
   repetitions:
     from: 1
     to: 20

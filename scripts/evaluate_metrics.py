@@ -93,7 +93,7 @@ def _evaluate_metrics(
     metrics = params["experiments"][experiment_name]["metrics"]
     metrics_kwargs = metrics[metric_name]
     metric_fn = metrics_kwargs.pop("fn")
-    metrics_kwargs.pop("plot", None)
+    metrics_kwargs.pop("plots", None)
     curve_names = metrics_kwargs.pop("curve")
     metrics_fn = partial(MetricsRegistry[metric_fn], **metrics_kwargs)
     os.makedirs(output_dir, exist_ok=True)

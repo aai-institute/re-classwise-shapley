@@ -25,12 +25,12 @@ def compute_values(
     utility: Utility, valuation_method: str, **kwargs
 ) -> ValuationResult:
     progress = kwargs.get("progress", False)
-    tmp_dir = "/tmp/ray"
-    n_jobs = 2
+    tmp_dir = kwargs["temp_dir"]
+    n_jobs = kwargs["n_jobs"]
     parallel_config = ParallelConfig(
-        backend="ray",
+        backend=kwargs["backend"],
         n_cpus_local=n_jobs,
-        logging_level=logging.WARNING,
+        logging_level=logging.DEBUG,
         _temp_dir=tmp_dir,
     )
     if valuation_method == "random":

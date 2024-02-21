@@ -59,3 +59,27 @@ stages:
       - output/results/noise_removal/${item.model}
     outs:
       - output/plots/noise_removal/${item.model}
+
+  cs-shapley-wad-drop-transfer-experiment:
+    matrix:
+      dataset: ${active.datasets}
+      model: ${active.models}
+      transfer_model: ${experiments.wad_drop_transfer.transfer_models}
+    cmd: python -m scripts.run_experiment_wad_drop --dataset-name ${item.dataset} --model-name ${item.model} --transfer-model-name ${item.transfer_model}
+    deps:
+      - scripts/run_experiment_wad_drop.py
+      - output/preprocessed/${item.dataset}
+    outs:
+      - output/results/wad_drop_transfer/${item.model}/${item.transfer_model}/${item.dataset}
+
+  cs-shapley-wad-drop-transfer-plots:
+    matrix:
+      model: ${active.models}
+      transfer_model: ${experiments.wad_drop_transfer.transfer_models}
+
+    cmd: python -m scripts.render_plots --experiment-name wad_drop_transfer --model-name ${item.model} --sub-folder ${item.transfer_model}
+    deps:
+      - scripts/render_plots.py
+      - output/results/wad_drop_transfer/${item.model}/${item.transfer_model}
+    outs:
+      - output/plots/wad_drop_transfer/${item.model}/${item.transfer_model}

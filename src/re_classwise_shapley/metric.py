@@ -12,7 +12,7 @@ from re_classwise_shapley.log import setup_logger
 
 __all__ = [
     "pr_curve_ranking",
-    "weighted_accuracy_drop",
+    "weighted_metric_drop",
     "weighted_reciprocal_diff_average",
 ]
 
@@ -94,7 +94,7 @@ def weighted_reciprocal_diff_average(
     return float(avg), scores
 
 
-def weighted_accuracy_drop(
+def weighted_metric_drop(
     u: Utility,
     values: ValuationResult,
     info: Dict,
@@ -102,11 +102,12 @@ def weighted_accuracy_drop(
     progress: bool = False,
     highest_first: bool = True,
     transfer_model: SupervisedModel = None,
+    metric: str = "accuracy",
 ) -> Tuple[float, pd.Series]:
     u_eval = Utility(
         data=u.data,
         model=transfer_model if transfer_model is not None else u.model,
-        scorer=Scorer("accuracy", default=0),
+        scorer=Scorer(metric, default=0),
     )
     wad, graph = weighted_reciprocal_diff_average(
         u=u_eval,
@@ -115,5 +116,5 @@ def weighted_accuracy_drop(
         highest_first=highest_first,
     )
     graph.index.name = "num_removed"
-    graph.name = "accuracy"
+    graph.name = metric
     return float(wad), graph

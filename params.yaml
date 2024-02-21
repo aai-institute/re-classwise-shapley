@@ -1,23 +1,23 @@
 settings:
   evaluation:
-    n_repetitions: 3
+    n_repetitions: 5
 
   parallel:
-    n_jobs: 4
+    n_jobs: 60
     backend: joblib
     temp_dir: /raid/tmp/ray
 
 active:
   models: [ "logistic_regression" ]
-  datasets: [ "diabetes" , "cpu", "covertype" ]
-  valuation_methods: [ "random", "loo" ]
+  datasets: [ "cifar10", "click", "covertype", "cpu", "diabetes", "fmnist_binary", "mnist_binary", "mnist_multi", "phoneme" ]
+  valuation_methods: [ "random", "loo", "classwise_shapley", "classwise_shapley_add_idx", "beta_shapley", "tmc_shapley" ]
 
 experiments:
   wad_drop:
   noise_removal:
   wad_drop_transfer:
     transfer_models:
-      [ "logistic_regression", "knn" ]
+      [ "gradient_boosting_classifier" ]
 
 models:
   logistic_regression: {
@@ -53,7 +53,7 @@ valuation_methods:
     kwargs: {
       n_updates: 500,
       normalize_values: True,
-      n_resample_complement_sets: 10,
+      n_resample_complement_sets: 1,
       rtol: 1e-4,
       progress: True
     }
@@ -63,7 +63,7 @@ valuation_methods:
     kwargs: {
       n_updates: 500,
       normalize_values: True,
-      n_resample_complement_sets: 10,
+      n_resample_complement_sets: 1,
       use_default_scorer_value: False,
       rtol: 1e-4,
       progress: True
@@ -74,7 +74,7 @@ valuation_methods:
     kwargs: {
       alpha: 16.0,
       beta: 1.0,
-      n_updates: 1000,
+      n_updates: 500,
       progress: False
     }
   }
@@ -82,7 +82,7 @@ valuation_methods:
     algorithm: "tmc_shapley",
     kwargs: {
       rtol: 1e-4,
-      n_updates: 1000,
+      n_updates: 500,
       progress: False
     }
   }

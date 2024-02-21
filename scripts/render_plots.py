@@ -38,12 +38,12 @@ def render_plots(
 
     experiment_path = Config.RESULT_PATH / experiment_name / model_name
     output_dir = Config.PLOT_PATH / experiment_name / model_name
-    os.makedirs(output_dir, exist_ok=True)
 
     if sub_folder is not None:
         experiment_path /= sub_folder
         output_dir /= sub_folder
 
+    os.makedirs(output_dir, exist_ok=True)
     results_per_dataset = load_results_per_dataset(experiment_path)
     plot_metric_table(results_per_dataset, output_dir)
     plot_metric_curves(

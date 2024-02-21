@@ -157,7 +157,7 @@ def run_pipeline():
 
     except KeyboardInterrupt:
         logger.info("Interrupted by Ctrl+C.")
-    finally:
+    else:
         logger.info("Shutdown system.")
         os.system("sudo shutdown now")
 

@@ -37,6 +37,7 @@ from re_classwise_shapley.plotting import (
     plot_metric_table,
     plot_threshold_characteristics,
     plot_time,
+    plot_value_decay,
 )
 from re_classwise_shapley.utils import (
     flatten_dict,
@@ -103,6 +104,26 @@ def _render_plots(experiment_name: str, model_name: str):
 
         params = load_params_fast()
         plot_format = params["settings"]["plot_format"]
+
+        logger.info(f"Load valuations results.")
+        valuation_results = Accessor.valuation_results(
+            experiment_name,
+            model_name,
+            dataset_names,
+            repetitions,
+            method_names,
+        )
+        logger.info(f"Plotting value decay for all methods.")
+        with plot_value_decay(valuation_results, method_names) as fig:
+            log_figure(fig, output_folder, f"decay.{plot_format}", "values")
+
+        for method_name in method_names:
+            logger.info(f"Plot histogram for values of method `{method_name}`.")
+            with plot_histogram(valuation_results, [method_name]) as fig:
+                log_figure(
+                    fig, output_folder, f"density.{method_name}.{plot_format}", "values"
+                )
+
         threshold_characteristics_settings = params["settings"][
             "threshold_characteristics"
         ]
@@ -125,20 +146,6 @@ def _render_plots(experiment_name: str, model_name: str):
                     output_folder,
                     f"threshold_characteristics.{plot_format}",
                     "threshold_characteristics",
-                )
-        logger.info(f"Load valuations results.")
-        valuation_results = Accessor.valuation_results(
-            experiment_name,
-            model_name,
-            dataset_names,
-            repetitions,
-            method_names,
-        )
-        for method_name in method_names:
-            logger.info(f"Plot histogram for values of method `{method_name}`.")
-            with plot_histogram(valuation_results, [method_name]) as fig:
-                log_figure(
-                    fig, output_folder, f"density.{method_name}.{plot_format}", "densities"
                 )
 
         params = load_params_fast()
@@ -173,6 +180,7 @@ def _render_plots(experiment_name: str, model_name: str):
                         plot_perc = plot_settings.get("plot_perc", 1.0)
                         x_label = plot_settings.get("x_label", None)
                         y_label = plot_settings.get("y_label", None)
+                        agg = plot_settings.get("agg", "mean")
                         with plot_curves(
                             selected_loaded_curves,
                             plot_perc=plot_perc,
@@ -180,7 +188,10 @@ def _render_plots(experiment_name: str, model_name: str):
                             y_label=y_label,
                         ) as fig:
                             log_figure(
-                                fig, output_folder, f"{curve_name}.{plot_format}", "curves"
+                                fig,
+                                output_folder,
+                                f"{curve_name}.{plot_format}",
+                                "curves",
                             )
                     case _:
                         raise NotImplementedError

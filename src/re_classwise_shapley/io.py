@@ -235,7 +235,7 @@ class Accessor:
     THRESHOLD_CHARACTERISTICS_PATH = OUTPUT_PATH / "threshold_characteristics"
     SAMPLED_PATH = OUTPUT_PATH / "sampled"
     VALUES_PATH = OUTPUT_PATH / "values"
-    CURVES_PATH = OUTPUT_PATH / "results"
+    CURVES_PATH = OUTPUT_PATH / "curves"
     METRICS_PATH = OUTPUT_PATH / "metrics"
     PLOT_PATH = OUTPUT_PATH / "plots"
 
@@ -340,7 +340,7 @@ class Accessor:
             / str(repetition_id)
             / method_name
         )
-        curve = pd.read_csv(base_path / f"{curve_name}.curve.csv")
+        curve = pd.read_csv(base_path / f"{curve_name}.csv")
         curve.index = curve[curve.columns[0]]
         curve = curve.drop(columns=[curve.columns[0]]).iloc[:, -1]
 

@@ -18,7 +18,6 @@ import os
 from functools import partial, reduce
 
 import click
-import pandas as pd
 from pydvl.parallel import ParallelConfig
 from pydvl.utils.functional import maybe_add_argument
 
@@ -148,7 +147,7 @@ def _evaluate_curves(
             cache=cache,
         )
 
-    metric_curve.to_csv(output_dir / f"{curve_name}.curve.csv")
+    metric_curve.to_csv(output_dir / f"{curve_name}.csv")
 
 
 if __name__ == "__main__":

@@ -47,6 +47,36 @@ def curve_roc(
     return _curve_precision_recall_ranking(info[flipped_labels], ranked_list)
 
 
+def curve_top_fraction(
+    values: ValuationResult,
+    alpha_range: Dict,
+) -> pd.Series:
+    """
+    Calculate the top fraction indices. This is used as an input to the evaluation
+    of rank stability as well.
+    Args:
+        values: The values, which should be tested.
+        alpha_range: A dictionary containing from, to and step keys.
+
+    Returns:
+        A pd.Series contianing the alpha value on the x-axis and a unfolded list on the
+            y-axis.
+    """
+    assert -1 <= alpha_range["to"] <= 1.0
+    assert -1 <= alpha_range["from"] <= 1.0
+    n = int((alpha_range["to"] - alpha_range["from"]) / alpha_range["step"]) + 1
+    alpha_range = np.arange(alpha_range["from"], alpha_range["to"], alpha_range["step"])
+    values.sort(reverse=np.all(alpha_range >= 0))
+
+    alpha_values = []
+    for alpha in alpha_range:
+        n = int(len(values) * abs(alpha))
+        indices = list(values.indices[:n])
+        alpha_values.append(" ".join(map(str, indices)))  # TODO Change dtype
+
+    return pd.Series(alpha_values, index=alpha_range)
+
+
 def curve_metric(
     data: Dataset,
     values: ValuationResult,
@@ -117,6 +147,14 @@ def metric_geometric_weighted_metric_drop(curve: pd.Series, input_perc: float) -
     diff_curve = np.nancumsum(diff_curve)
     weighted_diff = diff_curve / (np.arange(1, len(diff_curve) + 1))
     return float(np.sum(weighted_diff))
+
+
+def metric_weighted_relative_accuracy_difference_random(
+    curve: pd.Series, lamb: float, random_base_line: pd.Series
+) -> float:
+    n = len(curve)
+    weights = np.exp(-lamb * np.arange(n))
+    return weights.dot(random_base_line - curve).mean()
 
 
 def _curve_precision_recall_ranking(
@@ -274,9 +312,11 @@ def _curve_score_over_point_removal_or_addition(
 CurvesRegistry: Dict[str, Callable[..., pd.Series]] = {
     "metric": curve_metric,
     "precision_recall": curve_roc,
+    "top_fraction": curve_top_fraction,
 }
 
 MetricsRegistry: Dict[str, Callable[..., float]] = {
     "geometric_weighted_drop": metric_geometric_weighted_metric_drop,
     "roc_auc": metric_roc_auc,
+    "weighted_relative_accuracy_difference_random": metric_weighted_relative_accuracy_difference_random,
 }

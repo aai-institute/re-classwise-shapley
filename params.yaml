@@ -5,11 +5,11 @@ settings:
   plot_format: pdf
 
   stages:
-    fetch_data: false
-    preprocess_data: false
-    sample_data: false
-    calculate_values: false
-    calculate_threshold_characteristics: false
+    fetch_data: true
+    preprocess_data: true
+    sample_data: true
+    calculate_values: true
+    calculate_threshold_characteristics: true
     evaluate_curves: true
     evaluate_metrics: true
     render_plots: true
@@ -59,62 +59,84 @@ experiments:
   point_removal:
     sampler: default
     curves:
-      weighted_accuracy_drop_logistic_regression:
+      accuracy_logistic_regression:
         fn: metric
         metric: accuracy
         eval_model: logistic_regression
         plots:
           - accuracy
-      weighted_accuracy_drop_knn:
+      accuracy_knn:
         fn: metric
         metric: accuracy
         eval_model: knn
         plots:
           - accuracy
-      weighted_accuracy_drop_gradient_boosting_classifier:
+      accuracy_gradient_boosting_classifier:
         fn: metric
         metric: accuracy
         eval_model: gradient_boosting_classifier
         plots:
           - accuracy
-      weighted_accuracy_drop_svm:
+      accuracy_svm:
         fn: metric
         metric: accuracy
         eval_model: svm
         plots:
           - accuracy
-      weighted_accuracy_drop_mlp:
+      accuracy_mlp:
         fn: metric
         metric: accuracy
         eval_model: mlp
         plots:
           - accuracy
 
-    metrics:
-      geometric_weighted_drop:
-        curve:
-          - weighted_accuracy_drop_logistic_regression
-          - weighted_accuracy_drop_knn
-          - weighted_accuracy_drop_gradient_boosting_classifier
-          - weighted_accuracy_drop_svm
-          - weighted_accuracy_drop_mlp
-        fn: geometric_weighted_drop
-        input_perc: 1.0
+      top_fraction:
+        fn: top_fraction
+        alpha_range:
+          from: 0.01
+          to: 0.05
+          step: 0.01
         plots:
-          - table_wad
-          - box_wad
+          # - rank_stability
+
+    metrics:
+      weighted_relative_accuracy_difference_random:
+        curve:
+          - accuracy_logistic_regression
+          - accuracy_knn
+          - accuracy_gradient_boosting_classifier
+          - accuracy_svm
+          - accuracy_mlp
+        lamb: 0.1
+        fn: weighted_relative_accuracy_difference_random
+        plots:
+          - table
+          - box_wrad
 
       geometric_weighted_drop_half:
         curve:
-          - weighted_accuracy_drop_logistic_regression
-          - weighted_accuracy_drop_knn
-          - weighted_accuracy_drop_gradient_boosting_classifier
-          - weighted_accuracy_drop_svm
-          - weighted_accuracy_drop_mlp
+          - accuracy_logistic_regression
+          - accuracy_knn
+          - accuracy_gradient_boosting_classifier
+          - accuracy_svm
+          - accuracy_mlp
         fn: geometric_weighted_drop
         input_perc: 0.5
         plots:
-          - table_wad
+          - table
+          - box_wad
+
+      geometric_weighted_drop:
+        curve:
+          - accuracy_logistic_regression
+          - accuracy_knn
+          - accuracy_gradient_boosting_classifier
+          - accuracy_svm
+          - accuracy_mlp
+        fn: geometric_weighted_drop
+        input_perc: 1.0
+        plots:
+          - table
           - box_wad
 
   noise_removal:
@@ -138,22 +160,36 @@ experiments:
           - box_auc
 
 plots:
+
+  density:
+
+  rank_stability:
+    type: line
+    mean_agg: intersect
+    x_label: "n"
+    y_label: "Accuracy"
+
   accuracy:
     type: line
+    mean_agg: mean
+    std_agg: bootstrap
     plot_perc: 0.5
     x_label: "n"
     y_label: "Accuracy"
 
   precision_recall:
     type: line
+    mean_agg: mean
+    std_agg: bootstrap
     x_label: "Recall"
     y_label: "Precision"
 
-  table_wad:
+  table:
     type: table
 
-  table_auc:
-    type: table
+  box_wrad:
+    type: boxplot
+    x_label: "WRAD"
 
   box_wad:
     type: boxplot

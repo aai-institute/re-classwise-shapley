@@ -1,6 +1,6 @@
 import math as m
 from contextlib import contextmanager
-from typing import Any, Callable, List, Sequence, Tuple, Union
+from typing import Any, Callable, List, Literal, Sequence, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -66,11 +66,13 @@ LABELS = {
 }
 
 
-def shaded_mean_normal_confidence_interval(
+def shaded_interval_line_plot(
     data: pd.DataFrame,
     abscissa: Sequence[Any] = None,
     mean_color: str = "dodgerblue",
     shade_color: str = "lightblue",
+    mean_agg: Literal["mean"] = "mean",
+    std_agg: Literal["bootstrap"] | None = None,
     ax: Axes = None,
     n_bootstrap_samples: int = 1000,
     confidence: float = 0.95,
@@ -90,26 +92,42 @@ def shaded_mean_normal_confidence_interval(
         confidence:  Size of the confidence interval.
     """
     assert len(data.shape) == 2
-    mean = data.mean(axis=1)
-    sampled_idx = np.random.choice(range(data.shape[1]), n_bootstrap_samples)
-    sampled_data = data.iloc[:, sampled_idx]
+    match mean_agg:
+        case "mean":
+            mean = data.mean(axis=1)
+        case "intersect":
+            pass
+        case _:
+            raise NotImplementedError()
 
-    no_confidence = 1 - confidence
-    upper_bound = np.quantile(sampled_data, q=1 - no_confidence / 2, axis=1)
-    lower_bound = np.quantile(sampled_data, q=no_confidence / 2, axis=1)
+    upper_bound = None
+    lower_bound = None
+    match std_agg:
+        case "bootstrap":
+            sampled_idx = np.random.choice(range(data.shape[1]), n_bootstrap_samples)
+            sampled_data = data.iloc[:, sampled_idx]
+
+            no_confidence = 1 - confidence
+            upper_bound = np.quantile(sampled_data, q=1 - no_confidence / 2, axis=1)
+            lower_bound = np.quantile(sampled_data, q=no_confidence / 2, axis=1)
+        case None:
+            pass
+        case _:
+            raise NotImplementedError()
 
     if ax is None:
         fig, ax = plt.subplots()
     if abscissa is None:
         abscissa = list(range(data.shape[1]))
 
-    ax.fill_between(
-        abscissa,
-        np.minimum(upper_bound, 1.0),
-        lower_bound,
-        alpha=0.3,
-        color=shade_color,
-    )
+    if std_agg is not None:
+        ax.fill_between(
+            abscissa,
+            upper_bound,
+            lower_bound,
+            alpha=0.3,
+            color=shade_color,
+        )
     ax.plot(abscissa, mean, color=mean_color, **kwargs)
 
 
@@ -196,12 +214,11 @@ def plot_grid_over_datasets(
                 FormatStrFormatter(format_x_ticks)
             )
 
-    i_first_unfilled_plot = 2 * n_plots - n_rows * n_cols
-    use_last_as_legend = False
-    for i in range(i_first_unfilled_plot, n_plots):
+    i_first_unfilled_plot = 2 * n_plots - n_rows * n_cols + 1
+    use_last_as_legend = i_first_unfilled_plot < n_rows * n_cols
+    for i in range(i_first_unfilled_plot, n_rows * n_cols):
         last = ax[i]
         last.set_axis_off()
-        use_last_as_legend = True
 
     if legend or isinstance(legend, list):
         handles_labels = ax[0].get_legend_handles_labels() if legend else (legend,)
@@ -292,6 +309,62 @@ def plot_histogram(
 
 
 @contextmanager
+def plot_value_decay(
+    data: pd.DataFrame,
+    method_names: OneOrMany[str],
+    patch_size: Tuple[float, float] = (3, 2.5),
+    n_cols: int = 5,
+    fraction: float = 0.05,
+) -> plt.Figure:
+    def plot_value_decay_func(
+        data: pd.DataFrame, ax: plt.Axes, method_names: List[str], **kwargs
+    ):
+        data.loc[:, "method_name"] = data["method_name"].apply(lambda m: LABELS[m])
+        for method_name in method_names:
+            method_dataset_valuation_results = data.loc[
+                data["method_name"] == LABELS[method_name]
+            ]
+            method_values = np.stack(
+                method_dataset_valuation_results["valuation"].apply(
+                    lambda v: np.flip(np.sort(v.values))
+                )
+            )
+            reduced_length = int(method_values.shape[1] * fraction)
+            method_values = method_values[:, :reduced_length] / np.max(
+                method_values, axis=1, keepdims=True
+            )
+            color_name = COLOR_ENCODING[LABELS[method_name]]
+            mean_color, shade_color = COLORS[color_name]
+            method_values = pd.DataFrame(
+                method_values.T, index=np.arange(method_values.shape[1])
+            )
+            shaded_interval_line_plot(
+                method_values,
+                mean_agg="mean",
+                std_agg="bootstrap",
+                abscissa=method_values.index,
+                mean_color=mean_color,
+                shade_color=shade_color,
+                label=method_name,
+                ax=ax,
+            )
+
+    with plot_grid_over_datasets(
+        data,
+        plot_value_decay_func,
+        patch_size=patch_size,
+        n_cols=n_cols,
+        legend=True,
+        method_names=ensure_list(method_names),
+        xlabel="n",
+        ylabel="Value",
+        format_x_ticks="%.3f",
+        grid=True,
+    ) as fig:
+        yield fig
+
+
+@contextmanager
 def plot_time(
     data: pd.DataFrame,
     patch_size: Tuple[float, float] = (3, 2.5),
@@ -342,6 +415,8 @@ def plot_curves(
     data: pd.DataFrame,
     patch_size: Tuple[float, float] = (3, 2.5),
     n_cols: int = 5,
+    mean_agg: Literal["mean"] = "mean",
+    std_agg: Literal["bootstrap"] | None = None,
     plot_perc: float = None,
     x_label: str = None,
     y_label: str = None,
@@ -367,8 +442,10 @@ def plot_curves(
             if plot_perc is not None:
                 results = results.iloc[: int(m.ceil(plot_perc * results.shape[0])), :]
 
-            shaded_mean_normal_confidence_interval(
+            shaded_interval_line_plot(
                 results,
+                mean_agg=mean_agg,
+                std_agg=std_agg,
                 abscissa=results.index,
                 mean_color=mean_color,
                 shade_color=shade_color,
@@ -544,3 +621,58 @@ def plot_threshold_characteristics(
         ],
     ) as fig:
         yield fig
+
+
+def plot_rank_stability(
+    model: str, base_path: str, n_columns: int, n_rows: int, alpha_range: Sequence
+) -> plt.Figure():
+    assert n_columns * n_rows > len(ALL_DATASETS)
+
+    rank_stabilities = rank_stability(
+        model=model, base_path=base_path, alpha_range=alpha_range
+    )
+
+    fig, axs = plt.subplots(n_rows, n_columns, figsize=(15, 5))
+    axs = axs.flatten()
+    plt.subplots_adjust(
+        left=0.05, right=0.95, top=0.9, bottom=0.05, wspace=0.3, hspace=0.3
+    )
+
+    plot_n = 0
+
+    methods = sorted(set(ALL_METHODS).difference(["random", "loo"]))
+    for dataset in ALL_DATASETS:
+        for method in methods:
+            mean_color, shade_color = COLORS[COLOR_ENCODING[LABELS[method]]]
+            axs[plot_n].plot(
+                np.abs(alpha_range),
+                rank_stabilities[dataset][method],
+                label=LABELS[method],
+                color=mean_color,
+            )
+            axs[plot_n].set_title(f"{dataset}")
+            axs[plot_n].set_ylim(0, 0.8)
+            axs[plot_n].set_xlim((min(alpha_range), max(alpha_range)))
+            axs[plot_n].set_xticks(np.linspace(min(alpha_range), max(alpha_range), 4))
+            axs[plot_n].set_xticklabels(
+                np.linspace(
+                    100 * min(alpha_range), 100 * max(alpha_range), 4, dtype=int
+                )
+            )
+            axs[plot_n].set_yticks(np.linspace(0, 0.8, 5))
+            axs[plot_n].set_yticklabels(np.linspace(0, 80, 5, dtype=int))
+            axs[plot_n].grid(True)
+
+        #
+        plot_n += 1
+
+    m = len(axs)
+    for ax in axs[plot_n : m - 1]:
+        ax.remove()
+    handles, labels = axs[0].get_legend_handles_labels()
+
+    last = axs[m - 1]
+    last.set_axis_off()
+    last.legend(handles, labels, loc="center", prop={"size": 9})  # size in points
+
+    return fig

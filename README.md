@@ -346,7 +346,7 @@ experiments:
   point_removal:
     [...]
     metrics:
-      weighted_accuracy_drop_logistic_regression:
+      accuracy_logistic_regression:
         idx: weighted_metric_drop
         metric: accuracy
         eval_model: logistic_regression

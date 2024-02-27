@@ -18,10 +18,12 @@ from functools import partial
 
 import click
 import pandas as pd
+from pydvl.utils.functional import free_arguments, maybe_add_argument
 
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.metric import MetricsRegistry
+from re_classwise_shapley.requests import FunctionalCurveRequest
 from re_classwise_shapley.utils import load_params_fast
 
 logger = setup_logger("evaluate_metrics")
@@ -95,7 +97,18 @@ def _evaluate_metrics(
     metric_fn = metrics_kwargs.pop("fn")
     metrics_kwargs.pop("plots", None)
     curve_names = metrics_kwargs.pop("curve")
-    metrics_fn = partial(MetricsRegistry[metric_fn], **metrics_kwargs)
+    repetitions = get_active_repetitions(params)
+
+    fn = MetricsRegistry[metric_fn]
+    requests = []
+    if "random_base_line" in free_arguments(fn):
+        requests.append(
+            FunctionalCurveRequest("random_base_line", "random", repetitions)
+        )
+
+    fn = maybe_add_argument(fn, "random_base_line")
+    metrics_fn = partial(fn, **metrics_kwargs)
+
     os.makedirs(output_dir, exist_ok=True)
     curves = list(
         Accessor.curves(
@@ -114,11 +127,23 @@ def _evaluate_metrics(
         if os.path.exists(output_dir / f"{metric_name}.{curve_name}.csv"):
             continue
 
-        metric = metrics_fn(curve)
+        extra_kwargs = {
+            request.arg_name: request.request(
+                experiment_name, model_name, dataset_name, curve_names
+            )
+            for request in requests
+        }
+        metric = metrics_fn(curve, **extra_kwargs)
         evaluated_metrics = pd.Series([metric])
         evaluated_metrics.name = "value"
         evaluated_metrics.index.name = "metric"
         evaluated_metrics.to_csv(output_dir / f"{metric_name}.{curve_name}.csv")
+
+
+def get_active_repetitions(params):
+    active_params = params["active"]
+    repetitions = active_params["repetitions"]
+    return list(range(repetitions["from"], repetitions["to"] + 1))
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ settings:
     preprocess_data: true
     sample_data: true
     calculate_values: true
-    calculate_threshold_characteristics: true
+    calculate_threshold_characteristics: false
     evaluate_curves: true
     evaluate_metrics: true
     render_plots: true
@@ -49,8 +49,10 @@ active:
   - tmc_shapley
   - beta_shapley
   - banzhaf_shapley
-  - msr_banzhaf_shapley
+  - msr_banzhaf_shapley_500
+  - msr_banzhaf_shapley_5000
   - least_core
+  - least_core_5000
   - loo
   repetitions:
     from: 1
@@ -327,9 +329,15 @@ valuation_methods:
     progress: true
     cache_group: acc
 
-  msr_banzhaf_shapley:
+  msr_banzhaf_shapley_500:
     algorithm: msr_banzhaf_shapley
     n_updates: 500
+    progress: true
+    cache_group: acc
+
+  msr_banzhaf_shapley_5000:
+    algorithm: msr_banzhaf_shapley
+    n_updates: 5000
     progress: true
     cache_group: acc
 
@@ -343,6 +351,12 @@ valuation_methods:
   least_core:
     algorithm: least_core
     n_updates: 5000
+    progress: false
+    cache_group: acc
+
+  least_core_500:
+    algorithm: least_core
+    n_updates: 500
     progress: false
     cache_group: acc
 

@@ -4,10 +4,10 @@ from typing import Callable, Dict, Optional, Set, Tuple
 
 import numpy as np
 import pandas as pd
+from joblib import effective_n_jobs
 from numpy.typing import NDArray
 from pydvl.parallel import (
     ParallelConfig,
-    effective_n_jobs,
     init_executor,
     init_parallel_backend,
 )
@@ -229,7 +229,7 @@ def _curve_score_over_point_removal_or_addition(
     u_ref = parallel_backend.put(u)
     values_ref = parallel_backend.put(values)
     n_evals = len(u.data) - min_points + 1
-    n_jobs = effective_n_jobs(n_jobs, config)
+    n_jobs = effective_n_jobs(n_jobs)
     max_jobs = 2 * n_jobs
     n_submitted_jobs = 0
     n_completed = 0

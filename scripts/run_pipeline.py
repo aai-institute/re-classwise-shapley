@@ -184,7 +184,7 @@ def run_pipeline():
         logger.info("Interrupted by Ctrl+C.")
     else:
         logger.info("Shutdown system.")
-        # os.system("sudo shutdown now")
+        os.system("sudo shutdown now")
 
 
 if __name__ == "__main__":

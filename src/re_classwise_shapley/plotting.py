@@ -36,7 +36,10 @@ COLOR_ENCODING = {
     "Classwise Shapley": "red",
     "Owen Sampling": "purple",
     "Banzhaf Shapley": "orange",
-    "Least Core": "pink",
+    "MSR Banzhaf Shapley (500)": "purple",
+    "MSR Banzhaf Shapley (5000)": "purple",
+    "Least Core (500)": "pink",
+    "Least Core (5000)": "pink",
 }
 
 # Mapping from colors to mean and shade color.
@@ -62,7 +65,10 @@ LABELS = {
     "classwise_shapley": "Classwise Shapley",
     "owen_sampling_shapley": "Owen Sampling",
     "banzhaf_shapley": "Banzhaf Shapley",
-    "least_core": "Least Core",
+    "msr_banzhaf_shapley_500": "MSR Banzhaf Shapley (500)",
+    "msr_banzhaf_shapley_5000": "MSR Banzhaf Shapley (5000)",
+    "least_core": "Least Core (5000)",
+    "least_core_500": "Least Core (500)",
 }
 
 

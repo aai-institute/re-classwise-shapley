@@ -49,6 +49,7 @@ active:
   - tmc_shapley
   - beta_shapley
   - banzhaf_shapley
+  - msr_banzhaf_shapley
   - least_core
   - loo
   repetitions:
@@ -326,6 +327,11 @@ valuation_methods:
     progress: true
     cache_group: acc
 
+  msr_banzhaf_shapley:
+    algorithm: msr_banzhaf_shapley
+    n_updates: 500
+    progress: true
+    cache_group: acc
 
   tmc_shapley:
     algorithm: tmc_shapley

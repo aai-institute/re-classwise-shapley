@@ -17,9 +17,10 @@ from pydvl.value import (
     compute_classwise_shapley_values,
     compute_least_core_values,
     compute_loo,
-    compute_shapley_values,
+    compute_shapley_values, MSRSampler,
 )
-from pydvl.value.semivalues import SemiValueMode, compute_semivalues
+from pydvl.value.semivalues import SemiValueMode, compute_semivalues, \
+    always_one_coefficient, RawUtility, MSRFutureProcessor, compute_generic_semivalues
 
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.model import instantiate_model
@@ -126,6 +127,21 @@ def compute_values(
                         config=parallel_config,
                         progress=progress,
                         seed=seed,
+                    )
+
+                case "msr_banzhaf_shapley":
+                    n_updates = int(kwargs.get("n_updates"))
+                    return compute_generic_semivalues(
+                        MSRSampler(utility.data.indices, seed=seed),
+                        utility,
+                        always_one_coefficient,
+                        MinUpdates(n_updates=n_updates),
+                        marginal=RawUtility(),
+                        future_processor=MSRFutureProcessor(utility),
+                        batch_size=len(utility.data),
+                        n_jobs=n_jobs,
+                        config=parallel_config,
+                        progress=progress,
                     )
 
                 case "tmc_shapley":

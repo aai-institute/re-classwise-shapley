@@ -25,7 +25,7 @@ boto3 = "^1.28.36"
 plotly = "^5.16.1"
 dataframe_image = "*"
 python-dotenv = "*"
-pyDVL = {version="0.8.0", extras=["memcached"]}
+pyDVL = {version="0.9.1", extras=["memcached"]}
 python-memcached = "1.62"
 
 [tool.poetry.group.dev.dependencies]

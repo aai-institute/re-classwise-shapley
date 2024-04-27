@@ -89,7 +89,7 @@ def _evaluate_curves(
         / str(repetition_id)
         / valuation_method_name
     )
-    if os.path.exists(output_dir / f"{curve_name}.curve.csv"):
+    if os.path.exists(output_dir / f"{curve_name}.csv"):
         return logger.info(f"Curve data exists in '{output_dir}'. Skipping...")
 
     values = Accessor.valuation_results(

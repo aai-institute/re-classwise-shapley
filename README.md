@@ -353,6 +353,40 @@ experiments:
         len_curve_perc: 0.5
 ```
 
-A special role has the parameter `len_curve_perc`. It defines how much of the curve
+The parameter `len_curve_perc` has a special role. It defines how much of the curve
 should be drawn in the plots. It is not passed to the metric itself, but used in the 
 last stage. All other parameters are passed as keyword arguments to the metric.
+
+
+# The reproducibility report
+
+The report is written using [TeXmacs](https://www.texmacs.org). The sources
+can be found in the `report` folder.
+
+Due to the requirement to use TMLR's style files, we use TeXmacs' *conservative
+export* to LaTeX. After activating this preference in the editor, import the
+LaTeX file and work on it as if it were a regular TeXmacs file. Save the file to
+export back, while preserving any TeXmacs-specific formatting. Export to PDF
+from TeXmacs any time, or use the LaTeX file with TMLR's template project for
+overleaf.
+
+## Images
+
+Images are linked from the `output` folder. These are not included in the
+repository, but can be generated from saved run data using
+
+```shell
+dvc repro render-plots -f -s
+```
+
+For convenience, the script under `scripts/finish_latex_export.py` can be used
+to gather all used images for easy upload to overleaf. It will create a folder
+`report/output` mimicking the structure of the `output` folder, and copy all
+used images there.
+
+## Caveats
+
+TMLR requires using \citep and \citet for citations. TeXmacs does not support
+this natively, so we use an ugly workaround. In TeXmacs we enclose the required 
+citations in parentheses, and then we use a simple regex to convert those. This
+is just a hack until we add a couple of macros to texmacs for proper export.

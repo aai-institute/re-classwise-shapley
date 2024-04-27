@@ -141,11 +141,10 @@ def run_pipeline():
                         "curves"
                     ].keys():
                         logger.info(
-                            f"Calculate metric {curve_name} for dataset {dataset_name}, "
+                            f"Calculate curve {curve_name} for dataset {dataset_name}, "
                             f"valuation method {valuation_method_name} and seed "
-                            f"{repetition_id}."
+                            f"{repetition_id} on model {model_name}."
                         )
-                        logger.info(f"Evaluate metric {curve_name}.")
                         repeat(
                             _evaluate_curves,
                             experiment_name,
@@ -163,7 +162,7 @@ def run_pipeline():
                         logger.info(
                             f"Calculate metric {metric_name} for dataset {dataset_name}, "
                             f"valuation method {valuation_method_name} and seed "
-                            f"{repetition_id}."
+                            f"{repetition_id} on model {model_name}."
                         )
                         logger.info(f"Evaluate metric {metric_name}.")
                         repeat(

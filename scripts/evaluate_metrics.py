@@ -125,6 +125,7 @@ def _evaluate_metrics(
         logger.info(f"Processing curve {i+1}/{len(curves)} with name '{curve_name}'.")
         curve = curve["curve"]
         if os.path.exists(output_dir / f"{metric_name}.{curve_name}.csv"):
+            logger.info(f"Metric data exists in '{output_dir}/{metric_name}.{curve_name}.csv'. Skipping...")
             continue
 
         extra_kwargs = {

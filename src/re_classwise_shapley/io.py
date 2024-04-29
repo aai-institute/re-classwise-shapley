@@ -340,6 +340,7 @@ class Accessor:
             / str(repetition_id)
             / method_name
         )
+        import os
         curve = pd.read_csv(base_path / f"{curve_name}.csv")
         curve.index = curve[curve.columns[0]]
         curve = curve.drop(columns=[curve.columns[0]]).iloc[:, -1]

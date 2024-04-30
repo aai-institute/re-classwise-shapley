@@ -37,7 +37,7 @@ COLOR_ENCODING = {
     "Owen Sampling": "purple",
     "Banzhaf Shapley": "orange",
     "MSR Banzhaf Shapley (500)": "purple",
-    "MSR Banzhaf Shapley (5000)": "purple",
+    "MSR Banzhaf Shapley (5000)": "turquoise",
     "Least Core (500)": "pink",
     "Least Core (5000)": "pink",
 }

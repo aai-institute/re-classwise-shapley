@@ -29,7 +29,6 @@ active:
   models:
   - logistic_regression
   datasets:
-  - diabetes
   - cpu
   - mnist_multi
   valuation_methods:

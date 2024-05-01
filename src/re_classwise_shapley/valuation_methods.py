@@ -11,16 +11,23 @@ from pydvl.value import (
     ClasswiseScorer,
     MaxChecks,
     MinUpdates,
+    MSRSampler,
     RelativeTruncation,
     ShapleyMode,
     ValuationResult,
     compute_classwise_shapley_values,
     compute_least_core_values,
     compute_loo,
-    compute_shapley_values, MSRSampler,
+    compute_shapley_values,
 )
-from pydvl.value.semivalues import SemiValueMode, compute_semivalues, \
-    always_one_coefficient, RawUtility, MSRFutureProcessor, compute_generic_semivalues
+from pydvl.value.semivalues import (
+    MSRFutureProcessor,
+    RawUtility,
+    SemiValueMode,
+    always_one_coefficient,
+    compute_generic_semivalues,
+    compute_semivalues,
+)
 
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.model import instantiate_model
@@ -34,16 +41,7 @@ logger = setup_logger(__name__)
 
 def compute_values(
     utility: Utility,
-    valuation_method: Literal[
-        "random",
-        "loo",
-        "classwise_shapley",
-        "beta_shapley",
-        "banzhaf_shapley",
-        "tmc_shapley",
-        "owen_sampling_shapley",
-        "least_core",
-    ],
+    valuation_method: str,
     seed: int = None,
     **kwargs,
 ) -> ValuationResult:
@@ -51,8 +49,6 @@ def compute_values(
     Computes the valuation values for a given valuation method. The valuation method is
     specified by the `valuation_method` argument. The `kwargs` are passed to the
     valuation method.
-
-    TODO Remove this method by integrating function calls in to the params.yaml file.
 
     Args:
         utility: Utility object to compute the valuation values for.

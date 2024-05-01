@@ -11,7 +11,7 @@ settings:
     sample_data: false
     calculate_values: false
     calculate_threshold_characteristics: false
-    evaluate_curves: false
+    evaluate_curves: true
     evaluate_metrics: true
     render_plots: true
 
@@ -84,7 +84,7 @@ experiments:
         fn: top_fraction
         alpha_range:
           from: 0.01
-          to: 0.05
+          to: 0.5
           step: 0.01
         plots:
           - rank_stability

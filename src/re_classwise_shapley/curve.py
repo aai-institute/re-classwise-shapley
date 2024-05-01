@@ -48,13 +48,16 @@ def curve_top_fraction(
         alpha_range: A dictionary containing from, to and step keys.
 
     Returns:
-        A pd.Series contianing the alpha value on the x-axis and a unfolded list on the
+        A pd.Series containing the alpha value on the x-axis and a unfolded list on the
             y-axis.
     """
     assert -1 <= alpha_range["to"] <= 1.0
     assert -1 <= alpha_range["from"] <= 1.0
-    n = int((alpha_range["to"] - alpha_range["from"]) / alpha_range["step"]) + 1
-    alpha_range = np.arange(alpha_range["from"], alpha_range["to"], alpha_range["step"])
+    alpha_range = np.arange(
+        alpha_range["from"],
+        alpha_range["to"] + alpha_range["step"],
+        alpha_range["step"],
+    )
     values.sort(reverse=np.all(alpha_range >= 0))
 
     alpha_values = []

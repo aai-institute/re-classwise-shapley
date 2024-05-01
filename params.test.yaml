@@ -29,8 +29,8 @@ active:
   models:
   - logistic_regression
   datasets:
+  - diabetes
   - cpu
-  - mnist_multi
   valuation_methods:
   - random
   - loo
@@ -115,29 +115,19 @@ samplers:
 
 datasets:
 
+  diabetes:
+    openml_id: 37
+
   cpu:
     openml_id: 197
     preprocessor:
       threshold_y:
         threshold: 89
 
-  mnist_multi:
-    openml_id: 554
-    preprocessor:
-      principal_resnet_components:
-        n_components: 32
-        grayscale: true
-        seed: 104
-
 models:
   logistic_regression:
     model: logistic_regression
     solver: liblinear
-
-  knn:
-    model: knn
-    n_neighbors: 5
-    weights: uniform
 
 valuation_methods:
 

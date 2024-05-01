@@ -26,6 +26,7 @@ ALL_METHODS = [
     "classwise_shapley",
     "least_core",
     "loo",
+    "msr_banzhaf_shapley_5000",
     "random",
     "tmc_shapley",
 ]
@@ -56,7 +57,7 @@ def varwad(model: str, base_path: str):
         for run in range(1, N_RUNS + 1):
             df = pd.read_csv(
                 f"{base_path}/{model}/{dataset}/{run}/"
-                f"{method}/weighted_accuracy_drop_{model}.curve.csv"
+                f"{method}/accuracy_{model}.csv"
             )
             df["run"] = run
             df = df.rename(columns={"n_points_removed": "t"}).sort_values(
@@ -367,7 +368,7 @@ def plot_rank_stability(
 if __name__ == "__main__":
     fig = plot_varwad(
         model=SOURCE_MODEL,
-        base_path=f"{BASE_PATH}/results/point_removal",
+        base_path=f"{BASE_PATH}/curves/point_removal",
         n_bootstrap_samples=10000,
     )
     fig.savefig(

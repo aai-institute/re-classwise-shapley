@@ -223,7 +223,7 @@ plots:
     type: line
     mean_agg: intersect
     x_label: "%"
-    y_label: "a"
+    y_label: "%"
 
   value_decay:
     type: line

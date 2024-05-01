@@ -48,9 +48,7 @@ def run_pipeline():
         stages = params["settings"]["stages"]
         active_params = params["active"]
         repetitions = active_params["repetitions"]
-        active_params["repetitions"] = list(
-            range(repetitions["from"], repetitions["to"] + 1)
-        )
+        active_params["repetitions"] = list(repetitions)
 
         for dataset_name in active_params["datasets"]:
             logger.info(f"Fetching dataset {dataset_name}.")
@@ -127,16 +125,16 @@ def run_pipeline():
                         repetition_id,
                     )
 
-            for (
-                dataset_name,
-                valuation_method_name,
-                repetition_id,
-            ) in product(
-                active_params["datasets"],
-                active_params["valuation_methods"],
-                active_params["repetitions"],
-            ):
-                if stages["evaluate_curves"]:
+            if stages["evaluate_curves"]:
+                for (
+                    dataset_name,
+                    valuation_method_name,
+                    repetition_id,
+                ) in product(
+                    active_params["datasets"],
+                    active_params["valuation_methods"],
+                    active_params["repetitions"],
+                ):
                     for curve_name in params["experiments"][experiment_name][
                         "curves"
                     ].keys():
@@ -155,7 +153,16 @@ def run_pipeline():
                             curve_name,
                         )
 
-                if stages["evaluate_metrics"]:
+            if stages["evaluate_metrics"]:
+                for (
+                    dataset_name,
+                    valuation_method_name,
+                    repetition_id,
+                ) in product(
+                    active_params["datasets"],
+                    active_params["valuation_methods"],
+                    active_params["repetitions"],
+                ):
                     for metric_name in params["experiments"][experiment_name][
                         "metrics"
                     ].keys():

@@ -1,5 +1,6 @@
 import math as m
 from contextlib import contextmanager
+from functools import reduce
 from typing import Any, Callable, List, Literal, Sequence, Tuple, Union
 
 import matplotlib.pyplot as plt
@@ -82,6 +83,7 @@ def shaded_interval_line_plot(
     ax: Axes = None,
     n_bootstrap_samples: int = 1000,
     confidence: float = 0.95,
+    dataset_name: str = None,
     **kwargs,
 ):
     """
@@ -102,7 +104,17 @@ def shaded_interval_line_plot(
         case "mean":
             mean = data.mean(axis=1)
         case "intersect":
-            pass
+
+            def intersect(row):
+                lst_row = list(row)
+                lst_row = [set(s.split(" ")) for s in lst_row]
+                lst = list(reduce(lambda t, s: t.intersection(s), lst_row, set()))
+                return len(lst)
+
+            n_indices = 128 if dataset_name == "diabetes" else 500
+            top_indices = data.apply(intersect, axis=1)
+            mean = top_indices / (n_indices * abs(data.index))
+
         case _:
             raise NotImplementedError()
 
@@ -438,6 +450,7 @@ def plot_curves(
     """
 
     def plot_curves_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
+        dataset_name = kwargs.get("dataset_name")
         data.loc[:, "method_name"] = data["method_name"].apply(lambda m: LABELS[m])
         for method_name, method_data in data.groupby("method_name"):
             color_name = COLOR_ENCODING[method_name]
@@ -457,6 +470,7 @@ def plot_curves(
                 shade_color=shade_color,
                 label=method_name,
                 ax=ax,
+                dataset_name=dataset_name,
             )
 
     with plot_grid_over_datasets(
@@ -505,8 +519,6 @@ def plot_metric_boxplot(
         patch_size: Size of one image patch of the multi plot.
         n_cols: Number of columns for subplot layout.
     """
-
-    data = data.loc[data["method_name"] != "random"]
 
     def plot_metric_boxplot_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
         data.loc[:, "method_name"] = data["method_name"].apply(lambda m: LABELS[m])

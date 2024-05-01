@@ -341,6 +341,7 @@ class Accessor:
             / method_name
         )
         import os
+
         curve = pd.read_csv(base_path / f"{curve_name}.csv")
         curve.index = curve[curve.columns[0]]
         curve = curve.drop(columns=[curve.columns[0]]).iloc[:, -1]
@@ -373,9 +374,10 @@ class Accessor:
             / dataset_name
             / str(repetition_id)
             / method_name
+            / metric_name
         )
 
-        metric = pd.read_csv(base_path / f"{metric_name}.{curve_name}.csv")
+        metric = pd.read_csv(base_path / f"{curve_name}.csv")
         metric = metric.iloc[-1, -1]
 
         return {

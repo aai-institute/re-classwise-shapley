@@ -4,13 +4,14 @@ settings:
   mlflow_tracking_uri: http://localhost:5000
   plot_format: pdf
 
+  # only valid for `scripts/run_pipeline.py`
   stages:
-    fetch_data: true
-    preprocess_data: true
-    sample_data: true
-    calculate_values: true
-    calculate_threshold_characteristics: true
-    evaluate_curves: true
+    fetch_data: false
+    preprocess_data: false
+    sample_data: false
+    calculate_values: false
+    calculate_threshold_characteristics: false
+    evaluate_curves: false
     evaluate_metrics: true
     render_plots: true
 
@@ -19,7 +20,6 @@ settings:
     active: true
 
   threshold_characteristics:
-    active: false
     valuation_method: banzhaf_shapley  # Method used to calculate the threshold characteristics.
     model: logistic_regression  # Default model to use for determining the values
     max_plotting_percentage: 1e-4  # Threshold for stopping plotting in direction of x-axis.
@@ -54,13 +54,41 @@ active:
   - least_core
   - loo
   repetitions:
-    from: 1
-    to: 20
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  - 15
+  - 16
+  - 17
+  - 18
+  - 19
+  - 20
+
 
 experiments:
   point_removal:
     sampler: default
     curves:
+      top_fraction:
+        fn: top_fraction
+        alpha_range:
+          from: 0.01
+          to: 0.05
+          step: 0.01
+        plots:
+          - rank_stability
+
       accuracy_logistic_regression:
         fn: metric
         metric: accuracy
@@ -156,6 +184,12 @@ experiments:
 plots:
 
   density:
+
+  rank_stability:
+    type: line
+    mean_agg: intersect
+    x_label: "%"
+    y_label: "a"
 
   accuracy:
     type: line

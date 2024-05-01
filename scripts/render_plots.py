@@ -16,6 +16,7 @@ also stored in mlflow. The id of the mlflow experiment is given by the schema
 import os
 import os.path
 from datetime import datetime
+from typing import Any
 
 import click
 import mlflow
@@ -37,7 +38,6 @@ from re_classwise_shapley.plotting import (
     plot_metric_table,
     plot_threshold_characteristics,
     plot_time,
-    plot_value_decay,
 )
 from re_classwise_shapley.utils import (
     flatten_dict,
@@ -74,11 +74,10 @@ def _render_plots(experiment_name: str, model_name: str):
     dataset_names = params_active["datasets"]
     method_names = params_active["valuation_methods"]
     repetitions = params_active["repetitions"]
-    repetitions = list(range(repetitions["from"], repetitions["to"] + 1))
+    repetitions = list(repetitions)
     curves_def = params["experiments"][experiment_name]["curves"]
     curve_names = list(curves_def.keys())
     metrics_def = params["experiments"][experiment_name]["metrics"]
-    metric_names = list(metrics_def.keys())
 
     mlflow.set_tracking_uri(params["settings"]["mlflow_tracking_uri"])
     experiment_id = get_or_create_mlflow_experiment(mlflow_id)
@@ -113,10 +112,6 @@ def _render_plots(experiment_name: str, model_name: str):
             repetitions,
             method_names,
         )
-        logger.info(f"Plotting value decay for all methods.")
-        with plot_value_decay(valuation_results, method_names) as fig:
-            log_figure(fig, output_folder, f"decay.{plot_format}", "values")
-
         for method_name in method_names:
             logger.info(f"Plot histogram for values of method `{method_name}`.")
             with plot_histogram(valuation_results, [method_name]) as fig:
@@ -180,12 +175,15 @@ def _render_plots(experiment_name: str, model_name: str):
                         plot_perc = plot_settings.get("plot_perc", 1.0)
                         x_label = plot_settings.get("x_label", None)
                         y_label = plot_settings.get("y_label", None)
-                        agg = plot_settings.get("agg", "mean")
+                        agg = plot_settings.get("mean_agg", "mean")
+                        std_agg = plot_settings.get("std_agg", None)
                         with plot_curves(
                             selected_loaded_curves,
                             plot_perc=plot_perc,
                             x_label=x_label,
                             y_label=y_label,
+                            mean_agg=agg,
+                            std_agg=std_agg,
                         ) as fig:
                             log_figure(
                                 fig,
@@ -196,17 +194,21 @@ def _render_plots(experiment_name: str, model_name: str):
                     case _:
                         raise NotImplementedError
 
+            f_metric_names = filter_metric_by_curve(metrics_def, curve_name)
             logger.info("Loading metrics form hard disk.")
             loaded_metrics = Accessor.metrics(
                 experiment_name,
                 model_name,
                 dataset_names,
                 method_names,
-                metric_names,
+                f_metric_names,
                 repetitions,
                 curve_name,
             )
-            for metric_name in metric_names:
+            if len(loaded_metrics) == 0:
+                continue
+
+            for metric_name in f_metric_names:
                 logger.info(f"Processing metric '{metric_name}'.")
                 selected_loaded_metrics = loaded_metrics.loc[
                     loaded_metrics["metric_name"] == metric_name
@@ -236,7 +238,9 @@ def _render_plots(experiment_name: str, model_name: str):
                                     )
 
                             logger.info(f"Plotting table for metric '{metric_name}'.")
-                            with plot_metric_table(metric_table) as fig:
+                            with plot_metric_table(
+                                metric_table, format_x=plot_settings.get("format", None)
+                            ) as fig:
                                 log_figure(
                                     fig,
                                     output_folder,
@@ -245,6 +249,7 @@ def _render_plots(experiment_name: str, model_name: str):
                                 )
                         case "boxplot":
                             x_label = plot_settings.get("x_label", None)
+                            x_format = plot_settings.get("format", None)
                             logger.info(f"Plotting boxplot for metric '{metric_name}'.")
                             with plot_metric_boxplot(
                                 selected_loaded_metrics, x_label=x_label
@@ -260,6 +265,10 @@ def _render_plots(experiment_name: str, model_name: str):
                             raise NotImplementedError
 
     logger.info(f"Finished rendering plots and metrics.")
+
+
+def filter_metric_by_curve(metric_defs: dict[str, Any], curve_name: str) -> list[str]:
+    return [name for name, d in metric_defs.items() if curve_name in d["curve"]]
 
 
 if __name__ == "__main__":

@@ -51,20 +51,23 @@ stages:
       - output/sampled/${item.experiment}/${item.dataset}:
           persist: true
 
-  determine-in-out-of-cls-marginal-accuracies:
+  calculate-threshold-characteristics:
     matrix:
       experiment: ${active.experiments}
       dataset: ${active.datasets}
+      repetition: ${active.repetitions}
     cmd: >
-      python -m scripts.determine_in_out_of_cls_marginal_accuracies
+      python -m scripts.calculate_threshold_characteristics
       --experiment-name ${item.experiment}
       --dataset-name ${item.dataset}
-      --model-name logistic_regression
+      --repetition-id ${item.repetition}
+    params:
+      - settings.threshold_characteristics
     deps:
-      - scripts/determine_in_out_of_cls_marginal_accuracies.py
+      - scripts/calculate_threshold_characteristics.py
       - output/sampled/${item.experiment}/${item.dataset}
     outs:
-      - output/info/${item.experiment}/${item.dataset}/in_out_of_cls_marginals.json:
+      - output/threshold_characteristics/${item.experiment}/${item.dataset}/${item.repetition}:
           persist: true
 
   calculate-values:
@@ -89,7 +92,56 @@ stages:
       - src/re_classwise_shapley/valuation_methods.py
       - output/sampled/${item.experiment}/${item.dataset}
     outs:
-      - output/values/${item.experiment}/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl:
+      - output/values/${item.experiment}/${item.model}/${item.dataset}/${item.repetition}:
+          persist: true
+
+  # TODO Make more concise once https://github.com/iterative/dvc/issues/9948 is closed.
+  evaluate-curves-point-removal:
+    matrix:
+      dataset: ${active.datasets}
+      model: ${active.models}
+      repetition: ${active.repetitions}
+      method: ${active.valuation_methods}
+      curve: ${experiments.point_removal.curves}
+    cmd: python -m scripts.evaluate_curves
+      --experiment-name point_removal
+      --dataset-name ${item.dataset}
+      --model-name ${item.model}
+      --valuation-method-name ${item.method}
+      --repetition-id ${item.repetition}
+      --curve-name ${item.curve}
+    params:
+      - experiments.point_removal.curves.${item.curve}
+    deps:
+      - scripts/evaluate_curves.py
+      - src/re_classwise_shapley/curve.py
+      - output/values/point_removal/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
+    outs:
+      - output/curves/point_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.curve}.csv:
+          persist: true
+
+  evaluate-curves-noise-removal:
+    matrix:
+      dataset: ${active.datasets}
+      model: ${active.models}
+      repetition: ${active.repetitions}
+      method: ${active.valuation_methods}
+      curve: ${experiments.noise_removal.curves}
+    cmd: python -m scripts.evaluate_curves
+      --experiment-name noise_removal
+      --dataset-name ${item.dataset}
+      --model-name ${item.model}
+      --valuation-method-name ${item.method}
+      --repetition-id ${item.repetition}
+      --curve-name ${item.curve}
+    params:
+      - experiments.noise_removal.curves.${item.curve}
+    deps:
+      - scripts/evaluate_curves.py
+      - src/re_classwise_shapley/curve.py
+      - output/values/noise_removal/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
+    outs:
+      - output/curves/noise_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.curve}.csv:
           persist: true
 
   # TODO Make more concise once https://github.com/iterative/dvc/issues/9948 is closed.
@@ -114,9 +166,7 @@ stages:
       - src/re_classwise_shapley/metric.py
       - output/values/point_removal/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
     outs:
-      - output/results/point_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.csv:
-          persist: true
-      - output/results/point_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.curve.csv:
+      - output/metrics/point_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}:
           persist: true
   
   evaluate-metrics-noise-removal:
@@ -140,9 +190,7 @@ stages:
       - src/re_classwise_shapley/metric.py
       - output/values/noise_removal/${item.model}/${item.dataset}/${item.repetition}/valuation.${item.method}.pkl
     outs:
-      - output/results/noise_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.csv:
-          persist: true
-      - output/results/noise_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}.curve.csv:
+      - output/metrics/noise_removal/${item.model}/${item.dataset}/${item.repetition}/${item.method}/${item.metric}:
           persist: true
   
   render-plots:
@@ -156,7 +204,9 @@ stages:
       - experiments.${item.experiment}.metrics
     deps:
       - scripts/render_plots.py
-      - output/results/${item.experiment}/${item.model}
+      - output/curves/${item.experiment}/${item.model}
+      - output/metrics/${item.experiment}/${item.model}
+      - output/threshold_characteristics/${item.experiment}
     outs:
       - output/plots/${item.experiment}/${item.model}
   

@@ -22,9 +22,9 @@ from pydvl.parallel import ParallelConfig
 from pydvl.utils.functional import maybe_add_argument
 
 from re_classwise_shapley.cache import PrefixMemcachedCacheBackend
+from re_classwise_shapley.curve import CurvesRegistry
 from re_classwise_shapley.io import Accessor
 from re_classwise_shapley.log import setup_logger
-from re_classwise_shapley.metric import CurvesRegistry
 from re_classwise_shapley.utils import load_params_fast, n_threaded, pipeline_seed
 
 logger = setup_logger("evaluate_curves")

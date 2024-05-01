@@ -125,7 +125,9 @@ def _evaluate_metrics(
         logger.info(f"Processing curve {i+1}/{len(curves)} with name '{curve_name}'.")
         curve = curve["curve"]
         if os.path.exists(output_dir / f"{metric_name}.{curve_name}.csv"):
-            logger.info(f"Metric data exists in '{output_dir}/{metric_name}.{curve_name}.csv'. Skipping...")
+            logger.info(
+                f"Metric data exists in '{output_dir}/{metric_name}.{curve_name}.csv'. Skipping..."
+            )
             continue
 
         extra_kwargs = {
@@ -138,13 +140,15 @@ def _evaluate_metrics(
         evaluated_metrics = pd.Series([metric])
         evaluated_metrics.name = "value"
         evaluated_metrics.index.name = "metric"
-        evaluated_metrics.to_csv(output_dir / f"{metric_name}.{curve_name}.csv")
+        metric_dir = output_dir / metric_name
+        metric_dir.mkdir(parents=True, exist_ok=True)
+        evaluated_metrics.to_csv(metric_dir / f"{curve_name}.csv")
 
 
 def get_active_repetitions(params):
     active_params = params["active"]
     repetitions = active_params["repetitions"]
-    return list(range(repetitions["from"], repetitions["to"] + 1))
+    return list(repetitions)
 
 
 if __name__ == "__main__":

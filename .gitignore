@@ -140,3 +140,6 @@ output/preprocessed
 output/*.zip
 output
 mlruns
+
+dvc.lock
+*.tar.gz

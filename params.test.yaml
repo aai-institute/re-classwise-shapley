@@ -1,0 +1,140 @@
+settings:
+  n_jobs: 4
+  backend: joblib
+  mlflow_tracking_uri: http://localhost:5000
+
+  # only valid for `scripts/run_pipeline.py`
+  stages:
+    fetch_data: true
+    preprocess_data: true
+    sample_data: true
+    calculate_values: true
+    calculate_threshold_characteristics: true
+    evaluate_curves: true
+    evaluate_metrics: true
+    render_plots: true
+
+  time:
+    active: true
+
+  threshold_characteristics:
+    valuation_method: loo  # Method used to calculate the threshold characteristics.
+    model: logistic_regression  # Default model to use for determining the values
+    max_plotting_percentage: 1e-4  # Threshold for stopping plotting in direction of x-axis.
+
+active:
+  experiments:
+  - point_removal
+  - noise_removal
+  models:
+  - logistic_regression
+  datasets:
+  - diabetes
+  - cpu
+  valuation_methods:
+  - random
+  - loo
+  repetitions:
+  - 1
+
+
+experiments:
+  point_removal:
+    sampler: default
+    curves:
+
+      accuracy_logistic_regression:
+        fn: metric
+        metric: accuracy
+        eval_model: logistic_regression
+        plots:
+          - accuracy
+
+      top_fraction:
+        fn: top_fraction
+        alpha_range:
+          from: 0.01
+          to: 0.5
+          step: 0.01
+        plots:
+          - rank_stability
+
+      value_decay:
+        fn: value_decay
+        plots:
+          - value_decay
+
+    metrics:
+
+      geometric_weighted_drop:
+        curve:
+          - accuracy_logistic_regression
+        fn: geometric_weighted_drop
+        input_perc: 1.0
+        plots:
+          - table
+          - box_wad
+
+plots:
+
+  accuracy:
+    type: line
+    mean_agg: mean
+    std_agg: bootstrap
+    plot_perc: 0.5
+    x_label: "n"
+    y_label: "Accuracy"
+
+  table:
+    type: table
+    format: "%.3f"
+
+  box_wad:
+    type: boxplot
+    x_label: "WAD"
+
+  rank_stability:
+    type: line
+    mean_agg: intersect
+    x_label: "%"
+    y_label: "%"
+
+  value_decay:
+    type: line
+    mean_agg: mean
+    std_agg: bootstrap
+    x_label: "n"
+    y_label: "%"
+
+samplers:
+  default:
+    train: 0.1667
+    val: 0.1667
+    test: 0.6667
+    max_samples: 3000
+
+datasets:
+
+  diabetes:
+    openml_id: 37
+
+  cpu:
+    openml_id: 197
+    preprocessor:
+      threshold_y:
+        threshold: 89
+
+models:
+  logistic_regression:
+    model: logistic_regression
+    solver: liblinear
+
+valuation_methods:
+
+  random:
+    algorithm: random
+
+  loo:
+    algorithm: loo
+    progress: true
+    cache_group: acc

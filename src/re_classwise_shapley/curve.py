@@ -124,6 +124,22 @@ def curve_metric(
     return curve
 
 
+def curve_value_decay(values: ValuationResult, fraction: float = 0.05) -> pd.Series:
+    """
+    Computes the value decay curve for a given valuation result. The value decay curve
+    shows the average value of the valuation result for each prefix of the ranking.
+    :param values: Valuation result to compute the value decay curve for.
+    :param fraction: Fraction of the ranking to consider.
+    :return: A pd.Series object containing the value decay curve.
+    """
+    method_values = np.flip(np.sort(values.values))
+    reduced_length = int(len(method_values) * fraction)
+    method_values = method_values[:reduced_length] / np.max(method_values)
+    return pd.Series(
+        method_values, index=np.arange(1, len(method_values) + 1), name="value_decay"
+    )
+
+
 def _curve_precision_recall_ranking(
     target_list: NDArray[np.int_], ranked_list: NDArray[np.int_]
 ) -> pd.Series:
@@ -280,4 +296,5 @@ CurvesRegistry: Dict[str, Callable[..., pd.Series]] = {
     "metric": curve_metric,
     "precision_recall": curve_roc,
     "top_fraction": curve_top_fraction,
+    "value_decay": curve_value_decay,
 }

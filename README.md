@@ -2,6 +2,10 @@
 
 Code for the submission to TMLR 2024. The original paper can be found [here](https://arxiv.org/abs/2211.06800).
 
+| :warning: WARNING                                           |
+|:------------------------------------------------------------|
+| It is it not recommended to use this library in production. |
+
 # Getting started
 
 ## Installation

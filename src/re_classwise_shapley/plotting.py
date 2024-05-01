@@ -9,7 +9,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.patches import Patch
-from matplotlib.ticker import FormatStrFormatter
+from matplotlib.ticker import FormatStrFormatter, FuncFormatter
 
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import OneOrMany, ensure_list
@@ -254,7 +254,8 @@ def plot_grid_over_datasets(
                 shadow=False,
                 **legend_kwargs,
             )
-            fig.subplots_adjust(bottom=0.1)
+
+        fig.subplots_adjust(bottom=0.1)
     yield fig
     plt.close(fig)
 
@@ -320,62 +321,6 @@ def plot_histogram(
         method_names=ensure_list(method_names),
         xlabel="Value",
         ylabel="#",
-        format_x_ticks="%.3f",
-        grid=True,
-    ) as fig:
-        yield fig
-
-
-@contextmanager
-def plot_value_decay(
-    data: pd.DataFrame,
-    method_names: OneOrMany[str],
-    patch_size: Tuple[float, float] = (3, 2.5),
-    n_cols: int = 5,
-    fraction: float = 0.05,
-) -> plt.Figure:
-    def plot_value_decay_func(
-        data: pd.DataFrame, ax: plt.Axes, method_names: List[str], **kwargs
-    ):
-        data.loc[:, "method_name"] = data["method_name"].apply(lambda m: LABELS[m])
-        for method_name in method_names:
-            method_dataset_valuation_results = data.loc[
-                data["method_name"] == LABELS[method_name]
-            ]
-            method_values = np.stack(
-                method_dataset_valuation_results["valuation"].apply(
-                    lambda v: np.flip(np.sort(v.values))
-                )
-            )
-            reduced_length = int(method_values.shape[1] * fraction)
-            method_values = method_values[:, :reduced_length] / np.max(
-                method_values, axis=1, keepdims=True
-            )
-            color_name = COLOR_ENCODING[LABELS[method_name]]
-            mean_color, shade_color = COLORS[color_name]
-            method_values = pd.DataFrame(
-                method_values.T, index=np.arange(method_values.shape[1])
-            )
-            shaded_interval_line_plot(
-                method_values,
-                mean_agg="mean",
-                std_agg="bootstrap",
-                abscissa=method_values.index,
-                mean_color=mean_color,
-                shade_color=shade_color,
-                label=method_name,
-                ax=ax,
-            )
-
-    with plot_grid_over_datasets(
-        data,
-        plot_value_decay_func,
-        patch_size=patch_size,
-        n_cols=n_cols,
-        legend=True,
-        method_names=ensure_list(method_names),
-        xlabel="n",
-        ylabel="Value",
         format_x_ticks="%.3f",
         grid=True,
     ) as fig:
@@ -489,6 +434,7 @@ def plot_curves(
 @contextmanager
 def plot_metric_table(
     data: pd.DataFrame,
+    format_x: str = "%.3f",
 ) -> plt.Figure:
     """
     Takes a pd.DataFrame and plots it as a table.
@@ -496,6 +442,7 @@ def plot_metric_table(
     data.columns = [LABELS[c] for c in data.columns]
     fig, ax = plt.subplots()
     sns.heatmap(data, annot=True, cmap=plt.cm.get_cmap("viridis"), ax=ax)
+    ax.xaxis.set_major_formatter(FormatStrFormatter(format_x))
     plt.ylabel("")
     plt.xlabel("")
     plt.tight_layout()

@@ -38,7 +38,6 @@ from re_classwise_shapley.plotting import (
     plot_metric_table,
     plot_threshold_characteristics,
     plot_time,
-    plot_value_decay,
 )
 from re_classwise_shapley.utils import (
     flatten_dict,
@@ -113,10 +112,6 @@ def _render_plots(experiment_name: str, model_name: str):
             repetitions,
             method_names,
         )
-        logger.info(f"Plotting value decay for all methods.")
-        with plot_value_decay(valuation_results, method_names) as fig:
-            log_figure(fig, output_folder, f"decay.{plot_format}", "values")
-
         for method_name in method_names:
             logger.info(f"Plot histogram for values of method `{method_name}`.")
             with plot_histogram(valuation_results, [method_name]) as fig:
@@ -243,7 +238,9 @@ def _render_plots(experiment_name: str, model_name: str):
                                     )
 
                             logger.info(f"Plotting table for metric '{metric_name}'.")
-                            with plot_metric_table(metric_table) as fig:
+                            with plot_metric_table(
+                                metric_table, format_x=plot_settings.get("format", None)
+                            ) as fig:
                                 log_figure(
                                     fig,
                                     output_folder,
@@ -252,6 +249,7 @@ def _render_plots(experiment_name: str, model_name: str):
                                 )
                         case "boxplot":
                             x_label = plot_settings.get("x_label", None)
+                            x_format = plot_settings.get("format", None)
                             logger.info(f"Plotting boxplot for metric '{metric_name}'.")
                             with plot_metric_boxplot(
                                 selected_loaded_metrics, x_label=x_label

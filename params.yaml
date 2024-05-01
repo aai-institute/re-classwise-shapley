@@ -80,14 +80,6 @@ experiments:
   point_removal:
     sampler: default
     curves:
-      top_fraction:
-        fn: top_fraction
-        alpha_range:
-          from: 0.01
-          to: 0.5
-          step: 0.01
-        plots:
-          - rank_stability
 
       accuracy_logistic_regression:
         fn: metric
@@ -120,6 +112,19 @@ experiments:
         plots:
           - accuracy
 
+      top_fraction:
+        fn: top_fraction
+        alpha_range:
+          from: 0.01
+          to: 0.5
+          step: 0.01
+        plots:
+          - rank_stability
+
+      value_decay:
+        fn: value_decay
+        plots:
+          - value_decay
 
     metrics:
       weighted_relative_accuracy_difference_random:
@@ -183,14 +188,6 @@ experiments:
 
 plots:
 
-  density:
-
-  rank_stability:
-    type: line
-    mean_agg: intersect
-    x_label: "%"
-    y_label: "a"
-
   accuracy:
     type: line
     mean_agg: mean
@@ -208,6 +205,7 @@ plots:
 
   table:
     type: table
+    format: "%.3f"
 
   box_wrad:
     type: boxplot
@@ -221,6 +219,18 @@ plots:
     type: boxplot
     x_label: "AUC"
 
+  rank_stability:
+    type: line
+    mean_agg: intersect
+    x_label: "%"
+    y_label: "a"
+
+  value_decay:
+    type: line
+    mean_agg: mean
+    std_agg: bootstrap
+    x_label: "n"
+    y_label: "%"
 
 samplers:
   default:

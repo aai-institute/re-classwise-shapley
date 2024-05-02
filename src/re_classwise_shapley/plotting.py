@@ -108,7 +108,11 @@ def shaded_interval_line_plot(
             def intersect(row):
                 lst_row = list(row)
                 lst_row = [set(s.split(" ")) for s in lst_row]
-                lst = list(reduce(lambda t, s: t.intersection(s), lst_row, set()))
+                s0 = lst_row[0]
+                for i in range(len(lst_row)):
+                    s0 = s0.intersection(lst_row[i])
+
+                lst = list(s0)
                 return len(lst)
 
             n_indices = 128 if dataset_name == "diabetes" else 500
@@ -239,23 +243,38 @@ def plot_grid_over_datasets(
         last.set_axis_off()
 
     if legend or isinstance(legend, list):
-        handles_labels = ax[0].get_legend_handles_labels() if legend else (legend,)
         if use_last_as_legend:
+            d = {
+                "loc": "center",
+                "prop": {"size": 9},
+            }
             last = ax[-1]
-            last.legend(*list(handles_labels), loc="center", prop={"size": 9})
+            if not isinstance(legend, list):
+                last.legend(*list(ax[0].get_legend_handles_labels()), **d)
+            else:
+                last.legend(handles=legend, **d)
         else:
-            legend_kwargs = {"framealpha": 0}
-            fig.legend(
-                *list(handles_labels),
+            d = dict(
                 loc="outside lower center",
                 ncol=5,
                 fontsize=9,
                 fancybox=False,
                 shadow=False,
-                **legend_kwargs,
+                framealpha=0,
             )
 
-        fig.subplots_adjust(bottom=0.1)
+            if not isinstance(legend, list):
+                fig.legend(
+                    *list(ax[0].get_legend_handles_labels()),
+                    **d,
+                )
+            else:
+                fig.legend(
+                    handles=legend,
+                    **d,
+                )
+
+    plt.tight_layout()
     yield fig
     plt.close(fig)
 
@@ -441,8 +460,7 @@ def plot_metric_table(
     """
     data.columns = [LABELS[c] for c in data.columns]
     fig, ax = plt.subplots()
-    sns.heatmap(data, annot=True, cmap=plt.cm.get_cmap("viridis"), ax=ax)
-    ax.xaxis.set_major_formatter(FormatStrFormatter(format_x))
+    sns.heatmap(data, annot=True, cmap=plt.cm.get_cmap("viridis"), ax=ax, fmt=format_x)
     plt.ylabel("")
     plt.xlabel("")
     plt.tight_layout()

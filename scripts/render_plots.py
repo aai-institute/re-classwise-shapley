@@ -249,7 +249,6 @@ def _render_plots(experiment_name: str, model_name: str):
                                 )
                         case "boxplot":
                             x_label = plot_settings.get("x_label", None)
-                            x_format = plot_settings.get("format", None)
                             logger.info(f"Plotting boxplot for metric '{metric_name}'.")
                             with plot_metric_boxplot(
                                 selected_loaded_metrics, x_label=x_label

@@ -112,6 +112,11 @@ experiments:
         plots:
           - accuracy
 
+      value_decay:
+        fn: value_decay
+        plots:
+          - value_decay
+
       top_fraction:
         fn: top_fraction
         alpha_range:
@@ -120,11 +125,6 @@ experiments:
           step: 0.01
         plots:
           - rank_stability
-
-      value_decay:
-        fn: value_decay
-        plots:
-          - value_decay
 
     metrics:
       weighted_relative_accuracy_difference_random:
@@ -205,7 +205,7 @@ plots:
 
   table:
     type: table
-    format: "%.3f"
+    format: ".3f"
 
   box_wrad:
     type: boxplot

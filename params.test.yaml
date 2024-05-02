@@ -12,7 +12,7 @@ settings:
     calculate_threshold_characteristics: true
     evaluate_curves: true
     evaluate_metrics: true
-    render_plots: true
+    render_plots: false
 
   time:
     active: true

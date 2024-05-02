@@ -11,8 +11,8 @@ settings:
     sample_data: false
     calculate_values: false
     calculate_threshold_characteristics: false
-    evaluate_curves: true
-    evaluate_metrics: true
+    evaluate_curves: false
+    evaluate_metrics: false
     render_plots: true
 
 

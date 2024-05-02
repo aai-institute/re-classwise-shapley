@@ -25,7 +25,6 @@ settings:
 active:
   experiments:
   - point_removal
-  - noise_removal
   models:
   - logistic_regression
   datasets:

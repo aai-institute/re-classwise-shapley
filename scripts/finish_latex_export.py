@@ -50,6 +50,16 @@ def copy_images_to_destination(image_paths: list[str], destination_root: str):
         print(f"Copied {source_path} to {destination_path}")
 
 
+def replace_cite_with_citep(file_path: str):
+    with open(file_path, 'r') as file:
+        content = file.read()
+
+    content = re.sub(r'\(\{\\cite\{(.*?)\}\}\)', r'{\\citep{\1}}', content)
+
+    with open(file_path, 'w') as file:
+        file.write(content)
+
+
 if __name__ == "__main__":
     latex_file = "../report/tmlr-re-csshapley.tex"
     destination_root = "../report/"
@@ -57,3 +67,5 @@ if __name__ == "__main__":
     image_paths = find_image_paths(latex_file)
 
     copy_images_to_destination(image_paths, destination_root)
+
+    replace_cite_with_citep(latex_file)

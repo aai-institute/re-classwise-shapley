@@ -12,6 +12,7 @@ from typing import Sequence
 import pandas as pd
 import numpy as np
 from numpy.typing import NDArray
+from pydvl.reporting.plots import plot_ci_array
 
 from pydvl.value import ValuationResult
 import matplotlib.pyplot as plt
@@ -130,6 +131,8 @@ def plot_varwad(
             ax=axs[plot_n],
             bootstrap=n_bootstrap_samples,
             palette=palette,
+            width=0.8,
+            linewidth=0.5,
             showfliers=False,
         )
         axs[plot_n].set_title(dataset)
@@ -283,6 +286,73 @@ def plot_rank_stability(
     return fig
 
 
+###############################################################################
+# Plot of value decay
+
+
+def plot_value_decay(
+    model: str, base_path: str, n_columns: int, n_rows: int, fraction: float
+):
+    assert n_columns * n_rows > len(ALL_DATASETS)
+
+    fig, axs = plt.subplots(n_rows, n_columns, figsize=(15, 5))
+    axs = axs.flatten()
+    plt.subplots_adjust(
+        left=0.055, right=0.95, top=0.95, bottom=0.12, wspace=0.3, hspace=0.3
+    )
+    fig.text(0.02, 0.5, "Normalized value", va="center", rotation="vertical")
+    fig.text(0.5, 0.02, "Value rank", ha="center")
+
+    plot_n = 0
+
+    methods = sorted(set(ALL_METHODS).difference(["random"]))
+    for dataset in ALL_DATASETS:
+        for method in methods:
+            m = -1
+            vals = None
+            for n in range(1, N_RUNS + 1):
+                with open(
+                    f"{base_path}/{model}/{dataset}/{n}/valuation." f"{method}.pkl",
+                    "rb",
+                ) as f:
+                    values: ValuationResult = pickle.load(f)
+                values.sort(reverse=True)
+                if vals is None:
+                    m = int(len(values) * fraction)
+                    vals = np.zeros((N_RUNS, m))
+                vals[n - 1] = values.values[:m] / max(abs(values.values))
+            axs[plot_n].set_title(f"{dataset}")
+            axs[plot_n].set_xticks(np.linspace(0, m, 5, dtype=int))
+            axs[plot_n].set_xticklabels(np.linspace(0, m, 5, dtype=int))
+            axs[plot_n].set_xlim((0, m))
+            axs[plot_n].grid(True)
+            mean_color, shade_color = COLORS[COLOR_ENCODING[LABELS[method]]]
+
+            plot_ci_array(
+                vals,
+                level=0.01,
+                abscissa=list(range(vals.shape[1])),
+                mean_color=mean_color,
+                shade_color=shade_color,
+                type="auto",
+                ax=axs[plot_n],
+                label=LABELS[method],
+            )
+
+        plot_n += 1
+
+    m = len(axs)
+    for ax in axs[plot_n : m - 1]:
+        ax.remove()
+    handles, labels = axs[0].get_legend_handles_labels()
+
+    last = axs[m - 1]
+    last.set_axis_off()
+    last.legend(handles, labels, loc="center", prop={"size": 9})  # size in points
+
+    return fig
+
+
 if __name__ == "__main__":
     fig = plot_varwad(
         model=SOURCE_MODEL,
@@ -292,6 +362,18 @@ if __name__ == "__main__":
     fig.savefig(
         f"{BASE_PATH}/plots/point_removal/"
         f"{SOURCE_MODEL}/boxplots/varwad-{SOURCE_MODEL}.box.{PLOT_FORMAT}"
+    )
+    fig.show()
+
+    fig = plot_value_decay(
+        model=SOURCE_MODEL,
+        base_path=f"{BASE_PATH}/values/point_removal",
+        n_columns=5,
+        n_rows=2,
+        fraction=1.0,
+    )
+    fig.savefig(
+        f"{BASE_PATH}/plots/point_removal/{SOURCE_MODEL}/curves/value_decay.{PLOT_FORMAT}"
     )
     fig.show()
 

@@ -124,7 +124,7 @@ def curve_metric(
     return curve
 
 
-def curve_value_decay(values: ValuationResult, fraction: float = 0.05) -> pd.Series:
+def curve_value_decay(values: ValuationResult, fraction: float) -> pd.Series:
     """
     Computes the value decay curve for a given valuation result. The value decay curve
     shows the average value of the valuation result for each prefix of the ranking.

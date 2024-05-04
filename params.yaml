@@ -1,5 +1,5 @@
 settings:
-  n_jobs: 4
+  n_jobs: 26
   backend: joblib
   mlflow_tracking_uri: http://localhost:5000
   plot_format: pdf
@@ -49,8 +49,8 @@ active:
   - tmc_shapley
   - beta_shapley
   - banzhaf_shapley
-  - msr_banzhaf_shapley_500
-  - msr_banzhaf_shapley_5000
+#  - msr_banzhaf_shapley_500
+#  - msr_banzhaf_shapley_5000
   - least_core
   - loo
   repetitions:
@@ -114,6 +114,7 @@ experiments:
 
       value_decay:
         fn: value_decay
+        fraction: 1.0
         plots:
           - value_decay
 

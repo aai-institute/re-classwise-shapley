@@ -9,7 +9,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.patches import Patch
-from matplotlib.ticker import FormatStrFormatter, FuncFormatter
+from matplotlib.ticker import FormatStrFormatter
 
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import OneOrMany, ensure_list
@@ -38,9 +38,9 @@ COLOR_ENCODING = {
     "Owen Sampling": "purple",
     "Banzhaf Shapley": "orange",
     "MSR Banzhaf Shapley (500)": "purple",
-    "MSR Banzhaf Shapley (5000)": "turquoise",
+    "MSR Banzhaf Shapley": "turquoise",
     "Least Core (500)": "pink",
-    "Least Core (5000)": "pink",
+    "Least Core": "pink",
 }
 
 # Mapping from colors to mean and shade color.
@@ -67,8 +67,8 @@ LABELS = {
     "owen_sampling_shapley": "Owen Sampling",
     "banzhaf_shapley": "Banzhaf Shapley",
     "msr_banzhaf_shapley_500": "MSR Banzhaf Shapley (500)",
-    "msr_banzhaf_shapley_5000": "MSR Banzhaf Shapley (5000)",
-    "least_core": "Least Core (5000)",
+    "msr_banzhaf_shapley_5000": "MSR Banzhaf Shapley",
+    "least_core": "Least Core",
     "least_core_500": "Least Core (500)",
 }
 
@@ -191,14 +191,14 @@ def plot_grid_over_datasets(
     Returns:
         A figure containing the plot.
     """
-    dataset_names = data["dataset_name"].unique().tolist()
+    dataset_names = sorted(data["dataset_name"].unique().tolist())
     n_plots = len(dataset_names)
     n_rows = int((n_plots + n_cols - 1) / n_cols)
     fig, ax = plt.subplots(
         n_rows, n_cols, figsize=(n_cols * patch_size[0], n_rows * patch_size[1])
     )
     plt.subplots_adjust(
-        left=0.05, right=0.95, top=0.9, bottom=0.05, wspace=0.2, hspace=0.3
+        left=0.05, right=0.95, top=0.9, bottom=0.05, wspace=0.3, hspace=0.3
     )
     ax = ax.flatten()
 

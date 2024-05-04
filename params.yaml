@@ -14,7 +14,7 @@ settings:
     evaluate_curves: false
     evaluate_metrics: false
     render_plots: true
-
+    shutdown: false
 
   time:
     active: true

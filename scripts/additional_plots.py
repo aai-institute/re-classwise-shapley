@@ -17,36 +17,19 @@ import pickle
 import seaborn as sns
 
 from re_classwise_shapley.plotting import COLORS, COLOR_ENCODING, LABELS
+from re_classwise_shapley.utils import load_params_fast
 
-ALL_MODELS = ["logistic_regression", "knn", "svm", "gradient_boosting_classifier"]
+params = load_params_fast()
+active_params = params["active"]
 
-ALL_METHODS = [
-    "banzhaf_shapley",
-    "beta_shapley",
-    "classwise_shapley",
-    "least_core",
-    "loo",
-    "msr_banzhaf_shapley_5000",
-    "random",
-    "tmc_shapley",
-]
+ALL_METHODS = active_params["methods"]
+ALL_DATASETS = active_params["datasets"]
+ALL_MODELS = active_params["models"]
 
-ALL_DATASETS = [
-    "cifar10",
-    "click",
-    "covertype",
-    "cpu",
-    "diabetes",
-    "fmnist_binary",
-    "mnist_binary",
-    "mnist_multi",
-    "phoneme",
-]
-
-PLOT_FORMAT = "pdf"
+PLOT_FORMAT = params["settings"]["plot_format"]
 BASE_PATH = "../output"
 SOURCE_MODEL = "logistic_regression"
-N_RUNS = 20
+N_RUNS = len(active_params["repetitions"])
 
 
 def varwad(model: str, base_path: str):

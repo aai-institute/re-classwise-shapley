@@ -51,10 +51,15 @@ def copy_images_to_destination(image_paths: list[str], destination_root: str):
 
 
 def replace_cite_with_citep(file_path: str):
+    print(f"Replacing (\\cite) with \\citep in {file_path}")
     with open(file_path, 'r') as file:
         content = file.read()
 
     content = re.sub(r'\(\{\\cite\{(.*?)\}\}\)', r'{\\citep{\1}}', content)
+
+    print(f"Replacing (\\citep) with \\citep in {file_path}")
+
+    content = re.sub(r'\(\{\\citep\{(.*?)\}\}\)', r'{\\citep{\1}}', content)
 
     with open(file_path, 'w') as file:
         file.write(content)

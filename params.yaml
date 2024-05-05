@@ -1,5 +1,5 @@
 settings:
-  n_jobs: 4
+  n_jobs: 26
   backend: joblib
   mlflow_tracking_uri: http://localhost:5000
   plot_format: pdf
@@ -14,12 +14,13 @@ settings:
     evaluate_curves: false
     evaluate_metrics: false
     render_plots: true
-
+    shutdown: false
 
   time:
     active: true
 
   threshold_characteristics:
+    active: false
     valuation_method: banzhaf_shapley  # Method used to calculate the threshold characteristics.
     model: logistic_regression  # Default model to use for determining the values
     max_plotting_percentage: 1e-4  # Threshold for stopping plotting in direction of x-axis.

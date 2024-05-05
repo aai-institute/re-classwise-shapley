@@ -35,9 +35,9 @@ COLOR_ENCODING = {
     "Truncated Monte-Carlo Shapley": "green",
     "Classwise Shapley": "red",
     "Owen Sampling": "purple",
-    "Banzhaf Shapley": "orange",
+    "Banzhaf Shapley": "turquoise",
     "MSR Banzhaf Shapley (500)": "purple",
-    "MSR Banzhaf Shapley": "turquoise",
+    "MSR Banzhaf Shapley": "orange",
     "Least Core (500)": "pink",
     "Least Core": "pink",
 }

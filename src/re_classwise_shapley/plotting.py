@@ -1,6 +1,5 @@
 import math as m
 from contextlib import contextmanager
-from functools import reduce
 from typing import Any, Callable, List, Literal, Sequence, Tuple, Union
 
 import matplotlib.pyplot as plt
@@ -9,7 +8,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.patches import Patch
-from matplotlib.ticker import FormatStrFormatter, FuncFormatter
+from matplotlib.ticker import FormatStrFormatter
 
 from re_classwise_shapley.log import setup_logger
 from re_classwise_shapley.types import OneOrMany, ensure_list
@@ -36,11 +35,11 @@ COLOR_ENCODING = {
     "Truncated Monte-Carlo Shapley": "green",
     "Classwise Shapley": "red",
     "Owen Sampling": "purple",
-    "Banzhaf Shapley": "orange",
+    "Banzhaf Shapley": "turquoise",
     "MSR Banzhaf Shapley (500)": "purple",
-    "MSR Banzhaf Shapley (5000)": "turquoise",
+    "MSR Banzhaf Shapley": "orange",
     "Least Core (500)": "pink",
-    "Least Core (5000)": "pink",
+    "Least Core": "pink",
 }
 
 # Mapping from colors to mean and shade color.
@@ -67,8 +66,8 @@ LABELS = {
     "owen_sampling_shapley": "Owen Sampling",
     "banzhaf_shapley": "Banzhaf Shapley",
     "msr_banzhaf_shapley_500": "MSR Banzhaf Shapley (500)",
-    "msr_banzhaf_shapley_5000": "MSR Banzhaf Shapley (5000)",
-    "least_core": "Least Core (5000)",
+    "msr_banzhaf_shapley_5000": "MSR Banzhaf Shapley",
+    "least_core": "Least Core",
     "least_core_500": "Least Core (500)",
 }
 
@@ -191,7 +190,7 @@ def plot_grid_over_datasets(
     Returns:
         A figure containing the plot.
     """
-    dataset_names = data["dataset_name"].unique().tolist()
+    dataset_names = sorted(data["dataset_name"].unique().tolist())
     n_plots = len(dataset_names)
     n_rows = int((n_plots + n_cols - 1) / n_cols)
     fig, ax = plt.subplots(
@@ -265,14 +264,14 @@ def plot_grid_over_datasets(
 
             if not isinstance(legend, list):
                 fig.legend(
-                    *list(ax[0].get_legend_handles_labels()),
-                    **d,
-                )
+                        *list(ax[0].get_legend_handles_labels()),
+                        **d,
+                        )
             else:
                 fig.legend(
-                    handles=legend,
-                    **d,
-                )
+                        handles=legend,
+                        **d,
+                        )
 
     plt.tight_layout()
     yield fig
@@ -281,11 +280,11 @@ def plot_grid_over_datasets(
 
 @contextmanager
 def plot_histogram(
-    data: pd.DataFrame,
-    method_names: OneOrMany[str],
-    patch_size: Tuple[float, float] = (3, 2.5),
-    n_cols: int = 5,
-) -> plt.Figure:
+        data: pd.DataFrame,
+        method_names: OneOrMany[str],
+        patch_size: Tuple[float, float] = (3, 2.5),
+        n_cols: int = 5,
+        ) -> plt.Figure:
     """
     Plot the histogram of the data values for each dataset and valuation method.
 
@@ -336,7 +335,7 @@ def plot_histogram(
         plot_histogram_func,
         patch_size=patch_size,
         n_cols=n_cols,
-        legend=True,
+        legend=False,
         method_names=ensure_list(method_names),
         xlabel="Value",
         ylabel="#",
@@ -364,26 +363,39 @@ def plot_time(
     Returns:
         A figure containing the plot.
     """
+    data.loc[:, "method_name"] = data["method_name"].apply(lambda m: LABELS[m])
 
     def plot_time_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
-        data.loc[:, "method_name"] = data["method_name"].apply(lambda m: LABELS[m])
-        sns.boxplot(
-            data=data,
-            x="time_s",
-            y="method_name",
-            hue="method_name",
-            palette=COLOR_ENCODING,
-            legend=False,
-            width=0.5,
-            ax=ax,
+        for method_name in sorted(data["method_name"].unique()):
+            method_data = data[data["method_name"] == method_name]
+            sns.boxplot(
+                data=method_data,
+                x="time_s",
+                y="method_name",
+                color=COLORS[COLOR_ENCODING[method_name]][0],
+                legend=False,
+                width=0.8,
+                linewidth=0.5,
+                showfliers=False,
+                ax=ax,
+                )
+        ax.set_yticklabels([])
+        ax.tick_params(axis="y", length=0)
+
+    legend_patches = [
+        Patch(
+            color=COLORS[COLOR_ENCODING[method]][0],
+            label=method
         )
+        for method in sorted(data["method_name"].unique())
+    ]
 
     with plot_grid_over_datasets(
         data,
         plot_time_func,
         patch_size=patch_size,
         n_cols=n_cols,
-        legend=False,
+        legend=legend_patches,
         xlabel="s",
         ylabel="",
         tick_params_left_only=True,
@@ -416,7 +428,11 @@ def plot_curves(
     def plot_curves_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
         dataset_name = kwargs.get("dataset_name")
         data.loc[:, "method_name"] = data["method_name"].apply(lambda m: LABELS[m])
-        for method_name, method_data in data.groupby("method_name"):
+
+        grouped_data = data.groupby("method_name")
+
+        for method_name in sorted(grouped_data.groups.keys()):
+            method_data = grouped_data.get_group(method_name)
             color_name = COLOR_ENCODING[method_name]
             mean_color, shade_color = COLORS[color_name]
 
@@ -485,30 +501,38 @@ def plot_metric_boxplot(
         n_cols: Number of columns for subplot layout.
     """
 
+    data = data[data["method_name"] != "random"]
+    data.loc[:, "method_name"] = data["method_name"].apply(lambda m: LABELS[m])
+
     def plot_metric_boxplot_func(data: pd.DataFrame, ax: plt.Axes, **kwargs):
-        data.loc[:, "method_name"] = data["method_name"].apply(lambda m: LABELS[m])
-        sns.boxplot(
-            data=data,
-            x="metric",
-            y="method_name",
-            hue="method_name",
-            palette={
-                label: COLORS[COLOR_ENCODING[label]][0] for label in LABELS.values()
-            },
-            legend=False,
-            bootstrap=10000,
-            width=0.5,
-            ax=ax,
-        )
+        grouped_data = data.groupby("method_name")
+
+        for method_name in sorted(grouped_data.groups.keys()):
+            method_data = grouped_data.get_group(method_name)
+            sns.boxplot(
+                data=method_data,
+                x="metric",
+                y="method_name",
+                hue="method_name",
+                palette={
+                    label: COLORS[COLOR_ENCODING[label]][0] for label in LABELS.values()
+                },
+                legend=False,
+                bootstrap=10000,
+                width=0.8,
+                linewidth=0.5,
+                showfliers=False,
+                ax=ax,
+            )
         ax.set_yticklabels([])
         ax.tick_params(axis="y", length=0)
 
     legend_patches = [
         Patch(
-            color=COLORS[COLOR_ENCODING[LABELS[method]]][0],
-            label=LABELS[method],
+            color=COLORS[COLOR_ENCODING[method]][0],
+            label=method
         )
-        for method in data["method_name"].unique()
+        for method in sorted(data["method_name"].unique())
     ]
 
     with plot_grid_over_datasets(
@@ -604,58 +628,3 @@ def plot_threshold_characteristics(
         ],
     ) as fig:
         yield fig
-
-
-def plot_rank_stability(
-    model: str, base_path: str, n_columns: int, n_rows: int, alpha_range: Sequence
-) -> plt.Figure():
-    assert n_columns * n_rows > len(ALL_DATASETS)
-
-    rank_stabilities = rank_stability(
-        model=model, base_path=base_path, alpha_range=alpha_range
-    )
-
-    fig, axs = plt.subplots(n_rows, n_columns, figsize=(15, 5))
-    axs = axs.flatten()
-    plt.subplots_adjust(
-        left=0.05, right=0.95, top=0.9, bottom=0.05, wspace=0.3, hspace=0.3
-    )
-
-    plot_n = 0
-
-    methods = sorted(set(ALL_METHODS).difference(["random", "loo"]))
-    for dataset in ALL_DATASETS:
-        for method in methods:
-            mean_color, shade_color = COLORS[COLOR_ENCODING[LABELS[method]]]
-            axs[plot_n].plot(
-                np.abs(alpha_range),
-                rank_stabilities[dataset][method],
-                label=LABELS[method],
-                color=mean_color,
-            )
-            axs[plot_n].set_title(f"{dataset}")
-            axs[plot_n].set_ylim(0, 0.8)
-            axs[plot_n].set_xlim((min(alpha_range), max(alpha_range)))
-            axs[plot_n].set_xticks(np.linspace(min(alpha_range), max(alpha_range), 4))
-            axs[plot_n].set_xticklabels(
-                np.linspace(
-                    100 * min(alpha_range), 100 * max(alpha_range), 4, dtype=int
-                )
-            )
-            axs[plot_n].set_yticks(np.linspace(0, 0.8, 5))
-            axs[plot_n].set_yticklabels(np.linspace(0, 80, 5, dtype=int))
-            axs[plot_n].grid(True)
-
-        #
-        plot_n += 1
-
-    m = len(axs)
-    for ax in axs[plot_n : m - 1]:
-        ax.remove()
-    handles, labels = axs[0].get_legend_handles_labels()
-
-    last = axs[m - 1]
-    last.set_axis_off()
-    last.legend(handles, labels, loc="center", prop={"size": 9})  # size in points
-
-    return fig

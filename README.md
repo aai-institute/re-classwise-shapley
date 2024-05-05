@@ -2,10 +2,6 @@
 
 Code for the submission to TMLR 2024. The original paper can be found [here](https://arxiv.org/abs/2211.06800).
 
-| :warning: WARNING                                           |
-|:------------------------------------------------------------|
-| It is it not recommended to use this library in production. |
-
 # Getting started
 
 ## Installation
@@ -77,7 +73,7 @@ cd docker/mlflow
 docker compose up -d
 ```
 
-and open `http://localhost:5000` in your browser. mlflow relies on a S3 bucket served by
+and open `http://localhost:5000` in your browser. MLflow relies on a S3 bucket served by
 a minio server. All plots and artifacts are logged to this bucket. If you want to stop 
 MLflow execute
 
@@ -181,7 +177,7 @@ number) with the file name `<metric_name>.<curve_name>.csv`.
 ### 7. Render plots
 
 Last but not least, the plots are rendered and all relevant information is logged to
-mlflow. The following plots are generated
+MLflow. The following plots are generated
 
 | Plot             | Description                                                                              |
 |------------------|------------------------------------------------------------------------------------------|
@@ -193,12 +189,12 @@ mlflow. The following plots are generated
 
 ## Reproduction
 
-In general there are two ways of running the experiments. The later way uses `dvc` to 
+In general there are two ways of running the experiments. The original way uses `dvc` to 
 execute the pipeline. However, writing and reading the `dvc.lock` file takes some time. 
-Hence, the former way uses python directly. Both ways can be bridged by using 
-`dvc commit`.
+Hence, an alternative way runs experiments from a python script directly. Both ways can
+be bridged by using `dvc commit`. 
 
-### Manual
+### Manual runs
 
 Sometimes `dvc` takes a lot of time inbetween stages. Hence, we integrated an option to
 run the experiments without `dvc` and committing the results later on. Execute
@@ -208,7 +204,7 @@ python scripts/run_pipeline.py
 dvc commit
 ```
 
-to do a manual and faster run without `dvc`. Committing the results is optimal, but is
+to do a manual and faster run without `dvc`. Committing the results is optional, but
 necessary if you want to switch back to `dvc` with the results of the run. 
 
 
@@ -252,6 +248,19 @@ checks are skipped and thus the command runs faster than `dvc exp run`.
 ```shell
 dvc repro [-s <stage>]
 ```
+
+### Manual
+
+Sometimes `dvc` takes a lot of time inbetween stages. Hence, we integrated an option to
+run the experiments without `dvc` and committing the results later on. Execute
+
+```shell
+python scripts/run_pipeline.py
+dvc commit
+```
+
+to do a manual and faster run without `dvc`. Committing the results is optimal, but is
+necessary if you want to switch back to `dvc` with the results of the run. 
 
 # Development
 
@@ -431,6 +440,40 @@ experiments:
         arg: arg
 ```
 
-A special role has the parameter. It defines how much of the curve
+The parameter `len_curve_perc` has a special role. It defines how much of the curve
 should be drawn in the plots. It is not passed to the metric itself, but used in the 
 last stage. All other parameters are passed as keyword arguments to the metric.
+
+
+# The reproducibility report
+
+The report is written using [TeXmacs](https://www.texmacs.org). The sources
+can be found in the `report` folder.
+
+Due to the requirement to use TMLR's style files, we use TeXmacs' *conservative
+export* to LaTeX. After activating this preference in the editor, import the
+LaTeX file and work on it as if it were a regular TeXmacs file. Save the file to
+export back, while preserving any TeXmacs-specific formatting. Export to PDF
+from TeXmacs any time, or use the LaTeX file with TMLR's template project for
+overleaf.
+
+## Images
+
+Images are linked from the `output` folder. These are not included in the
+repository, but can be generated from saved run data using
+
+```shell
+dvc repro render-plots -f -s
+```
+
+For convenience, the script under `scripts/finish_latex_export.py` can be used
+to gather all used images for easy upload to overleaf. It will create a folder
+`report/output` mimicking the structure of the `output` folder, and copy all
+used images there.
+
+## Caveats
+
+TMLR requires using \citep and \citet for citations. TeXmacs does not support
+this natively, so we use an ugly workaround. In TeXmacs we enclose the required 
+citations in parentheses, and then we use a simple regex to convert those. This
+is just a hack until we add a couple of macros to texmacs for proper export.

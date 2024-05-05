@@ -20,6 +20,7 @@ settings:
     active: true
 
   threshold_characteristics:
+    active: false
     valuation_method: banzhaf_shapley  # Method used to calculate the threshold characteristics.
     model: logistic_regression  # Default model to use for determining the values
     max_plotting_percentage: 1e-4  # Threshold for stopping plotting in direction of x-axis.

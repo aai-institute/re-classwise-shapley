@@ -1,6 +1,6 @@
 @article{benmerzoug_re_2023,
   title = {[{{Re}}] {{If}} You like {{Shapley}}, Then You'll Love the Core},
-  author = {Benmerzoug, Anes and Delgado, Miguel de Benito},
+  author = {Benmerzoug, Anes and {de Benito Delgado}, Miguel},
   year = {2023},
   month = jul,
   journal = {ReScience C},
@@ -8,6 +8,7 @@
   number = {2},
   pages = {\#32},
   doi = {10.5281/zenodo.8173733},
+  url = {https://zenodo.org/record/8173733},
   urldate = {2023-08-27},
   abstract = {We investigate the results of [1] in the field of data valuation. We repeat their experiments and conclude that the (Monte Carlo) Least Core is sensitive to important characteristics of the ML problem of interest, making it difficult to apply.},
   keywords = {notion}
@@ -25,6 +26,7 @@
   pages = {1726--1730},
   issn = {0305-0548},
   doi = {10.1016/j.cor.2008.04.004},
+  url = {https://www.sciencedirect.com/science/article/pii/S0305054808000804},
   urldate = {2020-11-21},
   abstract = {In this paper we develop a polynomial method based on sampling theory that can be used to estimate the Shapley value (or any semivalue) for cooperative games. Besides analyzing the complexity problem, we examine some desirable statistical properties of the proposed approach and provide some computational results.},
   langid = {english},
@@ -41,6 +43,7 @@
   eprint = {2401.15866},
   publisher = {arXiv},
   doi = {10.48550/arXiv.2401.15866},
+  url = {http://arxiv.org/abs/2401.15866},
   urldate = {2024-03-05},
   abstract = {Many tasks in explainable machine learning, such as data valuation and feature attribution, perform expensive computation for each data point and can be intractable for large datasets. These methods require efficient approximations, and learning a network that directly predicts the desired output, which is commonly known as amortization, is a promising solution. However, training such models with exact labels is often intractable; we therefore explore training with noisy labels and find that this is inexpensive and surprisingly effective. Through theoretical analysis of the label noise and experiments with various models and datasets, we show that this approach significantly accelerates several feature attribution and data valuation methods, often yielding an order of magnitude speedup over existing approaches.},
   archiveprefix = {arxiv}
@@ -57,6 +60,7 @@
   pages = {2242--2251},
   publisher = {PMLR},
   issn = {2640-3498},
+  url = {https://proceedings.mlr.press/v97/ghorbani19c.html},
   urldate = {2020-11-01},
   abstract = {As data becomes the fuel driving technological and economic growth, a fundamental challenge is how to quantify the value of data in algorithmic predictions and decisions. For example, in healthcare and consumer markets, it has been suggested that individuals should be compensated for the data that they generate, but it is not clear what is an equitable valuation for individual data. In this work, we develop a principled framework to address data valuation in the context of supervised machine learning. Given a learning algorithm trained on n data points to produce a predictor, we propose data Shapley as a metric to quantify the value of each training datum to the predictor performance. Data Shapley uniquely satisfies several natural properties of equitable data valuation. We develop Monte Carlo and gradient-based methods to efficiently estimate data Shapley values in practical settings where complex learning algorithms, including neural networks, are trained on large datasets. In addition to being equitable, extensive experiments across biomedical, image and synthetic data demonstrate that data Shapley has several other benefits: 1) it is more powerful than the popular leave-one-out or leverage score in providing insight on what data is more valuable for a given learning task; 2) low Shapley value data effectively capture outliers and corruptions; 3) high Shapley value data inform what type of new data to acquire to improve the predictor.},
   archiveprefix = {arxiv},
@@ -72,6 +76,7 @@
   year = {2021},
   eprint = {1911.07128},
   pages = {8239--8247},
+  url = {https://openaccess.thecvf.com/content/CVPR2021/html/Jia_Scalability_vs._Utility_Do_We_Have_To_Sacrifice_One_for_CVPR_2021_paper.html},
   urldate = {2021-08-10},
   abstract = {Quantifying the importance of each training point to a learning task is a fundamental problem in machine learning and the estimated importance scores have been leveraged to guide a range of data workflows such as data summarization and domain adaption. One simple idea is to use the leave-one-out error of each training point to indicate its importance. Recent work has also proposed to use the Shapley value, as it defines a unique value distribution scheme that satisfies a set of appealing properties. However, calculating Shapley values is often expensive, which limits its applicability in real-world applications at scale. Multiple heuristics to improve the scalability of calculating Shapley values have been proposed recently, with the potential risk of compromising their utility in real-world applications. How well do existing data quantification methods perform on existing workflows? How do these methods compare with each other, empirically and theoretically? Must we sacrifice scalability for the utility in these workflows when using these methods? In this paper, we conduct a novel theoretical analysis comparing the utility of different importance quantification methods, and report extensive experimental studies on settings such as noisy label detection, watermark removal, data summarization, data acquisition, and domain adaptation on existing and proposed workflows. We show that Shapley value approximation based on a KNN surrogate over pre-trained feature embeddings obtains comparable utility with existing algorithms while achieving significant scalability improvement, often by orders of magnitude. Our theoretical analysis also justifies its advantage over the leave-one-out error. The code is available at https://github.com/AI-secure/Shapley-Study.},
   archiveprefix = {arxiv},
@@ -85,6 +90,7 @@
   author = {Just, Hoang Anh and Kang, Feiyang and Wang, Tianhao and Zeng, Yi and Ko, Myeongseob and Jin, Ming and Jia, Ruoxi},
   year = {2023},
   month = feb,
+  url = {https://openreview.net/forum?id=JJuP86nBl4q},
   urldate = {2023-04-25},
   abstract = {Traditionally, data valuation is posed as a problem of equitably splitting the validation performance of a learning algorithm among the training data. As a result, the calculated data values depend on many design choices of the underlying learning algorithm. However, this dependence is undesirable for many use cases of data valuation, such as setting priorities over different data sources in a data acquisition process and informing pricing mechanisms in a data marketplace. In these scenarios, data needs to be valued before the actual analysis and the choice of the learning algorithm is still undetermined then. Another side-effect of the dependence is that to assess the value of individual points, one needs to re-run the learning algorithm with and without a point, which incurs a large computation burden. This work leapfrogs over the current limits of data valuation methods by introducing a new framework that can value training data in a way that is oblivious to the downstream learning algorithm. Our main results are as follows. \${\textbackslash}textbf\{(1)\}\$ We develop a proxy for the validation performance associated with a training set based on a non-conventional \${\textbackslash}textit\{class-wise\}\$ \${\textbackslash}textit\{Wasserstein distance\}\$ between the training and the validation set. We show that the distance characterizes the upper bound of the validation performance for any given model under certain Lipschitz conditions. \${\textbackslash}textbf\{(2)\}\$ We develop a novel method to value individual data based on the sensitivity analysis of the \${\textbackslash}textit\{class-wise\}\$ Wasserstein distance. Importantly, these values can be directly obtained \${\textbackslash}textit\{for free\}\$ from the output of off-the-shelf optimization solvers once the Wasserstein distance is computed. \${\textbackslash}textbf\{(3) \}\$We evaluate our new data valuation framework over various use cases related to detecting low-quality data and show that, surprisingly, the learning-agnostic feature of our framework enables a \${\textbackslash}textit\{significant improvement\}\$ over the state-of-the-art performance while being \${\textbackslash}textit\{orders of magnitude faster.\}\$},
   langid = {english},
@@ -102,6 +108,7 @@
   eprint = {2110.14049},
   publisher = {PMLR},
   address = {Valencia, Spain},
+  url = {https://arxiv.org/abs/2110.14049},
   urldate = {2022-04-06},
   abstract = {Data Shapley has recently been proposed as a principled framework to quantify the contribution of individual datum in machine learning. It can effectively identify helpful or harmful data points for a learning algorithm. In this paper, we propose Beta Shapley, which is a substantial generalization of Data Shapley. Beta Shapley arises naturally by relaxing the efficiency axiom of the Shapley value, which is not critical for machine learning settings. Beta Shapley unifies several popular data valuation methods and includes data Shapley as a special case. Moreover, we prove that Beta Shapley has several desirable statistical properties and propose efficient algorithms to estimate it. We demonstrate that Beta Shapley outperforms state-of-the-art data valuation methods on several downstream ML tasks such as: 1) detecting mislabeled training data; 2) learning with subsamples; and 3) identifying points whose addition or removal have the largest positive or negative impact on the model.},
   archiveprefix = {arxiv},
@@ -119,8 +126,9 @@
   pages = {18135--18152},
   publisher = {PMLR},
   issn = {2640-3498},
+  url = {https://proceedings.mlr.press/v202/kwon23e.html},
   urldate = {2023-09-06},
-  abstract = {Data valuation is a powerful framework for providing statistical insights into which data are beneficial or detrimental to model training. Many Shapley-based data valuation methods have shown promising results in various downstream tasks, however, they are well known to be computationally challenging as it requires training a large number of models. As a result, it has been recognized as infeasible to apply to large datasets. To address this issue, we propose Data-OOB, a new data valuation method for a bagging model that utilizes the out-of-bag estimate. The proposed method is computationally efficient and can scale to millions of data by reusing trained weak learners. Specifically, Data-OOB takes less than 2.25 hours on a single CPU processor when there are \$10\^{}6\$ samples to evaluate and the input dimension is 100. Furthermore, Data-OOB has solid theoretical interpretations in that it identifies the same important data point as the infinitesimal jackknife influence function when two different points are compared. We conduct comprehensive experiments using 12 classification datasets, each with thousands of sample sizes. We demonstrate that the proposed method significantly outperforms existing state-of-the-art data valuation methods in identifying mislabeled data and finding a set of helpful (or harmful) data points, highlighting the potential for applying data values in real-world applications.},
+  abstract = {Data valuation is a powerful framework for providing statistical insights into which data are beneficial or detrimental to model training. Many Shapley-based data valuation methods have shown promising results in various downstream tasks, however, they are well known to be computationally challenging as it requires training a large number of models. As a result, it has been recognized as infeasible to apply to large datasets. To address this issue, we propose Data-OOB, a new data valuation method for a bagging model that utilizes the out-of-bag estimate. The proposed method is computationally efficient and can scale to millions of data by reusing trained weak learners. Specifically, Data-OOB takes less than 2.25 hours on a single CPU processor when there are \$10{\textasciicircum}6\$ samples to evaluate and the input dimension is 100. Furthermore, Data-OOB has solid theoretical interpretations in that it identifies the same important data point as the infinitesimal jackknife influence function when two different points are compared. We conduct comprehensive experiments using 12 classification datasets, each with thousands of sample sizes. We demonstrate that the proposed method significantly outperforms existing state-of-the-art data valuation methods in identifying mislabeled data and finding a set of helpful (or harmful) data points, highlighting the potential for applying data values in real-world applications.},
   langid = {english},
   keywords = {notion}
 }
@@ -135,6 +143,7 @@
   pages = {793--801},
   publisher = {PMLR},
   issn = {2640-3498},
+  url = {https://proceedings.mlr.press/v130/kwon21a.html},
   urldate = {2021-04-23},
   abstract = {Distributional data Shapley value (DShapley) has recently been proposed as a principled framework to quantify the contribution of individual datum in machine learning. DShapley develops the founda...},
   archiveprefix = {arxiv},
@@ -148,6 +157,7 @@
   year = {2023},
   month = nov,
   address = {New Orleans, Louisiana, USA},
+  url = {https://openreview.net/forum?id=u359tNBpxF},
   urldate = {2023-12-10},
   abstract = {Data valuation, a principled way to rank the importance of each training datum, has become increasingly important. However, existing value-based approaches (e.g., Shapley) are known to suffer from the stochasticity inherent in utility functions that render consistent and reliable ranking difficult. Recently, Wang and Jia (2023) proposed the noise-structure-agnostic framework to advocate the Banzhaf value for its robustness against such stochasticity as it achieves the largest safe margin among many alternatives. Surprisingly, our empirical study shows that the Banzhaf value is not always the most robust when compared with a broader family: weighted Banzhaf values. To analyze this scenario, we introduce the concept of Kronecker noise to parameterize stochasticity, through which we prove that the uniquely robust semi-value, which can be analytically derived from the underlying Kronecker noise, lies in the family of weighted Banzhaf values while minimizing the worst-case entropy. In addition, we adopt the maximum sample reuse principle to design an estimator to efficiently approximate weighted Banzhaf values, and show that it enjoys the best time complexity in terms of achieving an \$({\textbackslash}epsilon, {\textbackslash}delta)\$-approximation. Our theory is verified under both synthetic and authentic noises. For the latter, we fit a Kronecker noise to the inherent stochasticity, which is then plugged in to generate the predicted most robust semi-value. Our study suggests that weighted Banzhaf values are promising when facing undue noises in data valuation.},
   langid = {english},
@@ -162,6 +172,7 @@
   month = jun,
   pages = {13468--13504},
   publisher = {PMLR},
+  url = {https://proceedings.mlr.press/v162/lin22h.html},
   urldate = {2022-10-29},
   abstract = {We develop a new, principled algorithm for estimating the contribution of training data points to the behavior of a deep learning model, such as a specific prediction it makes. Our algorithm estimates the AME, a quantity that measures the expected (average) marginal effect of adding a data point to a subset of the training data, sampled from a given distribution. When subsets are sampled from the uniform distribution, the AME reduces to the well-known Shapley value. Our approach is inspired by causal inference and randomized experiments: we sample different subsets of the training data to train multiple submodels, and evaluate each submodel's behavior. We then use a LASSO regression to jointly estimate the AME of each data point, based on the subset compositions. Under sparsity assumptions (\$k {\textbackslash}ll N\$ datapoints have large AME), our estimator requires only \$O(k{\textbackslash}log N)\$ randomized submodel trainings, improving upon the best prior Shapley value estimators.},
   langid = {english},
@@ -176,6 +187,7 @@
   journal = {arXiv:1306.4265 [cs]},
   eprint = {1306.4265},
   primaryclass = {cs},
+  url = {https://arxiv.org/abs/1306.4265},
   urldate = {2020-11-16},
   abstract = {The Shapley value is arguably the most central normative solution concept in cooperative game theory. It specifies a unique way in which the reward from cooperation can be "fairly" divided among players. While it has a wide range of real world applications, its use is in many cases hampered by the hardness of its computation. A number of researchers have tackled this problem by (i) focusing on classes of games where the Shapley value can be computed efficiently, or (ii) proposing representation formalisms that facilitate such efficient computation, or (iii) approximating the Shapley value in certain classes of games. For the classical {\textbackslash}textit\{characteristic function\} representation, the only attempt to approximate the Shapley value for the general class of games is due to Castro {\textbackslash}textit\{et al.\} {\textbackslash}cite\{castro\}. While this algorithm provides a bound on the approximation error, this bound is {\textbackslash}textit\{asymptotic\}, meaning that it only holds when the number of samples increases to infinity. On the other hand, when a finite number of samples is drawn, an unquantifiable error is introduced, meaning that the bound no longer holds. With this in mind, we provide non-asymptotic bounds on the estimation error for two cases: where (i) the {\textbackslash}textit\{variance\}, and (ii) the {\textbackslash}textit\{range\}, of the players' marginal contributions is known. Furthermore, for the second case, we show that when the range is significantly large relative to the Shapley value, the bound can be improved (from \$O({\textbackslash}frac\{r\}\{m\})\$ to \$O({\textbackslash}sqrt\{{\textbackslash}frac\{r\}\{m\}\})\$). Finally, we propose, and demonstrate the effectiveness of using stratified sampling for improving the bounds further.},
   archiveprefix = {arxiv}
@@ -192,6 +204,7 @@
   publisher = {IEEE},
   issn = {1051-4651},
   doi = {10.1109/ICPR48806.2021.9412511},
+  url = {https://ieeexplore.ieee.org/abstract/document/9412511},
   abstract = {Shapley values are great analytical tools in game theory to measure the importance of a player in a game. Due to their axiomatic and desirable properties such as efficiency, they have become popular for feature importance analysis in data science and machine learning. However, the time complexity to compute Shapley values based on the original formula is exponential, and as the number of features increases, this becomes infeasible. Castro et al. [1] developed a sampling algorithm, to estimate Shapley values. In this work, we propose a new sampling method based on a multilinear extension technique as applied in game theory. The aim is to provide a more efficient (sampling) method for estimating Shapley values. Our method is applicable to any machine learning model, in particular for either multiclass classifications or regression problems. We apply the method to estimate Shapley values for multilayer perceptrons (MLPs) and through experimentation on two datasets, we demonstrate that our method provides more accurate estimations of the Shapley values by reducing the variance of the sampling statistics.},
   archiveprefix = {arxiv},
   langid = {english},
@@ -206,10 +219,21 @@
   year = {2022},
   month = oct,
   address = {New Orleans, Louisiana, USA},
+  url = {https://openreview.net/forum?id=KTOcrOR5mQ9},
   urldate = {2022-11-23},
   abstract = {Data valuation, or the valuation of individual datum contributions, has seen growing interest in machine learning due to its demonstrable efficacy for tasks such as noisy label detection. In particular, due to the desirable axiomatic properties, several Shapley value approximations have been proposed. In these methods, the value function is usually defined as the predictive accuracy over the entire development set. However, this limits the ability to differentiate between training instances that are helpful or harmful to their own classes. Intuitively, instances that harm their own classes may be noisy or mislabeled and should receive a lower valuation than helpful instances. In this work, we propose CS-Shapley, a Shapley value with a new value function that discriminates between training instances' in-class and out-of-class contributions. Our theoretical analysis shows the proposed value function is (essentially) the unique function that satisfies two desirable properties for evaluating data values in classification. Further, our experiments on two benchmark evaluation tasks (data removal and noisy label detection) and four classifiers demonstrate the effectiveness of CS-Shapley over existing methods. Lastly, we evaluate the ``transferability'' of data values estimated from one classifier to others, and our results suggest Shapley-based data valuation is transferable for application across different models.},
   langid = {english},
   keywords = {notion}
+}
+
+@misc{semmler_re_2024,
+  title = {[{{Re}}]  {{Class-wise Shapley Values}} for {{Data Valuation}}},
+  author = {Semmler, Markus},
+  year = {2024},
+  month = feb,
+  url = {https://github.com/aai-institute/re-classwise-shapley},
+  abstract = {Code for the submission to TMLR reproducing Schoch et al. 2022.},
+  howpublished = {appliedAI Institute gGmbH}
 }
 
 @inproceedings{sim_data_2022,
@@ -223,6 +247,7 @@
   pages = {5607--5614},
   issn = {1045-0823},
   doi = {10.24963/ijcai.2022/782},
+  url = {https://www.ijcai.org/proceedings/2022/782},
   urldate = {2023-01-29},
   abstract = {Electronic proceedings of IJCAI 2022},
   langid = {english}
@@ -233,6 +258,7 @@
   shorttitle = {{{pyDVL}}},
   author = {TransferLab, Team},
   year = {2022},
+  url = {https://pypi.org/project/pyDVL/},
   abstract = {pyDVL collects algorithms for Data Valuation and Influence Function computation.},
   copyright = {GNU Lesser General Public License v3},
   howpublished = {appliedAI Institute gGmbH}
@@ -247,10 +273,11 @@
   number = {2},
   pages = {49--60},
   publisher = {ACM},
-  doi = {10.1145/2641190.2641198}
+  doi = {10.1145/2641190.2641198},
+  url = {http://doi.acm.org/10.1145/2641190.264119}
 }
 
-@inproceedings{wang_data_2022,
+@inproceedings{wang_data_2023,
   title = {Data {{Banzhaf}}: {{A Robust Data Valuation Framework}} for {{Machine Learning}}},
   shorttitle = {Data {{Banzhaf}}},
   booktitle = {Proceedings of {{The}} 26th {{International Conference}} on {{Artificial Intelligence}} and {{Statistics}}},
@@ -260,6 +287,7 @@
   pages = {6388--6421},
   publisher = {PMLR},
   issn = {2640-3498},
+  url = {https://proceedings.mlr.press/v206/wang23e.html},
   urldate = {2024-02-15},
   abstract = {Data valuation has wide use cases in machine learning, including improving data quality and creating economic incentives for data sharing. This paper studies the robustness of data valuation to noisy model performance scores. Particularly, we find that the inherent randomness of the widely used stochastic gradient descent can cause existing data value notions (e.g., the Shapley value and the Leave-one-out error) to produce inconsistent data value rankings across different runs. To address this challenge, we introduce the concept of safety margin, which measures the robustness of a data value notion. We show that the Banzhaf value, a famous value notion that originated from cooperative game theory literature, achieves the largest safety margin among all semivalues (a class of value notions that satisfy crucial properties entailed by ML applications and include the famous Shapley value and Leave-one-out error). We propose an algorithm to efficiently estimate the Banzhaf value based on the Maximum Sample Reuse (MSR) principle. Our evaluation demonstrates that the Banzhaf value outperforms the existing semivalue-based data value notions on several ML tasks such as learning with weighted samples and noisy label detection. Overall, our study suggests that when the underlying ML algorithm is stochastic, the Banzhaf value is a promising alternative to the other semivalue-based data value schemes given its computational advantage and ability to robustly differentiate data quality.},
   langid = {english}
@@ -274,6 +302,7 @@
   eprint = {2107.06336v2},
   publisher = {arXiv},
   doi = {10.48550/arXiv.2107.06336},
+  url = {https://arxiv.org/abs/2107.06336v2},
   urldate = {2022-05-19},
   abstract = {The Shapley value (SV) and Least core (LC) are classic methods in cooperative game theory for cost/profit sharing problems. Both methods have recently been proposed as a principled solution for data valuation tasks, i.e., quantifying the contribution of individual datum in machine learning. However, both SV and LC suffer computational challenges due to the need for retraining models on combinatorially many data subsets. In this work, we propose to boost the efficiency in computing Shapley value or Least core by learning to estimate the performance of a learning algorithm on unseen data combinations. Theoretically, we derive bounds relating the error in the predicted learning performance to the approximation error in SV and LC. Empirically, we show that the proposed method can significantly improve the accuracy of SV and LC estimation.},
   archiveprefix = {arxiv},
@@ -291,6 +320,7 @@
   primaryclass = {cs},
   publisher = {arXiv},
   doi = {10.48550/arXiv.2311.05346},
+  url = {https://arxiv.org/abs/2311.05346},
   urldate = {2023-12-07},
   abstract = {Data valuation has found various applications in machine learning, such as data filtering, efficient learning and incentives for data sharing. The most popular current approach to data valuation is the Shapley value. While popular for its various applications, Shapley value is computationally expensive even to approximate, as it requires repeated iterations of training models on different subsets of data. In this paper we show that the Shapley value of data points can be approximated more efficiently by leveraging the structural properties of machine learning problems. We derive convergence guarantees on the accuracy of the approximate Shapley value for different learning settings including Stochastic Gradient Descent with convex and non-convex loss functions. Our analysis suggests that in fact models trained on small subsets are more important in the context of data valuation. Based on this idea, we describe \${\textbackslash}delta\$-Shapley -- a strategy of only using small subsets for the approximation. Experiments show that this approach preserves approximate value and rank of data, while achieving speedup of up to 9.9x. In pre-trained networks the approach is found to bring more efficiency in terms of accurate evaluation using small subsets.},
   archiveprefix = {arxiv}
@@ -301,6 +331,7 @@
   author = {Wilson, Ben and Zumar, Corey and Lok, Daniel and Fu, Gabriel and Kawamura, Harutaka and Ruan, Serena and Xu, Weichen and Watanabe, Yuki},
   year = {2023},
   month = dec,
+  url = {https://github.com/mlflow/mlflow},
   urldate = {2024-02-14},
   abstract = {Open source platform for the machine learning lifecycle},
   copyright = {Apache-2.0},
@@ -318,6 +349,7 @@
   pages = {106305},
   issn = {0305-0548},
   doi = {10.1016/j.cor.2023.106305},
+  url = {https://www.sciencedirect.com/science/article/pii/S0305054823001697},
   urldate = {2023-09-17},
   abstract = {Data valuation, especially quantifying data value in algorithmic prediction and decision-making, is a fundamental problem in data trading scenarios. The most widely used method is to define the data Shapley and approximate it by means of the permutation sampling algorithm. To make up for the large estimation variance of the permutation sampling that hinders the development of the data marketplace, we propose a more robust data valuation method using stratified sampling, named variance reduced data Shapley (VRDS for short). We theoretically show how to stratify, how many samples are taken at each stratum, and the sample complexity analysis of VRDS. Finally, the effectiveness of VRDS is illustrated in different types of datasets and data removal applications.},
   archiveprefix = {arxiv}
@@ -334,6 +366,7 @@
   publisher = {Association for the Advancement of Artificial Intelligence},
   address = {Virtual conference},
   doi = {10.1609/aaai.v35i6.16721},
+  url = {https://ojs.aaai.org/index.php/AAAI/article/view/16721},
   urldate = {2021-04-23},
   abstract = {The prevalent approach to problems of credit assignment in machine learning --- such as feature and data valuation--- is to model the problem at hand as a cooperative game and apply the Shapley value. But cooperative game theory offers a rich menu of alternative solution concepts, which famously includes the core and its variants. Our goal is to challenge the machine learning community's current consensus around the Shapley value, and make a case for the core as a viable alternative. To that end, we prove that arbitrarily good approximations to the least core --- a core relaxation that is always feasible --- can be computed efficiently (but prove an impossibility for a more refined solution concept, the nucleolus). We also perform experiments that corroborate these theoretical results and shed light on settings where the least core may be preferable to the Shapley value.},
   copyright = {Copyright (c) 2021, Association for the Advancement of Artificial Intelligence (www.aaai.org). All rights reserved.},

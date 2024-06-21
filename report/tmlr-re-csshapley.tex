@@ -1,20 +1,32 @@
 \documentclass[10pt]{article}
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
-\usepackage{geometry,amsmath,amssymb,graphicx,hyperref,cleveref,xcolor,float,url}
-\usepackage{tmlr}
+\usepackage{geometry,amsmath,amssymb,graphicx,xcolor,float,url}
+% \usepackage{tmlr}
 % If accepted, instead use the following line for the camera-ready submission:
-%\usepackage[accepted]{tmlr}
+\usepackage[accepted]{tmlr}
 % To de-anonymize and remove mentions to TMLR (for example for posting to preprint servers), instead use the following:
 %\usepackage[preprint]{tmlr}
 \usepackage{natbib}
 
+\usepackage[bookmarks=true]{hyperref} 
+\usepackage{bookmark,hypcap, cleveref}
+\hypersetup{
+    bookmarksnumbered=true,     
+    bookmarksopen=true,         
+    bookmarksopenlevel=1,  
+    colorlinks=true,
+    allcolors=blue,
+    pdfstartview=Fit,           
+    pdfpagemode=UseOutlines
+}
+
 \newcommand{\fix}{\marginpar{FIX}}
 \newcommand{\new}{\marginpar{NEW}}
 
-\def\month{MM}  % Insert correct month for camera-ready version
+\def\month{06}  % Insert correct month for camera-ready version
 \def\year{2024} % Insert correct year for camera-ready version
-\def\openreview{\url{https://openreview.net/forum?id=XXXX}} % Insert correct link to OpenReview for camera-ready version
+\def\openreview{\url{https://openreview.net/forum?id=srFEYJkqD7}} % Insert correct link to OpenReview for camera-ready version
 
 
 \newtheorem{claim}{Claim}
@@ -42,13 +54,12 @@
 
 \title{[Re] Classwise-Shapley values for data valuation}
 
-\author{
-  Markus Semmler
-  \tmaffiliation{appliedAI Initiative GmbH}
-  \and
-  Miguel de Benito Delgado
-  \tmaffiliation{appliedAI Institute gGmbH}
-}
+\author{\name Markus Semmler \email m.semmler@appliedai.de \\
+      \addr appliedAI Initiative GmbH
+      \AND
+      \name Miguel de Benito Delgado \email miguel@appliedai.de \\
+      \addr appliedAI Institute gGmbH
+      }
 
 \maketitle
 
@@ -56,7 +67,7 @@
   We evaluate CS-Shapley, a data valuation method introduced in
   {\cite{schoch_csshapley_2022}} for classification problems. We repeat the
   experiments in the paper, including two additional methods, the Least Core
-  {\citep{yan_if_2021}} and Data Banzhaf {\citep{wang_data_2022}}, a
+  {\citep{yan_if_2021}} and Data Banzhaf {\citep{wang_data_2023}}, a
   comparison not found in the literature. We include more conservative error
   estimates and additional metrics, like rank stability, and a
   variance-corrected version of Weighted Accuracy Drop, originally introduced
@@ -143,13 +154,13 @@ weights in  Equation~(\ref{eq:shapley-value}) with the goal of compensating
 for the variance of $u (S)$, which typically increases with model capacity at
 low set sizes $|S|$. Beta-Shapley {\citep{kwon_beta_2022}} gives more weight
 to subsets $S$ in the lower- to mid-size range by using a Beta function for
-the coefficients. A simpler approach, Data Banzhaf {\citep{wang_data_2022}}
+the coefficients. A simpler approach, Data Banzhaf {\citep{wang_data_2023}}
 (DB in the sequel), defined as follows, is of particular interest to our
 analysis:\footnote{Despite the formulation with a sum over the powerset of $T
 \setminus \{\tmmathbf{z}_i \}$, as with all game-theoretic methods, in
 practice one does not draw subsets $S$ from it, but iterates over permutations
 as described above, or uses another sampling strategy. To this avail,
-{\cite{wang_data_2022}} introduced Maximum Sample Reuse, an efficient
+{\cite{wang_data_2023}} introduced Maximum Sample Reuse, an efficient
 strategy with good performance, see below.}
 \begin{equation}
   v_{\tmop{bzf}} (\tmmathbf{z}_i) \assign \frac{1}{2^{n - 1}}  \sum_{S
@@ -253,7 +264,7 @@ but following the permutation approach first proposed in
 
 In this report, we set to verify the main claims of
 {\cite{schoch_csshapley_2022}}, incorporating two additional methods: Least
-Core {\citep{yan_if_2021}} and DB {\citep{wang_data_2022}}, which led to
+Core {\citep{yan_if_2021}} and DB {\citep{wang_data_2023}}, which led to
 some unexpected results. To the best of our knowledge, this represents the
 first direct comparison of DB with other methods in the tasks described in
 \Cref{sec:evaluation-data-val}. This work also extends the evaluation of LC
@@ -385,7 +396,7 @@ a fixed amount of times.
     CS-Shapley {\citep{schoch_csshapley_2022}} & {\small
     {\python{MinUpdates>500}}} & $\mathcal{O} (RK|T| / 2)$\tmrsup{$\dagger
     \dagger$} & $\varepsilon = 10^{- 4}, K = 1$\\
-    Data Banzhaf {\citep{wang_data_2022}} & {\small
+    Data Banzhaf {\citep{wang_data_2023}} & {\small
     {\python{MinUpdates>5000}}} & $K$ & $K = 5000$ samples\\
     Least Core {\citep{yan_if_2021}} & NA & $K$ & $K = 5000$ constraints
   \end{tabular} \
@@ -431,7 +442,7 @@ empty set. We use the default in {\tmname{pyDVL}} which does not include this
 restriction, hence sometimes conditioning on $S = \emptyset$ and setting $u
 (\emptyset |S) = u (S)$. We tested both without observing major differences.
 
-\paragraph{Data Banzhaf, DB {\citep{wang_data_2022}}:}A semi-value approach
+\paragraph{Data Banzhaf, DB {\citep{wang_data_2023}}:}A semi-value approach
 with constant weights, with the goal of counteracting the variance in
 stochastic utility functions. The idea is that for any particular choice of
 weights there will always be a utility for which they perform poorly, thus
@@ -439,7 +450,7 @@ making a constant the best choice. In particular wrt. rank stability of the
 methods, see  Figure~\ref{fig:rank-stability}.
 
 The paper also introduces an efficient sampling technique, dubbed
-{\tmdfn{Maximum Sample Reuse}} (MSR), which for every sample $S \subset T$
+{\tmem{Maximum Sample Reuse}} (MSR), which for every sample $S \subset T$
 updates all indices in the training set. This drastically reduces the amount
 of utility evaluations required for approximation, by a factor $| T |$ wrt.
 TMCS.
@@ -549,7 +560,7 @@ into practical use, since the fraction $\alpha$ is of course unknown in
 practice.}
 
 \paragraph{Rank stability.}(\Cref{sec:rank-stability}) Following
-{\cite{wang_data_2022}}, we look at how stable the top $k$\% of the values is
+{\cite{wang_data_2023}}, we look at how stable the top $k$\% of the values is
 across runs. Rank stability of a method is necessary but not sufficient for
 good results. Ideally one wants to identify high-value points reliably (good
 precision and recall) and consistently (good rank stability).
@@ -584,7 +595,7 @@ make more sense (maybe even clipping). More importantly, it does not take into
 account the heteroscedasticity of the accuracy. In  Figure~\ref{fig:acc-lr-lr}
 we can see that the 95\% CI tends to grow as data are removed from $T$,
 possibly reflecting the fact that after the few initial high values, many are
-very small, inducing changes in their ranking (see 
+very small, inducing changes in their ranking (see
 Figure~\ref{fig:value-decay} for the distribution of values).
 
 \paragraph{Variance Adjusted Relative Weighted Accuracy Drop.}For the
@@ -668,7 +679,7 @@ several high-cpu VMs of a cloud vendor. We initially used {\tmname{DVC}} to
 organize the experiment pipelines, but lock-file writing times after each
 combination of parameters where too long (in the several minutes each time).
 This motivated a switch to {\tmname{MLFlow}} {\citep{wilson_mlflow_2023}}.
-Code for all our experiments is available in {\todo{}}, including both setups
+Code for all our experiments is available in {\citep{semmler_re_2024}}, including both setups
 and instructions on running them. In order to best compare methods and
 maximally reuse computation, we employed {\tmname{PyDVL}}'s caching strategies
 for the utility function.
@@ -938,7 +949,7 @@ Further bounds in the literature prove even harder to apply in practice, e.g.
 those in {\cite{watson_accelerated_2023}}. All this means that it is in fact
 very difficult to choose the constants a priori. And the situation in the case
 of stochastic utilities is clearly even worse, as explained in
-{\cite{wang_data_2022}}.
+{\cite{wang_data_2023}}.
 
 \subsection{Value decay}\label{sec:value-decay}
 

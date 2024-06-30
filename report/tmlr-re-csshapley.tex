@@ -10,7 +10,7 @@
 \usepackage{natbib}
 
 \usepackage[bookmarks=true]{hyperref} 
-\usepackage{bookmark,hypcap, cleveref}
+\usepackage{bookmark,hypcap,cleveref}
 \hypersetup{
     bookmarksnumbered=true,     
     bookmarksopen=true,         
@@ -173,9 +173,9 @@ randomness). Intuitively, the constant coefficients $2^{n - 1}$ are the best
 one can do for general $u$, since given any weighting scheme, it is always
 possible to adversarially construct a utility with high variance at the set
 sizes with highest weights. The authors do indeed prove certain optimality
-results wrt. a notion of stability in value rankings. We will see in the
-experiments that this simple idea yields the best results in many
-situations.\footnote{{\citep{li_robust_2023}} recently extended DB to
+results with respect to (wrt.) a notion of stability in value rankings.
+We will see in the experiments that this simple idea yields the best results in
+many situations.\footnote{{\citep{li_robust_2023}} recently extended DB to
 {\tmem{weighted}} Banzhaf values, but we were not able to include this method
 in our experiments.}
 
@@ -208,7 +208,7 @@ label as $\tmmathbf{x}_i$, and its complement $D_{-\tmmathbf{y}_i} \assign
 D\backslash D_{\tmmathbf{y}_i}$. Analogously, $T = T_{\tmmathbf{y}_i} \uplus
 T_{-\tmmathbf{y}_i}$ is a partition into the subsets of all training data with
 the same and different class than $\tmmathbf{y}_i$, respectively. Trained over
-any $S \subseteq T$ the model has {\tmdfn{in-class accuracy}}: \footnote{We
+any $S \subseteq T$ the model has {\tmdfn{in-class accuracy}}:\footnote{We
 follow the notation of {\cite{schoch_csshapley_2022}}, but observe that the
 sub-index in $a_S$ is a variable. A more obvious notation would be $a (S,
 D_{\tmmathbf{y}_i})$.} $a_S  (D_{\tmmathbf{y}_i}) \assign \left( \text{\#
@@ -3554,4 +3554,3 @@ practitioner who appreciates the value of spending time looking at their data.
 % IGdyYWRpZW50IGJvb3N0aW5nCiAgY2xhc3NpZmllciwgZm9yIHZhbHVlcyBjb21wdXRlZCB1c2luZyBL
 % Tk4ufQpcZW5ke2ZpZ3VyZX17XGV0bXs3OH19CgpcZW5ke2RvY3VtZW50fQo=
 %%%%%%%%%% End TeXmacs source
-
